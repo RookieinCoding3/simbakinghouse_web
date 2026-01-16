@@ -173,7 +173,7 @@ export default function ProductModal({
                 ORDER NOW
               </Button>
               <p className="font-body text-bakery-brown/60 text-xs text-center mt-3">
-                You'll be redirected to our order form
+                You&apos;ll be redirected to our order form
               </p>
             </div>
           </div>

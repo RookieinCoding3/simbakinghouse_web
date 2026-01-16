@@ -21,16 +21,16 @@ export default function AboutSection() {
               <p>
                 Welcome to <span className="font-bold text-bakery-brown">Sim Baking House</span>,
                 where tradition meets passion in every bite. Nestled in the heart of Penang,
-                we've been crafting artisanal baked goods that bring warmth and joy to our community.
+                we&apos;ve been crafting artisanal baked goods that bring warmth and joy to our community.
               </p>
               <p>
                 Our journey began with a simple belief: that baking is more than just following
-                recipes—it's about pouring love, care, and dedication into every creation.
+                recipes—it&apos;s about pouring love, care, and dedication into every creation.
                 From our signature breads to our delicate pastries, each item is handcrafted
                 using time-honored techniques and the finest ingredients.
               </p>
               <p>
-                At Sim Baking House, we're not just bakers; we're storytellers. Every loaf,
+                At Sim Baking House, we&apos;re not just bakers; we&apos;re storytellers. Every loaf,
                 every cake, every pastry tells a story of heritage, craftsmanship, and the
                 warm embrace of home. We invite you to taste the difference that passion makes.
               </p>
