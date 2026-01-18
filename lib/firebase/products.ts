@@ -1,15 +1,18 @@
-import { collection, getDocs, query, orderBy } from 'firebase/firestore'
+import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore'
 import { db } from './config'
 import type { Product } from '@/types/product'
 
 /**
- * Fetch all products from the Firestore 'products' collection
+ * Fetch products from the Firestore 'products' collection
+ * @param limitCount - Optional limit on number of products to fetch
  * @returns Promise<Product[]> - Array of product objects
  */
-export async function fetchProducts(): Promise<Product[]> {
+export async function fetchProducts(limitCount?: number): Promise<Product[]> {
   try {
     const productsRef = collection(db, 'products')
-    const q = query(productsRef, orderBy('name', 'asc'))
+    const q = limitCount
+      ? query(productsRef, orderBy('name', 'asc'), limit(limitCount))
+      : query(productsRef, orderBy('name', 'asc'))
     const querySnapshot = await getDocs(q)
 
     const products: Product[] = []

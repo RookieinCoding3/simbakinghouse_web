@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import { Bebas_Neue, Playfair_Display } from 'next/font/google'
+import Header from '@/components/layout/Header'
+import Footer from '@/components/layout/Footer'
 import './globals.css'
 
 const bebasNeue = Bebas_Neue({
@@ -46,7 +48,11 @@ export default function RootLayout({
       lang="en"
       className={`${bebasNeue.variable} ${playfairDisplay.variable}`}
     >
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <Header />
+        {children}
+        <Footer />
+      </body>
     </html>
   )
 }
