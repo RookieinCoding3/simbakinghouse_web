@@ -67,14 +67,13 @@ export default function AboutSection() {
           {/* Logo Display */}
           <div className="relative h-[400px] md:h-[500px] rounded-lg overflow-hidden shadow-2xl bg-white/50 backdrop-blur-sm border-2 border-bakery-accent/20">
             <div className="absolute inset-0 flex items-center justify-center p-12">
-              <div className="relative w-full h-full">
-                <Image
-                  src="/SBH_logo.svg"
-                  alt="Sim Baking House Logo"
-                  fill
-                  className="object-contain"
-                />
-              </div>
+              <Image
+                src="/SBH_logo.svg"
+                alt="Sim Baking House Logo"
+                width={400}
+                height={400}
+                className="object-contain w-full h-full"
+              />
             </div>
             {/* Decorative corner elements */}
             <div className="absolute top-4 left-4 w-8 h-8 border-t-2 border-l-2 border-bakery-accent/30"></div>

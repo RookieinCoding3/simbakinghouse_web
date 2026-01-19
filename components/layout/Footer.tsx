@@ -10,12 +10,13 @@ export default function Footer() {
         <div className="grid md:grid-cols-2 gap-12 md:gap-16 mb-12">
           {/* Left Column - Logo & Est */}
           <div className="flex flex-col items-center md:items-start space-y-6">
-            <div className="relative w-64 h-32">
+            <div>
               <Image
                 src="/SBH_logo.svg"
                 alt="Sim Baking House"
-                fill
-                className="object-contain invert brightness-0 sepia saturate-0 hue-rotate-180"
+                width={256}
+                height={128}
+                className="object-contain w-64 h-32"
                 style={{ filter: 'brightness(0) saturate(100%) invert(94%) sepia(8%) saturate(401%) hue-rotate(356deg) brightness(101%) contrast(93%)' }}
               />
             </div>

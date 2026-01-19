@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app'
-import { getFirestore } from 'firebase/firestore'
+import { initializeFirestore, memoryLocalCache } from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -13,7 +13,9 @@ const firebaseConfig = {
 // Initialize Firebase (singleton pattern to prevent multiple instances)
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp()
 
-// Initialize Firestore
-export const db = getFirestore(app)
+// Initialize Firestore with memory cache to bypass browser storage restrictions
+export const db = initializeFirestore(app, {
+  localCache: memoryLocalCache()
+})
 
 export default app

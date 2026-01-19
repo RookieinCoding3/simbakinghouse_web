@@ -27,13 +27,14 @@ export default function Header() {
           {/* Logo */}
           <Link
             href="/"
-            className="relative h-12 md:h-14 w-32 md:w-40 hover:opacity-80 transition-opacity duration-200"
+            className="hover:opacity-80 transition-opacity duration-200"
           >
             <Image
               src="/SBH_logo.svg"
               alt="Sim Baking House"
-              fill
-              className="object-contain"
+              width={160}
+              height={56}
+              className="object-contain w-32 h-12 md:w-40 md:h-14"
               style={{ filter: 'brightness(0) saturate(100%) invert(94%) sepia(8%) saturate(401%) hue-rotate(356deg) brightness(101%) contrast(93%)' }}
               priority
             />

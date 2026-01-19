@@ -23,6 +23,7 @@ export default function FeaturedProductsSection() {
         setError(null)
         // Fetch only the first 8 products for the featured section
         const data = await fetchProducts(8)
+        console.log('Firestore Data (Featured):', data)
         setProducts(data)
       } catch (err) {
         console.error('Error loading featured products:', err)
@@ -57,7 +58,7 @@ export default function FeaturedProductsSection() {
             Our Selection
           </p>
           <h2 className="font-heading text-bakery-cream text-4xl sm:text-5xl md:text-6xl mb-4">
-            FEATURED PRODUCTS
+            FEATURED ESSENTIALS
           </h2>
           <p className="font-body text-bakery-cream/80 text-lg max-w-2xl mx-auto">
             Discover our most popular handcrafted creations
