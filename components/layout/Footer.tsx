@@ -12,7 +12,7 @@ export default function Footer() {
           <div className="flex flex-col items-center md:items-start space-y-6">
             <div className="relative w-64 h-32">
               <Image
-                src="/images/SBH_logo.svg"
+                src="/SBH_logo.svg"
                 alt="Sim Baking House"
                 fill
                 className="object-contain invert brightness-0 sepia saturate-0 hue-rotate-180"

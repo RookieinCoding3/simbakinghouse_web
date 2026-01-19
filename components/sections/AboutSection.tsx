@@ -69,7 +69,7 @@ export default function AboutSection() {
             <div className="absolute inset-0 flex items-center justify-center p-12">
               <div className="relative w-full h-full">
                 <Image
-                  src="/images/SBH_logo.svg"
+                  src="/SBH_logo.svg"
                   alt="Sim Baking House Logo"
                   fill
                   className="object-contain"

@@ -30,7 +30,7 @@ export default function Header() {
             className="relative h-12 md:h-14 w-32 md:w-40 hover:opacity-80 transition-opacity duration-200"
           >
             <Image
-              src="/images/SBH_logo.svg"
+              src="/SBH_logo.svg"
               alt="Sim Baking House"
               fill
               className="object-contain"
