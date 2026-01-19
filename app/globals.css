@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-bakery-brown text-bakery-cream font-body;
+    @apply bg-bakery-dark text-bakery-cream font-body;
   }
 
   /* Premium heading letter-spacing */

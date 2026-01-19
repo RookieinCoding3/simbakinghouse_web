@@ -34,8 +34,7 @@ export default function Header() {
               alt="Sim Baking House"
               width={160}
               height={56}
-              className="object-contain w-32 h-12 md:w-40 md:h-14"
-              style={{ filter: 'brightness(0) saturate(100%) invert(94%) sepia(8%) saturate(401%) hue-rotate(356deg) brightness(101%) contrast(93%)' }}
+              className="w-32 h-12 md:w-40 md:h-14 brightness-0 invert"
               priority
             />
           </Link>

@@ -17,6 +17,7 @@ export default {
           brown: '#2D1B14',
           cream: '#F5F1E8',
           accent: '#D4A574',
+          dark: '#221712',
         },
       },
     },

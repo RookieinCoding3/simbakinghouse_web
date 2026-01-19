@@ -16,8 +16,7 @@ export default function Footer() {
                 alt="Sim Baking House"
                 width={256}
                 height={128}
-                className="object-contain w-64 h-32"
-                style={{ filter: 'brightness(0) saturate(100%) invert(94%) sepia(8%) saturate(401%) hue-rotate(356deg) brightness(101%) contrast(93%)' }}
+                className="w-64 h-32 brightness-0 invert"
               />
             </div>
             <p className="font-heading text-bakery-accent text-2xl tracking-widest">
