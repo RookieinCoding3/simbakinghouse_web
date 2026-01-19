@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 
 export default function Header() {
@@ -29,15 +28,9 @@ export default function Header() {
             href="/"
             className="hover:opacity-80 transition-opacity duration-200"
           >
-            <Image
-              src="/SBH_logo.svg"
-              alt="Sim Baking House"
-              width={160}
-              height={56}
-              className="w-32 h-12 md:w-40 md:h-14"
-              style={{ filter: 'invert(1) sepia(1) saturate(3) hue-rotate(350deg) brightness(1.1)' }}
-              priority
-            />
+            <h1 className="font-body text-bakery-cream text-xl md:text-2xl font-bold italic tracking-wide">
+              Sim Baking House
+            </h1>
           </Link>
 
           {/* Desktop Navigation Links */}
