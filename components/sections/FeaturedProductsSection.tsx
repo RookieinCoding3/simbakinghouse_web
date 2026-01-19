@@ -21,8 +21,8 @@ export default function FeaturedProductsSection() {
       try {
         setLoading(true)
         setError(null)
-        // Fetch only the first 8 products for the featured section
-        const data = await fetchProducts(8)
+        // Fetch only the first 3 products for the featured section
+        const data = await fetchProducts(3)
         console.log('Firestore Data (Featured):', data)
         setProducts(data)
       } catch (err) {
@@ -49,7 +49,7 @@ export default function FeaturedProductsSection() {
   return (
     <section
       id="featured-products"
-      className="py-16 md:py-24 bg-bakery-brown"
+      className="py-16 md:py-24 bg-bakery-dark"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         {/* Section Header */}
@@ -95,10 +95,33 @@ export default function FeaturedProductsSection() {
           </div>
         )}
 
-        {/* Featured Products Grid */}
-        {!loading && !error && (
+        {/* Featured Products - 3 Vertical Images */}
+        {!loading && !error && products.length > 0 && (
           <>
-            <ProductGrid products={products} onProductClick={handleProductClick} />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+              {products.slice(0, 3).map((product) => (
+                <div
+                  key={product.id}
+                  className="relative group cursor-pointer overflow-hidden rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300"
+                  onClick={() => handleProductClick(product)}
+                >
+                  <div className="aspect-[3/4] relative">
+                    <img
+                      src={product.imageUrl}
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    {/* Overlay on hover */}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      <div className="text-center text-white p-4">
+                        <h3 className="font-heading text-2xl mb-2">{product.name}</h3>
+                        <p className="font-body text-bakery-accent text-xl">RM {product.price.toFixed(2)}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
 
             {/* View All Products Button */}
             <div className="text-center mt-12">
@@ -109,6 +132,13 @@ export default function FeaturedProductsSection() {
               </Link>
             </div>
           </>
+        )}
+
+        {/* No Products Message */}
+        {!loading && !error && products.length === 0 && (
+          <p className="text-center text-bakery-cream/70 text-lg">
+            No products available at the moment. Check back soon!
+          </p>
         )}
 
         {/* Product Modal */}

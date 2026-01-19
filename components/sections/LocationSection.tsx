@@ -2,7 +2,7 @@ export default function LocationSection() {
   return (
     <section
       id="location"
-      className="py-16 md:py-24 bg-bakery-brown"
+      className="py-16 md:py-24 bg-bakery-dark"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
         {/* Section Header */}

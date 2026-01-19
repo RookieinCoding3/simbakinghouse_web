@@ -21,7 +21,7 @@ export default function Header() {
   const isActive = (path: string) => pathname === path
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-bakery-brown/95 backdrop-blur-sm border-b border-bakery-cream/20">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-bakery-dark/95 backdrop-blur-sm border-b border-bakery-cream/20">
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
@@ -34,7 +34,8 @@ export default function Header() {
               alt="Sim Baking House"
               width={160}
               height={56}
-              className="w-32 h-12 md:w-40 md:h-14 brightness-0 invert"
+              className="w-32 h-12 md:w-40 md:h-14"
+              style={{ filter: 'invert(1) sepia(1) saturate(3) hue-rotate(350deg) brightness(1.1)' }}
               priority
             />
           </Link>

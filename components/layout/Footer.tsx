@@ -5,7 +5,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="bg-bakery-brown border-t border-bakery-cream/10 py-16">
+    <footer className="bg-bakery-dark border-t border-bakery-cream/10 py-16">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         <div className="grid md:grid-cols-2 gap-12 md:gap-16 mb-12">
           {/* Left Column - Logo & Est */}
@@ -16,7 +16,8 @@ export default function Footer() {
                 alt="Sim Baking House"
                 width={256}
                 height={128}
-                className="w-64 h-32 brightness-0 invert"
+                className="w-64 h-32"
+                style={{ filter: 'invert(1) sepia(1) saturate(3) hue-rotate(350deg) brightness(1.1)' }}
               />
             </div>
             <p className="font-heading text-bakery-accent text-2xl tracking-widest">

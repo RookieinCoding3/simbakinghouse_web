@@ -4,7 +4,7 @@ export default function AboutSection() {
   return (
     <section
       id="about"
-      className="py-24 md:py-32 bg-bakery-cream paper-texture relative"
+      className="py-24 md:py-32 bg-bakery-dark paper-texture relative"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
         <div className="grid md:grid-cols-2 gap-16 items-center">
@@ -14,14 +14,14 @@ export default function AboutSection() {
               <p className="font-body text-bakery-accent text-sm sm:text-base tracking-widest uppercase mb-3">
                 Our Story
               </p>
-              <h2 className="font-heading text-bakery-brown text-4xl sm:text-5xl md:text-6xl">
+              <h2 className="font-heading text-bakery-cream text-4xl sm:text-5xl md:text-6xl">
                 ABOUT US
               </h2>
             </div>
 
-            <div className="space-y-6 font-body text-bakery-brown/80 text-base sm:text-lg leading-relaxed">
+            <div className="space-y-6 font-body text-bakery-cream/80 text-base sm:text-lg leading-relaxed">
               <p>
-                Welcome to <span className="font-bold text-bakery-brown">Sim Baking House</span>,
+                Welcome to <span className="font-bold text-bakery-cream">Sim Baking House</span>,
                 where tradition meets passion in every bite. Nestled in the heart of Penang,
                 we&apos;ve been crafting artisanal baked goods that bring warmth and joy to our community.
               </p>
@@ -39,26 +39,26 @@ export default function AboutSection() {
             </div>
 
             <div className="pt-6">
-              <div className="flex items-center justify-center md:justify-start space-x-8 text-bakery-brown">
+              <div className="flex items-center justify-center md:justify-start space-x-8 text-bakery-cream">
                 <div className="text-center">
                   <p className="font-heading text-4xl sm:text-5xl text-bakery-accent mb-2">
                     10+
                   </p>
-                  <p className="font-body text-sm sm:text-base text-bakery-brown/70">Years of Excellence</p>
+                  <p className="font-body text-sm sm:text-base text-bakery-cream/70">Years of Excellence</p>
                 </div>
                 <div className="w-px h-16 bg-bakery-brown/20"></div>
                 <div className="text-center">
                   <p className="font-heading text-4xl sm:text-5xl text-bakery-accent mb-2">
                     100%
                   </p>
-                  <p className="font-body text-sm sm:text-base text-bakery-brown/70">Handcrafted</p>
+                  <p className="font-body text-sm sm:text-base text-bakery-cream/70">Handcrafted</p>
                 </div>
                 <div className="w-px h-16 bg-bakery-brown/20"></div>
                 <div className="text-center">
                   <p className="font-heading text-4xl sm:text-5xl text-bakery-accent mb-2">
                     ∞
                   </p>
-                  <p className="font-body text-sm sm:text-base text-bakery-brown/70">Love & Care</p>
+                  <p className="font-body text-sm sm:text-base text-bakery-cream/70">Love & Care</p>
                 </div>
               </div>
             </div>

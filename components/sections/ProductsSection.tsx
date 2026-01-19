@@ -46,7 +46,7 @@ export default function ProductsSection() {
   return (
     <section
       id="products"
-      className="py-16 md:py-24 bg-bakery-brown"
+      className="py-16 md:py-24 bg-bakery-dark"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         {/* Section Header */}
