@@ -49,7 +49,8 @@ export async function fetchProducts(limitCount?: number): Promise<Product[]> {
     }
 
     const products: Product[] = []
-    querySnapshot.forEach((doc, index) => {
+    let index = 0
+    querySnapshot.forEach((doc) => {
       const data = doc.data()
       console.log(`\n📄 Document ${index + 1}/${querySnapshot.size}:`, doc.id)
       console.log('   Raw data:', JSON.stringify(data, null, 2))
@@ -78,6 +79,7 @@ export async function fetchProducts(limitCount?: number): Promise<Product[]> {
       }
 
       products.push(product)
+      index++
     })
 
     console.log(`\n✅ Successfully fetched ${products.length} products`)
