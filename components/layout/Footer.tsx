@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -9,9 +10,16 @@ export default function Footer() {
         <div className="grid md:grid-cols-2 gap-12 md:gap-16 mb-12">
           {/* Left Column - Logo & Est */}
           <div className="flex flex-col items-center md:items-start space-y-6">
-            <h2 className="font-body text-bakery-cream text-3xl md:text-4xl font-bold italic tracking-wide">
-              Sim Baking House
-            </h2>
+            <div>
+              <Image
+                src="/SBH_logo.svg"
+                alt="Sim Baking House"
+                width={256}
+                height={128}
+                className="w-64 h-32"
+                style={{ filter: 'invert(1) sepia(1) saturate(3) hue-rotate(350deg) brightness(1.1)' }}
+              />
+            </div>
             <p className="font-heading text-bakery-accent text-2xl tracking-widest">
               EST. 2017
             </p>
