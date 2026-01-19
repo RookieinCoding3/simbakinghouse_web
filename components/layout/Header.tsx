@@ -9,14 +9,6 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
 
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id)
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' })
-      setMobileMenuOpen(false)
-    }
-  }
-
   // Helper to determine if link is active
   const isActive = (path: string) => pathname === path
 
@@ -62,21 +54,16 @@ export default function Header() {
             >
               Products
             </Link>
-            {pathname === '/' ? (
-              <button
-                onClick={() => scrollToSection('about')}
-                className="font-body text-bakery-cream hover:text-bakery-accent transition-colors duration-200"
-              >
-                About
-              </button>
-            ) : (
-              <Link
-                href="/#about"
-                className="font-body text-bakery-cream hover:text-bakery-accent transition-colors duration-200"
-              >
-                About
-              </Link>
-            )}
+            <Link
+              href="/about"
+              className={`font-body transition-colors duration-200 ${
+                isActive('/about')
+                  ? 'text-bakery-accent'
+                  : 'text-bakery-cream hover:text-bakery-accent'
+              }`}
+            >
+              About
+            </Link>
             <Link
               href="/location"
               className={`font-body transition-colors duration-200 ${
@@ -139,22 +126,17 @@ export default function Header() {
               >
                 Products
               </Link>
-              {pathname === '/' ? (
-                <button
-                  onClick={() => scrollToSection('about')}
-                  className="font-body text-lg text-left text-bakery-cream hover:text-bakery-accent transition-colors duration-200"
-                >
-                  About
-                </button>
-              ) : (
-                <Link
-                  href="/#about"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="font-body text-lg text-bakery-cream hover:text-bakery-accent transition-colors duration-200"
-                >
-                  About
-                </Link>
-              )}
+              <Link
+                href="/about"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`font-body text-lg transition-colors duration-200 ${
+                  isActive('/about')
+                    ? 'text-bakery-accent'
+                    : 'text-bakery-cream hover:text-bakery-accent'
+                }`}
+              >
+                About
+              </Link>
               <Link
                 href="/location"
                 onClick={() => setMobileMenuOpen(false)}
