@@ -1,0 +1,48 @@
+<svg width="500" height="350" viewBox="0 0 500 350" xmlns="http://www.w3.org/2000/svg">
+  <!-- Logo text -->
+  <text x="220" y="180" font-family="Arial Black, sans-serif" font-size="48" font-weight="900" fill="currentColor">
+    <tspan x="220" dy="0">SIM</tspan>
+    <tspan x="220" dy="52">BAKING</tspan>
+    <tspan x="220" dy="52">HOUSE</tspan>
+  </text>
+
+  <!-- EST. 2017 -->
+  <text x="380" y="280" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="currentColor">
+    <tspan>EST.</tspan>
+    <tspan x="380" dy="16">2017</tspan>
+  </text>
+
+  <!-- Baker illustrations (simplified) -->
+  <!-- Left baker -->
+  <g transform="translate(70, 140)">
+    <!-- Head -->
+    <circle cx="20" cy="20" r="12" fill="currentColor"/>
+    <!-- Hair bun -->
+    <circle cx="20" cy="12" r="6" fill="currentColor"/>
+    <!-- Body -->
+    <ellipse cx="20" cy="50" rx="18" ry="22" fill="currentColor"/>
+    <!-- Arms -->
+    <ellipse cx="8" cy="45" rx="6" ry="16" fill="currentColor" transform="rotate(-20 8 45)"/>
+    <ellipse cx="32" cy="45" rx="6" ry="16" fill="currentColor" transform="rotate(20 32 45)"/>
+    <!-- Bowl -->
+    <ellipse cx="20" cy="65" rx="20" ry="8" fill="none" stroke="currentColor" stroke-width="3"/>
+    <path d="M 0 65 Q 20 75 40 65" fill="none" stroke="currentColor" stroke-width="2"/>
+  </g>
+
+  <!-- Right baker -->
+  <g transform="translate(140, 140)">
+    <!-- Head -->
+    <circle cx="20" cy="20" r="12" fill="currentColor"/>
+    <!-- Chef hat -->
+    <ellipse cx="20" cy="10" rx="14" ry="8" fill="currentColor"/>
+    <rect x="10" y="12" width="20" height="8" fill="currentColor"/>
+    <!-- Body -->
+    <ellipse cx="20" cy="50" rx="18" ry="22" fill="currentColor"/>
+    <!-- Arms -->
+    <ellipse cx="8" cy="45" rx="6" ry="16" fill="currentColor" transform="rotate(-20 8 45)"/>
+    <ellipse cx="32" cy="45" rx="6" ry="16" fill="currentColor" transform="rotate(20 32 45)"/>
+    <!-- Cake -->
+    <rect x="5" y="60" width="30" height="12" fill="none" stroke="currentColor" stroke-width="3" rx="2"/>
+    <path d="M 8 60 L 12 50 L 28 50 L 32 60" fill="none" stroke="currentColor" stroke-width="2"/>
+  </g>
+</svg>

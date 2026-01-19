@@ -1,15 +1,17 @@
+import Image from 'next/image'
+
 export default function AboutSection() {
   return (
     <section
       id="about"
-      className="py-16 md:py-24 bg-bakery-cream"
+      className="py-24 md:py-32 bg-bakery-cream paper-texture relative"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
+        <div className="grid md:grid-cols-2 gap-16 items-center">
           {/* Content */}
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div>
-              <p className="font-body text-bakery-accent text-sm sm:text-base tracking-widest uppercase mb-2">
+              <p className="font-body text-bakery-accent text-sm sm:text-base tracking-widest uppercase mb-3">
                 Our Story
               </p>
               <h2 className="font-heading text-bakery-brown text-4xl sm:text-5xl md:text-6xl">
@@ -17,7 +19,7 @@ export default function AboutSection() {
               </h2>
             </div>
 
-            <div className="space-y-4 font-body text-bakery-brown/80 text-base sm:text-lg leading-relaxed">
+            <div className="space-y-6 font-body text-bakery-brown/80 text-base sm:text-lg leading-relaxed">
               <p>
                 Welcome to <span className="font-bold text-bakery-brown">Sim Baking House</span>,
                 where tradition meets passion in every bite. Nestled in the heart of Penang,
@@ -36,52 +38,49 @@ export default function AboutSection() {
               </p>
             </div>
 
-            <div className="pt-4">
-              <div className="flex items-center space-x-4 text-bakery-brown">
+            <div className="pt-6">
+              <div className="flex items-center justify-center md:justify-start space-x-8 text-bakery-brown">
                 <div className="text-center">
-                  <p className="font-heading text-3xl sm:text-4xl text-bakery-accent">
+                  <p className="font-heading text-4xl sm:text-5xl text-bakery-accent mb-2">
                     10+
                   </p>
-                  <p className="font-body text-sm sm:text-base">Years of Excellence</p>
+                  <p className="font-body text-sm sm:text-base text-bakery-brown/70">Years of Excellence</p>
                 </div>
-                <div className="w-px h-12 bg-bakery-brown/20"></div>
+                <div className="w-px h-16 bg-bakery-brown/20"></div>
                 <div className="text-center">
-                  <p className="font-heading text-3xl sm:text-4xl text-bakery-accent">
+                  <p className="font-heading text-4xl sm:text-5xl text-bakery-accent mb-2">
                     100%
                   </p>
-                  <p className="font-body text-sm sm:text-base">Handcrafted</p>
+                  <p className="font-body text-sm sm:text-base text-bakery-brown/70">Handcrafted</p>
                 </div>
-                <div className="w-px h-12 bg-bakery-brown/20"></div>
+                <div className="w-px h-16 bg-bakery-brown/20"></div>
                 <div className="text-center">
-                  <p className="font-heading text-3xl sm:text-4xl text-bakery-accent">
+                  <p className="font-heading text-4xl sm:text-5xl text-bakery-accent mb-2">
                     ∞
                   </p>
-                  <p className="font-body text-sm sm:text-base">Love & Care</p>
+                  <p className="font-body text-sm sm:text-base text-bakery-brown/70">Love & Care</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Image Placeholder */}
-          <div className="relative h-[400px] md:h-[500px] rounded-lg overflow-hidden shadow-2xl">
-            <div className="absolute inset-0 bg-bakery-accent/20 flex items-center justify-center">
-              <div className="text-center">
-                <svg
-                  className="w-24 h-24 mx-auto text-bakery-brown/30 mb-4"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <p className="font-body text-bakery-brown/50 text-sm">
-                  Your bakery image here
-                </p>
+          {/* Logo Display */}
+          <div className="relative h-[400px] md:h-[500px] rounded-lg overflow-hidden shadow-2xl bg-white/50 backdrop-blur-sm border-2 border-bakery-accent/20">
+            <div className="absolute inset-0 flex items-center justify-center p-12">
+              <div className="relative w-full h-full">
+                <Image
+                  src="/images/SBH_logo.svg"
+                  alt="Sim Baking House Logo"
+                  fill
+                  className="object-contain"
+                />
               </div>
             </div>
+            {/* Decorative corner elements */}
+            <div className="absolute top-4 left-4 w-8 h-8 border-t-2 border-l-2 border-bakery-accent/30"></div>
+            <div className="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-bakery-accent/30"></div>
+            <div className="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-bakery-accent/30"></div>
+            <div className="absolute bottom-4 right-4 w-8 h-8 border-b-2 border-r-2 border-bakery-accent/30"></div>
           </div>
         </div>
       </div>
