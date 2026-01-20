@@ -22,44 +22,44 @@ export default function HeroSection() {
         loop
         playsInline
         preload="auto"
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-cover parallax-slow"
         style={{ backgroundColor: '#000' }}
       >
         <source src="/landing_page.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
 
-      {/* Semi-transparent Black Overlay */}
-      <div className="absolute inset-0 bg-black/50"></div>
+      {/* Semi-transparent Black Overlay with Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/60"></div>
 
       {/* Hero Content */}
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl text-center">
         <div className="space-y-6 md:space-y-8">
           {/* Subtitle */}
-          <p className="font-body text-bakery-accent text-lg sm:text-xl md:text-2xl tracking-widest uppercase animate-fade-in">
+          <p className="font-body text-bakery-accent text-lg sm:text-xl md:text-2xl tracking-[0.3em] uppercase text-reveal">
             Welcome to
           </p>
 
           {/* Main Title */}
-          <h1 className="font-heading text-bakery-cream text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-tight animate-fade-in-up">
+          <h1 className="font-heading text-bakery-cream text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-tight tracking-wider animate-fade-in-up">
             A SPACE FOR
             <br />
-            <span className="text-bakery-accent">BAKING</span>
+            <span className="text-bakery-accent shimmer inline-block">BAKING</span>
           </h1>
 
           {/* Description */}
-          <p className="font-body text-bakery-cream/90 text-lg sm:text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed animate-fade-in-up-delayed">
+          <p className="font-body text-bakery-cream/90 text-lg sm:text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed animate-fade-in-delayed">
             Handcrafted pastries, breads, and cakes made with love and tradition
             in the heart of Penang
           </p>
 
           {/* CTA Button */}
-          <div className="pt-4 md:pt-8 animate-fade-in-up-delayed-more">
+          <div className="pt-4 md:pt-8 animate-fade-in-delayed-more">
             <Button
               variant="primary"
               size="lg"
               onClick={scrollToProducts}
-              className="text-xl"
+              className="text-xl tracking-widest hover-scale shimmer"
             >
               EXPLORE OUR PRODUCTS
             </Button>

@@ -4,7 +4,6 @@ import { useEffect } from 'react'
 import Image from 'next/image'
 import type { Product } from '@/types/product'
 import Button from '@/components/ui/Button'
-import { buildOrderFormUrl } from '@/lib/utils/googleForm'
 
 interface ProductModalProps {
   product: Product | null
@@ -38,8 +37,8 @@ export default function ProductModal({
   if (!isOpen || !product) return null
 
   const handleOrderNow = () => {
-    const formUrl = buildOrderFormUrl(product.name)
-    window.open(formUrl, '_blank', 'noopener,noreferrer')
+    // Direct link to Google Form
+    window.open('https://forms.gle/AufdJFLrqhPzSh61A', '_blank', 'noopener,noreferrer')
   }
 
   return (
@@ -52,7 +51,7 @@ export default function ProductModal({
       />
 
       {/* Modal Content */}
-      <div className="relative bg-bakery-cream rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto animate-scale-in">
+      <div className="relative bg-bakery-cream rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto animate-scale-in paper-texture">
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -89,20 +88,17 @@ export default function ProductModal({
           <div className="p-6 md:p-8 space-y-6">
             {/* Product Name */}
             <div>
-              <h2 className="font-heading text-bakery-brown text-3xl md:text-4xl mb-2">
+              <h2 className="font-heading text-bakery-brown text-3xl md:text-4xl tracking-wide animate-fade-in">
                 {product.name}
               </h2>
-              <p className="font-heading text-bakery-accent text-3xl">
-                RM {product.price.toFixed(2)}
-              </p>
             </div>
 
             {/* Divider */}
-            <div className="border-t border-bakery-brown/20"></div>
+            <div className="border-t border-bakery-brown/20 animate-fade-in-delayed"></div>
 
             {/* Product Description */}
-            <div>
-              <h3 className="font-heading text-bakery-brown text-xl mb-3">
+            <div className="animate-fade-in-delayed">
+              <h3 className="font-heading text-bakery-brown text-xl mb-3 tracking-wide">
                 Description
               </h3>
               <p className="font-body text-bakery-brown/80 text-base leading-relaxed">
@@ -111,7 +107,7 @@ export default function ProductModal({
             </div>
 
             {/* Product Info */}
-            <div className="bg-bakery-accent/10 rounded-lg p-4 space-y-2">
+            <div className="bg-bakery-accent/10 rounded-lg p-4 space-y-2 animate-fade-in-delayed-more">
               <div className="flex items-center space-x-2">
                 <svg
                   className="w-5 h-5 text-bakery-accent"
@@ -163,12 +159,12 @@ export default function ProductModal({
             </div>
 
             {/* Order Button */}
-            <div className="pt-4">
+            <div className="pt-4 animate-fade-in-delayed-more">
               <Button
                 variant="primary"
                 size="lg"
                 onClick={handleOrderNow}
-                className="w-full text-lg"
+                className="w-full text-lg tracking-widest hover-scale"
               >
                 ORDER NOW
               </Button>

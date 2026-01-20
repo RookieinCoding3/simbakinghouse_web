@@ -66,6 +66,13 @@ export async function fetchProducts(limitCount?: number): Promise<Product[]> {
         price: data.price || data.Price || data.cost || 0,
         // Try multiple field name variations for image
         imageUrl: data.imageUrl || data.image || data.imageURL || data.photo || data.photoURL || '/images/placeholder-product.jpg',
+        // Additional fields from Firebase schema
+        category: data.category || data.Category || 'Uncategorized',
+        featured: data.featured ?? false,
+        inStock: data.inStock ?? true,
+        stockQuantity: data.stockQuantity ?? 0,
+        createdAt: data.createdAt?.toDate?.(),
+        updatedAt: data.updatedAt?.toDate?.(),
       }
 
       console.log('   ✓ Mapped to:', product)
@@ -144,6 +151,12 @@ export async function fetchProductById(id: string): Promise<Product | null> {
           description: data.description || data.desc || data.Description || '',
           price: data.price || data.Price || 0,
           imageUrl: data.imageUrl || data.image || data.imageURL || data.photo || '/images/placeholder-product.jpg',
+          category: data.category || data.Category || 'Uncategorized',
+          featured: data.featured ?? false,
+          inStock: data.inStock ?? true,
+          stockQuantity: data.stockQuantity ?? 0,
+          createdAt: data.createdAt?.toDate?.(),
+          updatedAt: data.updatedAt?.toDate?.(),
         }
       }
     })
