@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app'
-import { initializeFirestore, memoryLocalCache } from 'firebase/firestore'
+import { getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -10,12 +10,20 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
+console.log('🔥 Firebase Config:', {
+  projectId: firebaseConfig.projectId,
+  hasApiKey: !!firebaseConfig.apiKey,
+  authDomain: firebaseConfig.authDomain
+})
+
 // Initialize Firebase (singleton pattern to prevent multiple instances)
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp()
 
-// Initialize Firestore with memory cache to bypass browser storage restrictions
-export const db = initializeFirestore(app, {
-  localCache: memoryLocalCache()
-})
+console.log('✅ Firebase App initialized:', app.name)
+
+// Initialize Firestore with default settings (works better in browser)
+export const db = getFirestore(app)
+
+console.log('✅ Firestore initialized')
 
 export default app
