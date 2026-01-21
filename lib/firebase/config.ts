@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app'
-import { initializeFirestore, getFirestore, memoryLocalCache } from 'firebase/firestore'
+import { initializeFirestore, getFirestore, memoryLocalCache, Firestore } from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -22,7 +22,7 @@ console.log('✅ Firebase App initialized:', app.name)
 
 // Initialize Firestore with memory cache to avoid storage access errors
 // This works in all browser contexts (normal, private, strict security)
-let db
+let db: Firestore
 
 try {
   // Try to initialize with memory cache (first time only)
