@@ -23,7 +23,7 @@ export default function InstagramGridSection() {
             FOLLOW OUR JOURNEY
           </h2>
           <p className="font-body text-bakery-brown/70 text-lg max-w-2xl mx-auto mb-6">
-            See what we're baking today on Instagram
+            See what we&apos;re baking today on Instagram
           </p>
 
           {/* Instagram Handle */}

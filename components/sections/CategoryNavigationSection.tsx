@@ -43,7 +43,7 @@ export default function CategoryNavigationSection() {
             WHAT ARE YOU CRAVING?
           </h2>
           <p className="font-body text-bakery-cream/80 text-lg max-w-2xl mx-auto">
-            Find exactly what you're looking for
+            Find exactly what you&apos;re looking for
           </p>
         </div>
 
