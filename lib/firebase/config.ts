@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app'
-import { getFirestore } from 'firebase/firestore'
+import { initializeFirestore, getFirestore, memoryLocalCache } from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -17,13 +17,29 @@ console.log('🔥 Firebase Config:', {
 })
 
 // Initialize Firebase (singleton pattern to prevent multiple instances)
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp()
-
+let app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp()
 console.log('✅ Firebase App initialized:', app.name)
 
-// Initialize Firestore with default settings (works better in browser)
-export const db = getFirestore(app)
+// Initialize Firestore with memory cache to avoid storage access errors
+// This works in all browser contexts (normal, private, strict security)
+let db
 
-console.log('✅ Firestore initialized')
+try {
+  // Try to initialize with memory cache (first time only)
+  db = initializeFirestore(app, {
+    localCache: memoryLocalCache()
+  })
+  console.log('✅ Firestore initialized with memory cache')
+} catch (error: any) {
+  // If already initialized, just get the existing instance
+  if (error.code === 'failed-precondition' && error.message.includes('already been called')) {
+    db = getFirestore(app)
+    console.log('⚠️ Firestore already initialized, using existing instance')
+  } else {
+    console.error('❌ Firebase initialization error:', error)
+    throw error
+  }
+}
 
+export { db }
 export default app
