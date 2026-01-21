@@ -65,13 +65,18 @@ export default function FeaturedProductsSection() {
           </p>
         </div>
 
-        {/* Loading State */}
+        {/* Loading State - Skeleton */}
         {loading && (
-          <div className="flex flex-col items-center justify-center py-20">
-            <LoadingSpinner size="lg" />
-            <p className="font-body text-bakery-cream/70 mt-4 text-lg">
-              Loading featured products...
-            </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            {[...Array(3)].map((_, index) => (
+              <div
+                key={index}
+                className="relative rounded-lg overflow-hidden shadow-lg animate-pulse"
+              >
+                {/* Skeleton Image */}
+                <div className="aspect-[3/4] bg-bakery-cream/20"></div>
+              </div>
+            ))}
           </div>
         )}
 
