@@ -25,9 +25,9 @@ export const metadata: Metadata = {
   keywords: 'bakery, Penang, artisan bread, pastries, cakes, handcrafted, SIM BAKING HOUSE',
   authors: [{ name: 'Sim Baking House' }],
   icons: {
-    icon: '/images/SBH_logo.svg',
-    shortcut: '/images/SBH_logo.svg',
-    apple: '/images/SBH_logo.svg',
+    icon: '/SBH_tab.png',
+    shortcut: '/SBH_tab.png',
+    apple: '/SBH_tab.png',
   },
   openGraph: {
     title: 'Sim Baking House | A Space for Baking',
