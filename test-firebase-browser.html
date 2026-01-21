@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Firebase Connection Test</title>
+</head>
+<body>
+    <h1>Testing Firebase Connection...</h1>
+    <div id="output"></div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, getDocs, initializeFirestore, memoryLocalCache } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const output = document.getElementById('output');
+
+        function log(message) {
+            console.log(message);
+            output.innerHTML += `<p>${message}</p>`;
+        }
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAKaoI87iBwJoqT9G9sA1wcRoG3IEbeogc",
+            authDomain: "sim-baking-house.firebaseapp.com",
+            projectId: "sim-baking-house",
+            storageBucket: "sim-baking-house.firebasestorage.app",
+            messagingSenderId: "687474191931",
+            appId: "1:687474191931:web:6583b7882727ede6af361e"
+        };
+
+        try {
+            log('🔥 Initializing Firebase...');
+            const app = initializeApp(firebaseConfig);
+            log('✅ Firebase initialized: ' + app.name);
+
+            log('🔥 Initializing Firestore with memory cache...');
+            const db = initializeFirestore(app, {
+                localCache: memoryLocalCache()
+            });
+            log('✅ Firestore initialized with memory cache');
+
+            log('📦 Querying products collection...');
+            const productsRef = collection(db, 'products');
+
+            getDocs(productsRef).then(snapshot => {
+                log(`✅ Query completed! Found ${snapshot.size} documents`);
+
+                if (snapshot.size === 0) {
+                    log('⚠️ WARNING: No documents found in products collection!');
+                    log('💡 This means either:');
+                    log('   1. The collection is empty');
+                    log('   2. The collection name is wrong');
+                    log('   3. Security rules are blocking access');
+                } else {
+                    log('\n📄 Product documents:');
+                    snapshot.forEach((doc, index) => {
+                        log(`\n--- Product ${index + 1} ---`);
+                        log(`ID: ${doc.id}`);
+                        log(`Data: ${JSON.stringify(doc.data(), null, 2)}`);
+                    });
+                }
+            }).catch(error => {
+                log('❌ ERROR querying products:');
+                log(`   Code: ${error.code}`);
+                log(`   Message: ${error.message}`);
+                log(`   Full error: ${JSON.stringify(error, null, 2)}`);
+            });
+
+        } catch (error) {
+            log('❌ ERROR initializing Firebase:');
+            log(`   Message: ${error.message}`);
+            log(`   Full error: ${JSON.stringify(error, null, 2)}`);
+        }
+    </script>
+</body>
+</html>

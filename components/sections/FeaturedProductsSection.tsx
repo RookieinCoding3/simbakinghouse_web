@@ -107,9 +107,13 @@ export default function FeaturedProductsSection() {
                 >
                   <div className="aspect-[3/4] relative">
                     <img
-                      src={product.imageUrl}
+                      src={product.imageUrl || '/images/placeholder-product.jpg'}
                       alt={product.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement
+                        target.src = '/images/placeholder-product.jpg'
+                      }}
                     />
                     {/* Overlay on hover */}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">

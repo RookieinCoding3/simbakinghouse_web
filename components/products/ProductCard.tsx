@@ -28,6 +28,9 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
           priority
+          onError={(e) => {
+            e.currentTarget.src = '/images/placeholder-product.jpg'
+          }}
         />
 
         {/* Gradient Overlay */}
