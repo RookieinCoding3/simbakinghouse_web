@@ -24,6 +24,11 @@ export const metadata: Metadata = {
     'Discover our selection of handcrafted baked goods. Order fresh pastries, cakes, and breads from Sim Baking House in Penang.',
   keywords: 'bakery, Penang, artisan bread, pastries, cakes, handcrafted, SIM BAKING HOUSE',
   authors: [{ name: 'Sim Baking House' }],
+  icons: {
+    icon: '/images/SBH_logo.svg',
+    shortcut: '/images/SBH_logo.svg',
+    apple: '/images/SBH_logo.svg',
+  },
   openGraph: {
     title: 'Sim Baking House | A Space for Baking',
     description: 'Handcrafted pastries, breads, and cakes made with love and tradition in Penang',
