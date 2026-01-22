@@ -1,0 +1,44 @@
+# DEPLOYMENT INSTRUCTIONS FOR SIM BAKING HOUSE
+
+## Your Site: https://www.simbakinghouse.com.my/products
+## Status: STUCK ON LOADING (Old code without memory cache fix)
+
+## SOLUTION: Redeploy with Latest Code
+
+### Method 1: Vercel Dashboard (RECOMMENDED)
+1. Go to: https://vercel.com/dashboard
+2. Login with your account
+3. Find project: "simbakinghouse_web" or similar
+4. Click "Deployments" tab
+5. See the latest deployment from GitHub
+6. If it's OLD (before today), click "Redeploy"
+7. If it's TODAY but still broken, check Environment Variables
+
+### Method 2: Force New Git Push (Alternative)
+Run these commands to trigger auto-deploy:
+
+```bash
+cd /Users/kahkin/Desktop/SBH-web
+git commit --allow-empty -m "chore: trigger production deployment"
+git push origin main
+```
+
+This creates an empty commit that triggers Vercel to rebuild.
+
+### Method 3: Check Environment Variables
+Go to Vercel Dashboard → Project Settings → Environment Variables
+MUST HAVE THESE:
+- NEXT_PUBLIC_FIREBASE_API_KEY
+- NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+- NEXT_PUBLIC_FIREBASE_PROJECT_ID  
+- NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+- NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+- NEXT_PUBLIC_FIREBASE_APP_ID
+
+If missing, copy from .env.local file and Redeploy!
+
+## WAIT TIME: 2-3 minutes for deployment to complete
+
+## VERIFY: 
+Open https://www.simbakinghouse.com.my/products
+Should see "Showing 74 products" instead of "Loading..."
