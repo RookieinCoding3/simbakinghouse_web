@@ -4,7 +4,7 @@ import CategoryNavigationSection from '@/components/sections/CategoryNavigationS
 import FeaturedProductsSection from '@/components/sections/FeaturedProductsSection'
 import BakersJourneySection from '@/components/sections/BakersJourneySection'
 import TestimonialsSection from '@/components/sections/TestimonialsSection'
-import LocationPreviewSection from '@/components/sections/LocationPreviewSection'
+import GetInTouchSection from '@/components/sections/GetInTouchSection'
 import StickyOrderButton from '@/components/ui/StickyOrderButton'
 
 export default function Home() {
@@ -13,11 +13,11 @@ export default function Home() {
       {/* 1. Hero Section - High-impact video background */}
       <HeroSection />
 
-      {/* 2. Why Choose Us - Establish trust immediately */}
-      <WhyChooseUsSection />
-
-      {/* 3. Category Navigation - Help users find what they want */}
+      {/* 2. Category Navigation - Help users find what they want */}
       <CategoryNavigationSection />
+
+      {/* 3. Why Choose Us - Establish trust and credibility */}
+      <WhyChooseUsSection />
 
       {/* 4. Featured Products - Top 3 essentials */}
       <FeaturedProductsSection />
@@ -28,8 +28,8 @@ export default function Home() {
       {/* 6. Testimonials - Social proof and trust */}
       <TestimonialsSection />
 
-      {/* 7. Location Preview - Opening hours & directions */}
-      <LocationPreviewSection />
+      {/* 7. Get In Touch - Multiple contact options */}
+      <GetInTouchSection />
 
       {/* Sticky Order Button - Mobile CTA */}
       <StickyOrderButton />
