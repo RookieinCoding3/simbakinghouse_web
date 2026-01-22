@@ -173,3 +173,61 @@ export async function fetchProductById(id: string): Promise<Product | null> {
     return null
   }
 }
+
+/**
+ * Fetch multiple products by their IDs in a specific order
+ * @param ids - Array of product document IDs in desired order
+ * @returns Promise<Product[]> - Array of product objects in the specified order
+ */
+export async function fetchProductsByIds(ids: string[]): Promise<Product[]> {
+  console.log(`🔥 Firebase: Fetching ${ids.length} products by IDs:`, ids)
+
+  try {
+    const productsRef = collection(db, 'products')
+    const querySnapshot = await getDocs(productsRef)
+
+    // Create a map for quick lookup
+    const productMap = new Map<string, Product>()
+
+    querySnapshot.forEach((doc) => {
+      if (ids.includes(doc.id)) {
+        const data = doc.data()
+        const product: Product = {
+          id: doc.id,
+          name: data.name || data.title || data.productName || 'Untitled Product',
+          description: data.description || data.desc || data.Description || '',
+          price: data.price || data.Price || 0,
+          imageUrl: data.imageUrl || data.image || data.imageURL || data.photo || '/images/placeholder-product.jpg',
+          category: data.category || data.Category || 'Uncategorized',
+          featured: data.featured ?? false,
+          inStock: data.inStock ?? true,
+          stockQuantity: data.stockQuantity ?? 0,
+          createdAt: data.createdAt?.toDate?.(),
+          updatedAt: data.updatedAt?.toDate?.(),
+        }
+        productMap.set(doc.id, product)
+      }
+    })
+
+    // Return products in the order specified by ids array
+    const products = ids
+      .map(id => productMap.get(id))
+      .filter((product): product is Product => product !== undefined)
+
+    console.log(`✓ Successfully fetched ${products.length} out of ${ids.length} requested products`)
+
+    // Log any missing products
+    const foundIds = products.map(p => p.id)
+    const missingIds = ids.filter(id => !foundIds.includes(id))
+    if (missingIds.length > 0) {
+      console.warn(`⚠️ Products not found:`, missingIds)
+    }
+
+    return products
+  } catch (error: any) {
+    console.error(`❌ Error fetching products by IDs:`, error)
+    console.error('Error code:', error.code)
+    console.error('Error message:', error.message)
+    return []
+  }
+}

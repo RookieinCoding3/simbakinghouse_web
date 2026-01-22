@@ -35,29 +35,29 @@ export default function LocationPreviewSection() {
 
   return (
     <section className="py-16 md:py-24 bg-bakery-cream paper-texture">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
-        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
+        <div className="bg-white rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden transform hover:scale-[1.01] transition-transform duration-500">
           <div className="grid md:grid-cols-2 gap-0">
             {/* Left: Status & Hours */}
-            <div className="p-8 md:p-10 bg-gradient-to-br from-bakery-accent/5 to-bakery-brown/5">
+            <div className="p-10 md:p-12 bg-gradient-to-br from-bakery-accent/10 via-bakery-cream/50 to-transparent">
               {/* Status Badge */}
-              <div className="mb-8">
-                <div className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full ${
+              <div className="mb-10">
+                <div className={`inline-flex items-center space-x-2.5 px-5 py-2.5 rounded-full shadow-md ${
                   isOpen
-                    ? 'bg-green-500/20 text-green-700'
-                    : 'bg-red-500/20 text-red-700'
+                    ? 'bg-green-500/20 text-green-700 border border-green-500/30'
+                    : 'bg-red-500/20 text-red-700 border border-red-500/30'
                 }`}>
-                  <span className={`w-2.5 h-2.5 rounded-full ${
-                    isOpen ? 'bg-green-500 animate-pulse' : 'bg-red-500'
+                  <span className={`w-3 h-3 rounded-full ${
+                    isOpen ? 'bg-green-500 animate-pulse shadow-lg shadow-green-500/50' : 'bg-red-500'
                   }`}></span>
-                  <span className="font-heading text-sm tracking-wide">
+                  <span className="font-heading text-sm tracking-wider font-semibold">
                     {isOpen ? `Open Now • Until ${closingTime}` : 'Currently Closed'}
                   </span>
                 </div>
               </div>
 
               {/* Title */}
-              <h2 className="font-heading text-bakery-brown text-3xl md:text-4xl mb-6">
+              <h2 className="font-heading text-bakery-brown text-3xl md:text-4xl mb-8 tracking-wide">
                 VISIT US IN PENANG
               </h2>
 
@@ -94,30 +94,36 @@ export default function LocationPreviewSection() {
             </div>
 
             {/* Right: Map Preview & CTA */}
-            <div className="relative bg-bakery-dark flex flex-col items-center justify-center p-8 md:p-10">
+            <div className="relative bg-gradient-to-br from-bakery-dark via-bakery-brown to-bakery-dark flex flex-col items-center justify-center p-10 md:p-12">
               {/* Map Icon/Illustration */}
-              <div className="w-32 h-32 mb-6 relative">
-                <div className="absolute inset-0 bg-bakery-accent/20 rounded-full animate-pulse"></div>
-                <div className="absolute inset-4 bg-bakery-accent/40 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+              <div className="w-36 h-36 mb-8 relative">
+                <div className="absolute inset-0 bg-bakery-accent/30 rounded-full animate-pulse"></div>
+                <div className="absolute inset-4 bg-bakery-accent/50 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                <div className="absolute inset-8 bg-bakery-accent/20 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <svg className="w-16 h-16 text-bakery-accent" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-18 h-18 text-bakery-accent drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 0c-4.198 0-8 3.403-8 7.602 0 4.198 3.469 9.21 8 16.398 4.531-7.188 8-12.2 8-16.398 0-4.199-3.801-7.602-8-7.602zm0 11c-1.657 0-3-1.343-3-3s1.343-3 3-3 3 1.343 3 3-1.343 3-3 3z"/>
                   </svg>
                 </div>
               </div>
 
               {/* CTA Buttons */}
-              <div className="space-y-3 w-full max-w-xs">
+              <div className="space-y-4 w-full max-w-sm">
                 <Link
                   href="/location"
-                  className="block w-full bg-bakery-accent hover:bg-bakery-accent/90 text-white font-heading px-6 py-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl text-center tracking-wide"
+                  className="group block w-full bg-bakery-accent hover:bg-bakery-accent/90 text-bakery-dark font-heading px-8 py-4 rounded-lg transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-bakery-accent/50 text-center tracking-widest transform hover:scale-105"
                 >
-                  GET DIRECTIONS
+                  <span className="flex items-center justify-center space-x-2">
+                    <span>GET DIRECTIONS</span>
+                    <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                      <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                  </span>
                 </Link>
 
                 <a
                   href="tel:+60123456789"
-                  className="block w-full bg-transparent hover:bg-bakery-cream/10 text-bakery-cream border-2 border-bakery-cream font-heading px-6 py-4 rounded-lg transition-colors duration-200 text-center tracking-wide"
+                  className="block w-full bg-transparent hover:bg-bakery-cream/10 text-bakery-cream border-2 border-bakery-accent hover:border-bakery-cream font-heading px-8 py-4 rounded-lg transition-all duration-300 text-center tracking-widest hover:shadow-lg"
                 >
                   CALL US
                 </a>

@@ -32,8 +32,8 @@ export default function Header() {
         <div className="flex items-center justify-between h-16 md:h-18">
           {/* Minimal Brand */}
           <Link href="/" className="group">
-            <h1 className="font-heading text-bakery-accent text-2xl md:text-3xl tracking-[0.2em] group-hover:tracking-[0.25em] transition-all duration-300">
-              SBH
+            <h1 className="font-heading text-bakery-accent text-xl md:text-2xl tracking-[0.15em] group-hover:tracking-[0.2em] transition-all duration-300">
+              SIM BAKING HOUSE
             </h1>
           </Link>
 

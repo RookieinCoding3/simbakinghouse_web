@@ -7,21 +7,39 @@ export default function TestimonialsSection() {
 
   const testimonials = [
     {
-      name: "Sarah Lim",
+      name: "Lim Mei Ling",
       location: "Georgetown, Penang",
-      text: "Sim is incredibly patient and helpful! She always takes time to explain which products work best for my baking needs. The premixes are fantastic - my cakes turn out perfect every time!",
+      text: "I've been coming here for 3 years. Sim is so patient, even when I ask the same questions! She helped me choose the right premix for my daughter's birthday cake. It turned out so fluffy and delicious!",
       rating: 5
     },
     {
-      name: "Ahmad Hassan",
+      name: "Tan Ah Kow",
       location: "Bayan Lepas, Penang",
-      text: "Best baking supplies store in Penang! The quality of their flour and ingredients is excellent. The owner's knowledge and friendly service keep me coming back.",
+      text: "As a home baker, I trust only Sim Baking House for my ingredients. The flour quality is consistent, prices are fair, and Sim always remembers what I usually buy. Feel like family here!",
       rating: 5
     },
     {
-      name: "Michelle Tan",
+      name: "Wong Siew Lan",
       location: "Tanjung Bungah, Penang",
-      text: "I love their premix selection - makes baking so much easier! The staff is always willing to share tips and recipes. Great prices and fantastic customer service!",
+      text: "My kuih business depends on quality ingredients. Sim never disappoints! She even taught me a few tricks to make my kuih lapis more colorful. Very grateful for her kindness and expertise.",
+      rating: 5
+    },
+    {
+      name: "Chong Li Ying",
+      location: "Air Itam, Penang",
+      text: "I was struggling with my mooncake recipe. Sim patiently explained which type of flour I needed and why. Now my mooncakes are selling so well! She's not just selling products, she genuinely cares.",
+      rating: 5
+    },
+    {
+      name: "Ooi Beng Huat",
+      location: "Jelutong, Penang",
+      text: "Been buying from here since they opened. The shop is small but has everything I need. Sim knows all her regular customers by name. That personal touch is hard to find nowadays!",
+      rating: 5
+    },
+    {
+      name: "Lee Geok Sim",
+      location: "Pulau Tikus, Penang",
+      text: "I make pineapple tarts during CNY. Sim always stocks up the right ingredients for me in advance. She even calls to remind me when new premix flavors arrive. Best service!",
       rating: 5
     }
   ]

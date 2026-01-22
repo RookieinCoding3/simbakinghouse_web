@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import type { Product } from '@/types/product'
-import { fetchProducts } from '@/lib/firebase/products'
+import { fetchProductsByIds } from '@/lib/firebase/products'
 import ProductGrid from '@/components/products/ProductGrid'
 import ProductModal from '@/components/products/ProductModal'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
@@ -16,14 +16,21 @@ export default function FeaturedProductsSection() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
+  // Top 3 Best Sellers IDs
+  const bestSellerIds = [
+    'k7KIV3aYXZG33EDmEqJg',    // Left
+    '3pTEcScO5E9hombgGEmL',    // Middle
+    '1KAQVQF1g9ZnJhslJ2Wd'     // Right
+  ]
+
   useEffect(() => {
     async function loadFeaturedProducts() {
       try {
         setLoading(true)
         setError(null)
-        // Fetch only the first 3 products for the featured section
-        const data = await fetchProducts(3)
-        console.log('Firestore Data (Featured):', data)
+        // Fetch the top 3 best sellers by their IDs
+        const data = await fetchProductsByIds(bestSellerIds)
+        console.log('Firestore Data (Best Sellers):', data)
         setProducts(data)
       } catch (err) {
         console.error('Error loading featured products:', err)

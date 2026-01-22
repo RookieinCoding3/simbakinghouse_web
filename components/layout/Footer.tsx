@@ -10,18 +10,21 @@ export default function Footer() {
         <div className="grid md:grid-cols-2 gap-12 md:gap-16 mb-12">
           {/* Left Column - Logo & Est */}
           <div className="flex flex-col items-center md:items-start space-y-6">
-            <div>
-              <Image
-                src="/SBH_logo.svg"
-                alt="Sim Baking House"
-                width={256}
-                height={128}
-                className="w-64 h-32"
-              />
+            {/* Logo and EST on same line */}
+            <div className="flex flex-col md:flex-row items-center md:items-center space-y-4 md:space-y-0 md:space-x-6">
+              <div className="w-32 h-32 rounded-full overflow-hidden bg-bakery-cream/10 p-4 flex items-center justify-center">
+                <Image
+                  src="/SBH_logo.svg"
+                  alt="Sim Baking House"
+                  width={128}
+                  height={128}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <p className="font-heading text-bakery-accent text-2xl tracking-widest">
+                EST. 2017
+              </p>
             </div>
-            <p className="font-heading text-bakery-accent text-2xl tracking-widest">
-              EST. 2017
-            </p>
             <p className="font-body text-bakery-cream/70 text-sm max-w-xs text-center md:text-left">
               Handcrafted with love and tradition in the heart of Penang
             </p>
