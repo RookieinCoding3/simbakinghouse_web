@@ -127,11 +127,13 @@ export default function FeaturedProductsSection() {
                         target.src = '/images/placeholder-product.jpg'
                       }}
                     />
-                    {/* Overlay on hover */}
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    {/* Base dark overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                       <div className="text-center text-white p-4">
                         <h3 className="font-heading text-2xl mb-2">{product.name}</h3>
-                        <p className="font-body text-bakery-accent text-xl">RM {product.price.toFixed(2)}</p>
+                        <p className="font-body text-bakery-accent text-xl font-semibold">RM {product.price.toFixed(2)}</p>
                       </div>
                     </div>
                   </div>

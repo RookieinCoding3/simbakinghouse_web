@@ -8,8 +8,26 @@ export default function WhyChooseUsSection() {
           <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
-      title: "QUALITY INGREDIENTS",
-      description: "We use only the finest ingredients, sourced locally whenever possible, ensuring every bite is pure and delicious."
+      title: "PREMIUM QUALITY",
+      description: "We stock only premium baking ingredients and supplies, carefully selected to ensure consistent results for your home baking projects."
+    },
+    {
+      icon: (
+        <svg className="w-8 h-8 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+          <path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+      title: "EXPERT GUIDANCE",
+      description: "Sim personally helps every customer find the right products for their needs, sharing tips and recipes from years of baking experience."
+    },
+    {
+      icon: (
+        <svg className="w-8 h-8 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+          <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+      ),
+      title: "COMPLETE RANGE",
+      description: "From basic flour to specialty premixes, baking tools to decorations - we have everything you need under one roof."
     },
     {
       icon: (
@@ -17,8 +35,8 @@ export default function WhyChooseUsSection() {
           <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
-      title: "TRADITIONAL METHODS",
-      description: "Our baking techniques honor time-tested traditions, creating authentic flavors that modern shortcuts can't replicate."
+      title: "FRESH STOCK",
+      description: "We maintain fresh inventory and track expiry dates carefully, so you always get the freshest ingredients for perfect results."
     },
     {
       icon: (
@@ -26,26 +44,8 @@ export default function WhyChooseUsSection() {
           <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
         </svg>
       ),
-      title: "MADE WITH LOVE",
-      description: "Every item is handcrafted with care and attention to detail, infusing each creation with warmth and passion."
-    },
-    {
-      icon: (
-        <svg className="w-8 h-8 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-          <path d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-        </svg>
-      ),
-      title: "FRESH DAILY",
-      description: "Everything is baked fresh daily, ensuring you always get the best quality and taste in every purchase."
-    },
-    {
-      icon: (
-        <svg className="w-8 h-8 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-          <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-      ),
-      title: "COMMUNITY FOCUSED",
-      description: "We're proud to serve our Penang community, building relationships one loaf at a time."
+      title: "PERSONAL SERVICE",
+      description: "We remember our regular customers and their preferences, creating a warm family atmosphere where everyone feels welcome."
     },
     {
       icon: (
@@ -53,8 +53,8 @@ export default function WhyChooseUsSection() {
           <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
-      title: "GREAT VALUE",
-      description: "Quality doesn't have to be expensive. We offer competitive prices without compromising on excellence."
+      title: "FAIR PRICES",
+      description: "Quality baking supplies at honest prices. We believe great ingredients should be affordable for home bakers."
     }
   ]
 

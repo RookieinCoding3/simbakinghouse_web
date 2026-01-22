@@ -158,7 +158,7 @@ export default function LocationPreviewSection() {
                     </svg>
                   </a>
                   <a
-                    href="https://instagram.com/simbakinghouse"
+                    href="https://www.instagram.com/sim_baking_house/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-bakery-cream/80 hover:text-bakery-accent transition-colors"

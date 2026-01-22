@@ -1,33 +1,27 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import Image from 'next/image'
 
 export default function CategoryNavigationSection() {
   const categories = [
     {
-      title: "Artisan Breads",
-      description: "Handcrafted daily with traditional methods",
-      icon: "🍞",
-      href: "/products?category=Breads",
-      gradient: "from-amber-500/20 to-orange-500/20",
-      hoverGradient: "group-hover:from-amber-500/30 group-hover:to-orange-500/30"
+      title: "Baking Ingredients",
+      description: "Premium flour, premixes, and essentials",
+      image: "/category-left.png",
+      href: "/products?category=Ingredients",
     },
     {
-      title: "Handcrafted Pastries",
-      description: "Delicate, flaky, and perfectly golden",
-      icon: "🥐",
-      href: "/products?category=Pastries",
-      gradient: "from-yellow-500/20 to-amber-500/20",
-      hoverGradient: "group-hover:from-yellow-500/30 group-hover:to-amber-500/30"
+      title: "Baking Tools",
+      description: "Professional utensils and equipment",
+      image: "/category-middle.png",
+      href: "/products?category=Tools",
     },
     {
-      title: "Custom Cakes",
-      description: "Made to order for your special occasions",
-      icon: "🎂",
-      href: "/products?category=Cakes",
-      gradient: "from-pink-500/20 to-rose-500/20",
-      hoverGradient: "group-hover:from-pink-500/30 group-hover:to-rose-500/30"
+      title: "Decorations & More",
+      description: "Sprinkles, molds, and specialty items",
+      image: "/category-right.png",
+      href: "/products?category=Decorations",
     }
   ]
 
@@ -53,32 +47,39 @@ export default function CategoryNavigationSection() {
             <Link
               key={index}
               href={category.href}
-              className="group relative bg-gradient-to-br from-bakery-cream/10 to-bakery-accent/10 rounded-2xl p-8 md:p-10 overflow-hidden hover:shadow-2xl transition-all duration-500 hover-scale animate-fade-in-up border border-bakery-cream/20"
+              className="group relative overflow-hidden rounded-2xl hover:shadow-2xl transition-all duration-500 hover-scale animate-fade-in-up"
               style={{ animationDelay: `${index * 150}ms` }}
             >
-              {/* Background Gradient Overlay */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} ${category.hoverGradient} transition-all duration-500`}></div>
+              {/* Background Image */}
+              <div className="relative aspect-[2/3]">
+                <Image
+                  src={category.image}
+                  alt={category.title}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                />
+                {/* Dark overlay for text readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                {/* Hover overlay */}
+                <div className="absolute inset-0 bg-bakery-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              </div>
 
               {/* Content */}
-              <div className="relative z-10 text-center">
-                {/* Icon */}
-                <div className="text-7xl md:text-8xl mb-6 transform group-hover:scale-110 transition-transform duration-500">
-                  {category.icon}
-                </div>
-
+              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 text-center">
                 {/* Title */}
-                <h3 className="font-heading text-bakery-cream text-2xl md:text-3xl mb-3 tracking-wide">
+                <h3 className="font-heading text-bakery-cream text-2xl md:text-3xl mb-2 tracking-wide drop-shadow-lg">
                   {category.title.toUpperCase()}
                 </h3>
 
                 {/* Description */}
-                <p className="font-body text-bakery-cream/80 text-sm md:text-base mb-6">
+                <p className="font-body text-bakery-cream/90 text-sm md:text-base mb-4 drop-shadow-md">
                   {category.description}
                 </p>
 
                 {/* Arrow CTA */}
                 <div className="flex items-center justify-center space-x-2 text-bakery-accent group-hover:text-bakery-cream transition-colors duration-300">
-                  <span className="font-body text-sm tracking-widest uppercase">
+                  <span className="font-body text-sm tracking-widest uppercase font-semibold">
                     Explore
                   </span>
                   <svg
