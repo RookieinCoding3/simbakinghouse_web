@@ -17,7 +17,6 @@ export default function Footer() {
                 width={256}
                 height={128}
                 className="w-64 h-32"
-                style={{ filter: 'invert(1) sepia(1) saturate(3) hue-rotate(350deg) brightness(1.1)' }}
               />
             </div>
             <p className="font-heading text-bakery-accent text-2xl tracking-widest">
@@ -111,7 +110,7 @@ export default function Footer() {
               </h3>
               <div className="flex items-center justify-center md:justify-start space-x-4">
                 <a
-                  href="https://facebook.com"
+                  href="https://www.facebook.com/p/Sim-Baking-House-100057442848182/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-bakery-cream/80 hover:text-bakery-accent transition-all duration-200 hover:scale-110"
@@ -126,7 +125,7 @@ export default function Footer() {
                   </svg>
                 </a>
                 <a
-                  href="https://instagram.com"
+                  href="https://www.instagram.com/simbakinghouse/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-bakery-cream/80 hover:text-bakery-accent transition-all duration-200 hover:scale-110"

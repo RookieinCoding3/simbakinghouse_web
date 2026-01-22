@@ -9,19 +9,19 @@ export default function TestimonialsSection() {
     {
       name: "Sarah Lim",
       location: "Georgetown, Penang",
-      text: "The sourdough here is absolutely incredible! You can taste the love and tradition in every bite. It's become a weekly ritual for our family.",
+      text: "Sim is incredibly patient and helpful! She always takes time to explain which products work best for my baking needs. The premixes are fantastic - my cakes turn out perfect every time!",
       rating: 5
     },
     {
       name: "Ahmad Hassan",
       location: "Bayan Lepas, Penang",
-      text: "Best croissants I've ever had outside of France! Flaky, buttery perfection every single time. The morning queue is worth it!",
+      text: "Best baking supplies store in Penang! The quality of their flour and ingredients is excellent. The owner's knowledge and friendly service keep me coming back.",
       rating: 5
     },
     {
       name: "Michelle Tan",
       location: "Tanjung Bungah, Penang",
-      text: "Ordered a custom cake for my daughter's birthday - it was a masterpiece! Beautiful design and tasted even better than it looked. Highly recommended!",
+      text: "I love their premix selection - makes baking so much easier! The staff is always willing to share tips and recipes. Great prices and fantastic customer service!",
       rating: 5
     }
   ]

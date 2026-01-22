@@ -4,7 +4,6 @@ import CategoryNavigationSection from '@/components/sections/CategoryNavigationS
 import FeaturedProductsSection from '@/components/sections/FeaturedProductsSection'
 import BakersJourneySection from '@/components/sections/BakersJourneySection'
 import TestimonialsSection from '@/components/sections/TestimonialsSection'
-import InstagramGridSection from '@/components/sections/InstagramGridSection'
 import LocationPreviewSection from '@/components/sections/LocationPreviewSection'
 import StickyOrderButton from '@/components/ui/StickyOrderButton'
 
@@ -29,10 +28,7 @@ export default function Home() {
       {/* 6. Testimonials - Social proof and trust */}
       <TestimonialsSection />
 
-      {/* 7. Instagram Feed - Visual hunger and freshness proof */}
-      <InstagramGridSection />
-
-      {/* 8. Location Preview - Opening hours & directions */}
+      {/* 7. Location Preview - Opening hours & directions */}
       <LocationPreviewSection />
 
       {/* Sticky Order Button - Mobile CTA */}
