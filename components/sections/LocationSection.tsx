@@ -1,6 +1,6 @@
 export default function LocationSection() {
   return (
-    <section className="py-20 bg-bakery-dark paper-texture min-h-[80vh] flex items-center">
+    <section className="py-20 bg-bakery-dark min-h-[80vh] flex items-center">
       <div className="container mx-auto px-6 max-w-6xl">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
 
