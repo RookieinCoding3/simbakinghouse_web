@@ -44,7 +44,7 @@ export default function HeroSection() {
           <h1 className="font-heading text-bakery-cream text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-tight tracking-wider animate-fade-in-up">
             A SPACE FOR
             <br />
-            <span className="text-bakery-accent shimmer inline-block">BAKING</span>
+            <span className="text-bakery-accent inline-block">BAKING</span>
           </h1>
 
           {/* Description */}
