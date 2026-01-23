@@ -12,17 +12,17 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
   return (
     <div
       onClick={onClick}
-      className="group relative bg-bakery-cream/5 rounded-sm overflow-hidden cursor-pointer border border-bakery-cream/10 hover:border-bakery-accent/50 transition-all duration-500"
+      className="group cursor-pointer flex flex-col space-y-2 md:space-y-3"
     >
-      {/* Image Container - Square aspect ratio */}
-      <div className="relative aspect-square">
+      {/* Visual Container: Minimalist & Tactile */}
+      <div className="relative aspect-square overflow-hidden bg-bakery-cream/5 md:bg-transparent">
         <Image
           src={product.imageUrl || '/images/placeholder-product.jpg'}
           alt={product.name}
           fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className={`object-cover transition-transform duration-700 group-hover:scale-105 ${
-            !product.inStock ? 'grayscale' : ''
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
+          className={`object-cover transition-transform duration-1000 ease-out group-hover:scale-110 ${
+            !product.inStock ? 'grayscale opacity-40' : ''
           }`}
           priority
           onError={(e) => {
@@ -30,36 +30,36 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
           }}
         />
 
-        {/* Out of Stock - Minimal Overlay */}
+        {/* Out of Stock - Mobile */}
         {!product.inStock && (
-          <div className="absolute inset-0 bg-bakery-dark/60 flex items-center justify-center">
+          <div className="absolute inset-0 bg-bakery-dark/60 flex items-center justify-center md:hidden">
             <span className="bg-bakery-dark text-bakery-cream px-3 py-1 text-[10px] uppercase tracking-widest border border-bakery-cream/20">
               Sold Out
             </span>
           </div>
         )}
+
+        {/* Elegant Hover Overlay (Desktop only) */}
+        <div className="absolute inset-0 bg-bakery-dark/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 hidden md:flex items-center justify-center p-6">
+          <span className="border border-bakery-accent text-bakery-accent px-4 py-2 font-heading tracking-widest text-xs uppercase">
+            {!product.inStock ? 'Sold Out' : 'Discover'}
+          </span>
+        </div>
       </div>
 
-      {/* Info: Compact for Mobile, Detailed on Desktop */}
-      <div className="p-2 md:p-4">
-        <div className="flex flex-col space-y-1">
-          <h3 className="font-heading text-bakery-cream text-sm md:text-lg tracking-wide line-clamp-1 group-hover:text-bakery-accent transition-colors">
-            {product.name}
-          </h3>
-          <div className="flex justify-between items-end">
-            <p className="text-bakery-accent/60 text-[10px] md:text-xs uppercase tracking-wide">
-              {product.category}
-            </p>
-            <p className="font-heading text-bakery-accent text-base md:text-xl">
-              RM{product.price.toFixed(2)}
-            </p>
-          </div>
+      {/* Info: Clean Typography */}
+      <div className="text-center md:text-left transition-transform duration-500 group-hover:-translate-y-1">
+        <h3 className="font-heading text-bakery-cream text-sm md:text-lg lg:text-xl tracking-wide uppercase line-clamp-1">
+          {product.name}
+        </h3>
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center mt-1">
+          <p className="text-bakery-accent/50 text-[10px] uppercase tracking-wide hidden md:block">
+            {product.category}
+          </p>
+          <p className="font-body text-bakery-accent text-base md:text-lg">
+            RM {product.price.toFixed(2)}
+          </p>
         </div>
-
-        {/* Desktop-only description - Hidden on mobile */}
-        <p className="hidden md:block font-body text-bakery-cream/50 text-sm mt-3 line-clamp-2">
-          {product.description}
-        </p>
       </div>
     </div>
   )

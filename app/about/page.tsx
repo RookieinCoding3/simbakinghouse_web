@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
+import OurCraftSection from '@/components/sections/OurCraftSection'
 
 export const metadata: Metadata = {
   title: 'About Us | Sim Baking House',
@@ -34,9 +35,16 @@ export default function AboutPage() {
             {/* Image */}
             <div className="relative h-[400px] md:h-[600px] rounded-lg overflow-hidden shadow-2xl">
               <div className="absolute inset-0 bg-bakery-brown/10 flex items-center justify-center">
-                <p className="font-heading text-bakery-brown/30 text-2xl">
-                  Baker Image Placeholder
-                </p>
+                <div className="text-center">
+                  <p className="font-heading text-bakery-brown/30 text-2xl mb-2">
+                    Baker Image Placeholder
+                  </p>
+                  <div className="inline-block border-2 border-bakery-accent/30 px-4 py-2 mt-4">
+                    <p className="font-heading text-bakery-accent text-xl tracking-widest">
+                      EST. 2017
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -67,25 +75,24 @@ export default function AboutPage() {
 
               {/* Opening Hours */}
               <div className="bg-bakery-cream/50 rounded-lg p-6 mt-8">
-                <h3 className="font-heading text-bakery-brown text-xl mb-4">
+                <h3 className="font-heading text-bakery-brown text-xl mb-4 tracking-wide">
                   OPENING HOURS
                 </h3>
                 <div className="space-y-2 font-body text-bakery-brown/80">
-                  <div className="flex justify-between">
-                    <span>Monday - Saturday</span>
-                    <span className="font-semibold">08:00 - 19:00</span>
+                  <div className="flex justify-between items-center">
+                    <span>Daily</span>
+                    <span className="font-semibold">6:30 AM — 1:00 PM</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Sunday</span>
-                    <span className="font-semibold">09:00 - 17:00</span>
-                  </div>
+                  <p className="text-sm text-bakery-accent/80 italic mt-2">
+                    Fresh supplies available daily
+                  </p>
                 </div>
               </div>
 
               {/* Social Links */}
               <div className="flex space-x-4 pt-4">
                 <a
-                  href="https://facebook.com"
+                  href="https://www.facebook.com/p/Sim-Baking-House-100057442848182/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-12 h-12 rounded-full bg-bakery-accent flex items-center justify-center text-white hover:bg-bakery-accent/90 transition-colors"
@@ -96,7 +103,7 @@ export default function AboutPage() {
                   </svg>
                 </a>
                 <a
-                  href="https://instagram.com"
+                  href="https://www.instagram.com/sim_baking_house/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-12 h-12 rounded-full bg-bakery-accent flex items-center justify-center text-white hover:bg-bakery-accent/90 transition-colors"
@@ -168,137 +175,35 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Why Choose Us / Benefits Section */}
-      <section className="py-16 md:py-24 bg-white">
+      {/* Our Craft Section - Replaces Why Choose Us */}
+      <OurCraftSection />
+
+      {/* Minimal Contact Bar - Replaces CTA Section */}
+      <section className="py-12 md:py-16 bg-bakery-dark border-t border-bakery-cream/10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-          {/* Section Header */}
-          <div className="text-center mb-16">
-            <h2 className="font-heading text-bakery-brown text-4xl sm:text-5xl md:text-6xl mb-4">
-              WHY CHOOSE US
-            </h2>
-            <p className="font-body text-bakery-brown/70 text-lg max-w-2xl mx-auto">
-              Discover what makes Sim Baking House special
-            </p>
-          </div>
-
-          {/* Benefits Grid */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Benefit 1 */}
-            <div className="bg-bakery-cream/50 rounded-lg p-8 text-center hover:shadow-lg transition-shadow duration-300">
-              <div className="w-16 h-16 bg-bakery-accent rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-8 h-8 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="font-heading text-bakery-brown text-xl mb-3">
-                QUALITY INGREDIENTS
-              </h3>
-              <p className="font-body text-bakery-brown/70 text-sm">
-                We use only the finest ingredients, sourced locally whenever possible, ensuring every bite is pure and delicious.
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="text-center md:text-left">
+              <p className="font-body text-bakery-cream/70 text-base md:text-lg">
+                Questions about our bakes?
               </p>
             </div>
-
-            {/* Benefit 2 */}
-            <div className="bg-bakery-cream/50 rounded-lg p-8 text-center hover:shadow-lg transition-shadow duration-300">
-              <div className="w-16 h-16 bg-bakery-accent rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-8 h-8 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-                  <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="font-heading text-bakery-brown text-xl mb-3">
-                TRADITIONAL METHODS
-              </h3>
-              <p className="font-body text-bakery-brown/70 text-sm">
-                Our baking techniques honor time-tested traditions, creating authentic flavors that modern shortcuts can&apos;t replicate.
-              </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <a
+                href="https://wa.me/60123456789"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block text-bakery-accent hover:text-bakery-accent/80 font-body text-sm md:text-base transition-colors underline"
+              >
+                WhatsApp Us
+              </a>
+              <span className="hidden sm:inline text-bakery-cream/30">|</span>
+              <a
+                href="mailto:simbakinghouse25@gmail.com"
+                className="inline-block text-bakery-accent hover:text-bakery-accent/80 font-body text-sm md:text-base transition-colors underline"
+              >
+                Email Us
+              </a>
             </div>
-
-            {/* Benefit 3 */}
-            <div className="bg-bakery-cream/50 rounded-lg p-8 text-center hover:shadow-lg transition-shadow duration-300">
-              <div className="w-16 h-16 bg-bakery-accent rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-8 h-8 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-                  <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-              </div>
-              <h3 className="font-heading text-bakery-brown text-xl mb-3">
-                MADE WITH LOVE
-              </h3>
-              <p className="font-body text-bakery-brown/70 text-sm">
-                Every item is handcrafted with care and attention to detail, infusing each creation with warmth and passion.
-              </p>
-            </div>
-
-            {/* Benefit 4 */}
-            <div className="bg-bakery-cream/50 rounded-lg p-8 text-center hover:shadow-lg transition-shadow duration-300">
-              <div className="w-16 h-16 bg-bakery-accent rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-8 h-8 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-                  <path d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-                </svg>
-              </div>
-              <h3 className="font-heading text-bakery-brown text-xl mb-3">
-                FRESH DAILY
-              </h3>
-              <p className="font-body text-bakery-brown/70 text-sm">
-                Everything is baked fresh daily, ensuring you always get the best quality and taste in every purchase.
-              </p>
-            </div>
-
-            {/* Benefit 5 */}
-            <div className="bg-bakery-cream/50 rounded-lg p-8 text-center hover:shadow-lg transition-shadow duration-300">
-              <div className="w-16 h-16 bg-bakery-accent rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-8 h-8 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-                  <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <h3 className="font-heading text-bakery-brown text-xl mb-3">
-                COMMUNITY FOCUSED
-              </h3>
-              <p className="font-body text-bakery-brown/70 text-sm">
-                We&apos;re proud to serve our Penang community, building relationships one loaf at a time.
-              </p>
-            </div>
-
-            {/* Benefit 6 */}
-            <div className="bg-bakery-cream/50 rounded-lg p-8 text-center hover:shadow-lg transition-shadow duration-300">
-              <div className="w-16 h-16 bg-bakery-accent rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-8 h-8 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-                  <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="font-heading text-bakery-brown text-xl mb-3">
-                GREAT VALUE
-              </h3>
-              <p className="font-body text-bakery-brown/70 text-sm">
-                Quality doesn&apos;t have to be expensive. We offer competitive prices without compromising on excellence.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Call to Action Section */}
-      <section className="py-16 md:py-24 bg-bakery-dark">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl text-center">
-          <h2 className="font-heading text-bakery-cream text-4xl sm:text-5xl md:text-6xl mb-6">
-            VISIT US TODAY
-          </h2>
-          <p className="font-body text-bakery-cream/80 text-lg sm:text-xl mb-8 max-w-2xl mx-auto">
-            Experience the warmth and taste of artisanal baking. Come visit us in Penang and discover
-            why our customers keep coming back for more.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/products"
-              className="inline-block bg-bakery-accent hover:bg-bakery-accent/90 text-white font-heading px-8 py-4 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
-            >
-              VIEW PRODUCTS
-            </Link>
-            <Link
-              href="/location"
-              className="inline-block bg-transparent hover:bg-bakery-cream/10 text-bakery-cream border-2 border-bakery-cream font-heading px-8 py-4 rounded-lg transition-colors duration-200"
-            >
-              GET DIRECTIONS
-            </Link>
           </div>
         </div>
       </section>
