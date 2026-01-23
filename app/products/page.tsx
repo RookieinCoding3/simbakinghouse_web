@@ -148,7 +148,7 @@ export default function ProductsPage() {
                 )}
                 {searchQuery && (
                   <span className="ml-2">
-                    for "<span className="text-bakery-accent font-medium">{searchQuery}</span>"
+                    for &quot;<span className="text-bakery-accent font-medium">{searchQuery}</span>&quot;
                   </span>
                 )}
               </p>
