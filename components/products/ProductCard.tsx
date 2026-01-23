@@ -12,17 +12,17 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
   return (
     <div
       onClick={onClick}
-      className="group relative bg-bakery-cream/5 border border-bakery-cream/10 overflow-hidden cursor-pointer hover:border-bakery-accent/50 transition-all duration-500"
+      className="group relative bg-bakery-cream/5 rounded-sm overflow-hidden cursor-pointer border border-bakery-cream/10 hover:border-bakery-accent/50 transition-all duration-500"
     >
-      {/* Image Container */}
-      <div className="aspect-square overflow-hidden relative">
+      {/* Image Container - Square aspect ratio */}
+      <div className="relative aspect-square">
         <Image
           src={product.imageUrl || '/images/placeholder-product.jpg'}
           alt={product.name}
           fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className={`object-cover transition-transform duration-700 group-hover:scale-110 ${
-            !product.inStock ? 'grayscale opacity-50' : ''
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          className={`object-cover transition-transform duration-700 group-hover:scale-105 ${
+            !product.inStock ? 'grayscale' : ''
           }`}
           priority
           onError={(e) => {
@@ -30,35 +30,35 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
           }}
         />
 
-        {/* Out of Stock Overlay */}
+        {/* Out of Stock - Minimal Overlay */}
         {!product.inStock && (
-          <div className="absolute inset-0 flex items-center justify-center bg-bakery-dark/60">
-            <p className="font-heading text-bakery-cream text-lg tracking-widest uppercase">
-              Out of Stock
-            </p>
+          <div className="absolute inset-0 bg-bakery-dark/60 flex items-center justify-center">
+            <span className="bg-bakery-dark text-bakery-cream px-3 py-1 text-[10px] uppercase tracking-widest border border-bakery-cream/20">
+              Sold Out
+            </span>
           </div>
         )}
-
-        {/* Hover Overlay with Description */}
-        <div className="absolute inset-0 bg-bakery-dark/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-6 text-center">
-          <p className="font-body text-bakery-cream/90 text-sm leading-relaxed italic">
-            {product.description}
-          </p>
-        </div>
       </div>
 
-      {/* Basic Info - Always Visible */}
-      <div className="p-4 flex justify-between items-start">
-        <div className="flex-1">
-          <h3 className="font-heading text-bakery-cream text-lg tracking-wide uppercase mb-1">
+      {/* Info: Compact for Mobile, Detailed on Desktop */}
+      <div className="p-2 md:p-4">
+        <div className="flex flex-col space-y-1">
+          <h3 className="font-heading text-bakery-cream text-sm md:text-lg tracking-wide line-clamp-1 group-hover:text-bakery-accent transition-colors">
             {product.name}
           </h3>
-          <p className="text-bakery-accent/60 text-xs uppercase tracking-widest">
-            {product.category}
-          </p>
+          <div className="flex justify-between items-end">
+            <p className="text-bakery-accent/60 text-[10px] md:text-xs uppercase tracking-wide">
+              {product.category}
+            </p>
+            <p className="font-heading text-bakery-accent text-base md:text-xl">
+              RM{product.price.toFixed(2)}
+            </p>
+          </div>
         </div>
-        <p className="font-heading text-bakery-accent text-xl ml-4">
-          RM{product.price.toFixed(2)}
+
+        {/* Desktop-only description - Hidden on mobile */}
+        <p className="hidden md:block font-body text-bakery-cream/50 text-sm mt-3 line-clamp-2">
+          {product.description}
         </p>
       </div>
     </div>

@@ -80,12 +80,12 @@ export default function ProductsPage() {
   return (
     <main className="min-h-screen bg-bakery-dark pt-24 pb-16">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-b from-bakery-brown to-bakery-dark py-16 mb-8">
+      <section className="relative bg-gradient-to-b from-bakery-brown to-bakery-dark py-8 md:py-16 mb-4 md:mb-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl text-center">
-          <h1 className="font-heading text-bakery-cream text-4xl sm:text-5xl md:text-6xl mb-4 tracking-wider">
+          <h1 className="font-heading text-bakery-cream text-3xl sm:text-5xl md:text-6xl mb-3 md:mb-4 tracking-wider">
             DISCOVER OUR COLLECTION
           </h1>
-          <p className="font-body text-bakery-cream/80 text-lg sm:text-xl max-w-2xl mx-auto mb-8">
+          <p className="font-body text-bakery-cream/80 text-sm sm:text-lg md:text-xl max-w-2xl mx-auto mb-6 md:mb-8">
             Premium baking supplies, ingredients, and tools for all your baking needs
           </p>
 
@@ -97,10 +97,10 @@ export default function ProductsPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search products, ingredients, tools..."
-                className="w-full px-6 py-4 pr-12 bg-bakery-cream/10 backdrop-blur-sm border border-bakery-cream/20 rounded-full text-bakery-cream placeholder:text-bakery-cream/40 font-body focus:outline-none focus:ring-2 focus:ring-bakery-accent transition-all"
+                className="w-full px-4 md:px-6 py-3 md:py-4 pr-10 md:pr-12 bg-bakery-cream/10 backdrop-blur-sm border border-bakery-cream/20 rounded-full text-bakery-cream placeholder:text-bakery-cream/40 font-body text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-bakery-accent transition-all"
               />
               <svg
-                className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-bakery-accent"
+                className="absolute right-3 md:right-5 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-bakery-accent"
                 fill="none"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -125,7 +125,7 @@ export default function ProductsPage() {
       )}
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl mt-12">
+      <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-7xl mt-6 md:mt-12">
         {loading ? (
           <div className="flex justify-center items-center py-20">
             <LoadingSpinner />
@@ -137,8 +137,8 @@ export default function ProductsPage() {
         ) : (
           <>
             {/* Results Count */}
-            <div className="flex items-center justify-between mb-8">
-              <p className="font-body text-bakery-cream/70">
+            <div className="flex items-center justify-between mb-4 md:mb-8">
+              <p className="font-body text-bakery-cream/70 text-xs md:text-base">
                 Showing <span className="text-bakery-accent font-medium">{filteredProducts.length}</span>{' '}
                 {filteredProducts.length === 1 ? 'product' : 'products'}
                 {selectedCategory && (
@@ -158,29 +158,29 @@ export default function ProductsPage() {
                     setSelectedCategory(null)
                     setSearchQuery('')
                   }}
-                  className="font-body text-bakery-accent text-sm hover:text-bakery-accent/80 transition-colors underline"
+                  className="font-body text-bakery-accent text-xs md:text-sm hover:text-bakery-accent/80 transition-colors underline"
                 >
-                  Clear all filters
+                  Clear all
                 </button>
               )}
             </div>
 
             {/* Product Grid */}
             {filteredProducts.length === 0 ? (
-              <div className="text-center py-20">
-                <p className="font-body text-bakery-cream/70 text-lg mb-4">No products found</p>
+              <div className="text-center py-12 md:py-20">
+                <p className="font-body text-bakery-cream/70 text-base md:text-lg mb-3 md:mb-4">No products found</p>
                 <button
                   onClick={() => {
                     setSelectedCategory(null)
                     setSearchQuery('')
                   }}
-                  className="font-body text-bakery-accent hover:text-bakery-accent/80 transition-colors underline"
+                  className="font-body text-bakery-accent hover:text-bakery-accent/80 transition-colors underline text-sm md:text-base"
                 >
-                  Clear filters and show all products
+                  Clear filters and show all
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
                 {filteredProducts.map((product) => (
                   <ProductCard
                     key={product.id}
