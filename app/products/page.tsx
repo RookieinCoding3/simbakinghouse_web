@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import type { Product } from '@/types/product'
 import { fetchProducts } from '@/lib/firebase/products'
 import { getUniqueCategoriesFromProducts } from '@/lib/firebase/categories'
-import ProductFilterSidebar from '@/components/products/ProductFilterSidebar'
+import CategoryNav from '@/components/products/CategoryNav'
 import ProductCard from '@/components/products/ProductCard'
 import ProductModal from '@/components/products/ProductModal'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
@@ -14,6 +14,7 @@ export default function ProductsPage() {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<string[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -43,16 +44,28 @@ export default function ProductsPage() {
     loadProducts()
   }, [])
 
-  // Filter products when category changes
+  // Filter products when category or search changes
   useEffect(() => {
-    if (selectedCategory === null) {
-      setFilteredProducts(products)
-    } else {
-      setFilteredProducts(
-        products.filter((product) => product.category === selectedCategory)
+    let result = products
+
+    // Filter by category
+    if (selectedCategory !== null) {
+      result = result.filter((product) => product.category === selectedCategory)
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      result = result.filter(
+        (product) =>
+          product.name.toLowerCase().includes(query) ||
+          product.description.toLowerCase().includes(query) ||
+          product.category.toLowerCase().includes(query)
       )
     }
-  }, [selectedCategory, products])
+
+    setFilteredProducts(result)
+  }, [selectedCategory, searchQuery, products])
 
   const handleProductClick = (product: Product) => {
     setSelectedProduct(product)
@@ -67,19 +80,52 @@ export default function ProductsPage() {
   return (
     <main className="min-h-screen bg-bakery-dark pt-24 pb-16">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-b from-bakery-brown to-bakery-dark py-16 mb-12">
+      <section className="relative bg-gradient-to-b from-bakery-brown to-bakery-dark py-16 mb-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl text-center">
-          <h1 className="font-heading text-bakery-cream text-4xl sm:text-5xl md:text-6xl mb-4 tracking-wider animate-fade-in-up">
-            OUR PRODUCTS
+          <h1 className="font-heading text-bakery-cream text-4xl sm:text-5xl md:text-6xl mb-4 tracking-wider">
+            DISCOVER OUR COLLECTION
           </h1>
-          <p className="font-body text-bakery-cream/80 text-lg sm:text-xl max-w-2xl mx-auto animate-fade-in-delayed">
+          <p className="font-body text-bakery-cream/80 text-lg sm:text-xl max-w-2xl mx-auto mb-8">
             Premium baking supplies, ingredients, and tools for all your baking needs
           </p>
+
+          {/* Search Bar */}
+          <div className="max-w-2xl mx-auto">
+            <div className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search products, ingredients, tools..."
+                className="w-full px-6 py-4 pr-12 bg-bakery-cream/10 backdrop-blur-sm border border-bakery-cream/20 rounded-full text-bakery-cream placeholder:text-bakery-cream/40 font-body focus:outline-none focus:ring-2 focus:ring-bakery-accent transition-all"
+              />
+              <svg
+                className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-bakery-accent"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
         </div>
       </section>
 
+      {/* Category Navigation */}
+      {!loading && !error && (
+        <CategoryNav
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+        />
+      )}
+
       {/* Main Content */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl mt-12">
         {loading ? (
           <div className="flex justify-center items-center py-20">
             <LoadingSpinner />
@@ -89,76 +135,62 @@ export default function ProductsPage() {
             <p className="font-body text-bakery-cream/70 text-lg">{error}</p>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-4 gap-8">
-            {/* Sidebar - Hidden on mobile, visible on large screens */}
-            <div className="hidden lg:block">
-              <ProductFilterSidebar
-                categories={categories}
-                selectedCategory={selectedCategory}
-                onCategoryChange={setSelectedCategory}
-              />
-            </div>
-
-            {/* Mobile Filter Dropdown */}
-            <div className="lg:hidden mb-6 col-span-full">
-              <div className="bg-bakery-cream rounded-lg p-4 shadow-md">
-                <label htmlFor="category-select" className="font-heading text-bakery-brown text-lg mb-2 block">
-                  Filter by Category:
-                </label>
-                <select
-                  id="category-select"
-                  value={selectedCategory || ''}
-                  onChange={(e) => setSelectedCategory(e.target.value || null)}
-                  className="w-full px-4 py-2 rounded-md bg-white border border-bakery-brown/20 text-bakery-brown font-body focus:outline-none focus:ring-2 focus:ring-bakery-accent"
+          <>
+            {/* Results Count */}
+            <div className="flex items-center justify-between mb-8">
+              <p className="font-body text-bakery-cream/70">
+                Showing <span className="text-bakery-accent font-medium">{filteredProducts.length}</span>{' '}
+                {filteredProducts.length === 1 ? 'product' : 'products'}
+                {selectedCategory && (
+                  <span className="ml-2">
+                    in <span className="text-bakery-accent font-medium">{selectedCategory}</span>
+                  </span>
+                )}
+                {searchQuery && (
+                  <span className="ml-2">
+                    for "<span className="text-bakery-accent font-medium">{searchQuery}</span>"
+                  </span>
+                )}
+              </p>
+              {(selectedCategory || searchQuery) && (
+                <button
+                  onClick={() => {
+                    setSelectedCategory(null)
+                    setSearchQuery('')
+                  }}
+                  className="font-body text-bakery-accent text-sm hover:text-bakery-accent/80 transition-colors underline"
                 >
-                  <option value="">All Products</option>
-                  {categories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                  Clear all filters
+                </button>
+              )}
             </div>
 
             {/* Product Grid */}
-            <div className="lg:col-span-3">
-              {/* Results Count */}
-              <div className="flex items-center justify-between mb-6">
-                <p className="font-body text-bakery-cream/70">
-                  Showing <span className="text-bakery-accent font-medium">{filteredProducts.length}</span> products
-                  {selectedCategory && (
-                    <span className="ml-2">
-                      in <span className="text-bakery-accent font-medium">{selectedCategory}</span>
-                    </span>
-                  )}
-                </p>
+            {filteredProducts.length === 0 ? (
+              <div className="text-center py-20">
+                <p className="font-body text-bakery-cream/70 text-lg mb-4">No products found</p>
+                <button
+                  onClick={() => {
+                    setSelectedCategory(null)
+                    setSearchQuery('')
+                  }}
+                  className="font-body text-bakery-accent hover:text-bakery-accent/80 transition-colors underline"
+                >
+                  Clear filters and show all products
+                </button>
               </div>
-
-              {filteredProducts.length === 0 ? (
-                <div className="text-center py-16">
-                  <p className="font-body text-bakery-cream/70 text-lg">
-                    No products found
-                    {selectedCategory && (
-                      <>
-                        {' '}in category <span className="text-bakery-accent">{selectedCategory}</span>
-                      </>
-                    )}
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {filteredProducts.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      onClick={() => handleProductClick(product)}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onClick={() => handleProductClick(product)}
+                  />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
 
