@@ -73,7 +73,7 @@ export default function ProductsPage() {
             OUR PRODUCTS
           </h1>
           <p className="font-body text-bakery-cream/80 text-lg sm:text-xl max-w-2xl mx-auto animate-fade-in-delayed">
-            Discover our handcrafted selection of artisanal baked goods, made fresh daily with premium ingredients
+            Premium baking supplies, ingredients, and tools for all your baking needs
           </p>
         </div>
       </section>

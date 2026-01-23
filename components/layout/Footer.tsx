@@ -57,8 +57,7 @@ export default function Footer() {
                   <span className="font-body text-sm">Penang, Malaysia</span>
                 </Link>
                 <p className="font-body text-bakery-cream/60 text-xs">
-                  Mon-Sat: 8AM-7PM<br />
-                  Sun: 9AM-5PM
+                  Daily: 6:30 AM - 1:00 PM
                 </p>
               </div>
             </div>
@@ -87,7 +86,7 @@ export default function Footer() {
                   <span className="font-body text-sm">Call Us</span>
                 </a>
                 <a
-                  href="mailto:hello@simbakinghouse.com"
+                  href="mailto:simbakinghouse25@gmail.com"
                   className="flex items-center justify-center md:justify-start space-x-2 text-bakery-cream/80 hover:text-bakery-accent transition-colors duration-200 group"
                 >
                   <svg

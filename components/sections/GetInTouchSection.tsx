@@ -38,7 +38,7 @@ export default function GetInTouchSection() {
               Penang, Malaysia
             </p>
             <p className="font-body text-bakery-accent text-sm font-semibold">
-              Mon-Sat: 8AM-7PM • Sun: 9AM-5PM
+              Daily: 6:30 AM - 1:00 PM
             </p>
           </Link>
 
