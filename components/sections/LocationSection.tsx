@@ -54,7 +54,7 @@ export default function LocationSection() {
 
           {/* Column 2: Map & Action */}
           <div className="space-y-6">
-            <div className="w-full h-[400px] rounded-sm grayscale hover:grayscale-0 transition-all duration-700 overflow-hidden shadow-2xl border border-bakery-cream/10">
+            <div className="w-full h-[400px] rounded-sm overflow-hidden shadow-2xl border border-bakery-cream/10">
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3971.822844789771!2d100.26833837587894!3d5.323661234803908!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x304ac1d3e299a5e3%3A0x858a5f78c301745b!2sSIM%20BAKING%20HOUSE!5e0!3m2!1sen!2smy!4v1737005000000!5m2!1sen!2smy"
                 width="100%"
