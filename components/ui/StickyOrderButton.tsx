@@ -1,23 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useCallback } from 'react'
+import { useScrollThrottle } from '@/lib/hooks/useScrollThrottle'
 
 export default function StickyOrderButton() {
   const [isVisible, setIsVisible] = useState(false)
 
-  useEffect(() => {
-    const toggleVisibility = () => {
-      // Show button after scrolling down 300px
-      if (window.scrollY > 300) {
-        setIsVisible(true)
-      } else {
-        setIsVisible(false)
-      }
-    }
-
-    window.addEventListener('scroll', toggleVisibility)
-    return () => window.removeEventListener('scroll', toggleVisibility)
+  const toggleVisibility = useCallback(() => {
+    // Show button after scrolling down 300px
+    setIsVisible(window.scrollY > 300)
   }, [])
+
+  useScrollThrottle(toggleVisibility, 100)
 
   const handleOrderClick = () => {
     window.open(process.env.NEXT_PUBLIC_GOOGLE_FORM_URL, '_blank')

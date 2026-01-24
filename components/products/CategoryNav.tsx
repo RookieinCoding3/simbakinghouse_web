@@ -1,12 +1,14 @@
 'use client'
 
+import { memo } from 'react'
+
 interface CategoryNavProps {
   categories: string[]
   selectedCategory: string | null
   onCategoryChange: (category: string | null) => void
 }
 
-export default function CategoryNav({
+function CategoryNav({
   categories,
   selectedCategory,
   onCategoryChange,
@@ -43,3 +45,5 @@ export default function CategoryNav({
     </div>
   )
 }
+
+export default memo(CategoryNav)

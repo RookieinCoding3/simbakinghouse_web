@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import type { Product } from '@/types/product'
 import { fetchProducts } from '@/lib/firebase/products'
 import ProductGrid from '@/components/products/ProductGrid'
@@ -31,15 +31,15 @@ export default function ProductsSection() {
     loadProducts()
   }, [])
 
-  const handleProductClick = (product: Product) => {
+  const handleProductClick = useCallback((product: Product) => {
     setSelectedProduct(product)
     setIsModalOpen(true)
-  }
+  }, [])
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setIsModalOpen(false)
-    setTimeout(() => setSelectedProduct(null), 300) // Delay clearing to allow animation
-  }
+    setTimeout(() => setSelectedProduct(null), 300)
+  }, [])
 
   return (
     <section

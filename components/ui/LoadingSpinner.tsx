@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { cn } from '@/lib/utils/cn'
 
 interface LoadingSpinnerProps {
@@ -5,7 +6,7 @@ interface LoadingSpinnerProps {
   className?: string
 }
 
-export default function LoadingSpinner({
+function LoadingSpinner({
   size = 'md',
   className,
 }: LoadingSpinnerProps) {
@@ -30,3 +31,5 @@ export default function LoadingSpinner({
     </div>
   )
 }
+
+export default memo(LoadingSpinner)

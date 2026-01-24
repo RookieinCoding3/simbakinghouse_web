@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import Image from 'next/image'
 import type { Product } from '@/types/product'
 
@@ -8,7 +9,7 @@ interface ProductCardProps {
   onClick: () => void
 }
 
-export default function ProductCard({ product, onClick }: ProductCardProps) {
+function ProductCard({ product, onClick }: ProductCardProps) {
   return (
     <div
       onClick={onClick}
@@ -64,3 +65,5 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
     </div>
   )
 }
+
+export default memo(ProductCard)

@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useScrollThrottle } from '@/lib/hooks/useScrollThrottle'
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -11,14 +12,12 @@ export default function Header() {
 
   const isActive = (path: string) => pathname === path
 
-  // Handle scroll effect for background
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+  // Handle scroll effect with throttling
+  const handleScroll = useCallback(() => {
+    setScrolled(window.scrollY > 20)
   }, [])
+
+  useScrollThrottle(handleScroll, 100)
 
   return (
     <header
