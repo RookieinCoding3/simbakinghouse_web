@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export const metadata: Metadata = {
   title: 'Our Journey | Sim Baking House',
@@ -36,10 +37,13 @@ export default function AboutPage() {
                 The real heartbreak? Penang didn&apos;t have the premium flour she needed. She made a promise: no baker in our community should have to give up because they can&apos;t find proper ingredients.
               </p>
             </div>
-            <div className="relative h-[450px] bg-bakery-cream rounded-lg overflow-hidden group shadow-2xl">
-               <div className="absolute inset-0 bg-bakery-brown/5 flex items-center justify-center opacity-40 group-hover:opacity-10 transition-opacity">
-                  <p className="font-heading text-xl">[Image: Sim&apos;s hands in dough]</p>
-               </div>
+            <div className="relative h-[450px] bg-bakery-cream rounded-lg overflow-hidden shadow-2xl">
+              <Image
+                src="/images/sim-kitchen.svg"
+                alt="Sim's kitchen workspace"
+                fill
+                className="object-cover"
+              />
             </div>
           </div>
         </div>
@@ -91,8 +95,13 @@ export default function AboutPage() {
       {/* 5. Sensory Visual Row */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-1 bg-bakery-dark">
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="aspect-square bg-white/5 grayscale hover:grayscale-0 transition-all duration-700 flex items-center justify-center">
-            <span className="font-heading text-[10px] text-bakery-accent opacity-30 uppercase tracking-widest">Visual Moment {i}</span>
+          <div key={i} className="relative aspect-square overflow-hidden group">
+            <Image
+              src={`/images/gallery/fresh-bake-${i}.svg`}
+              alt={`Fresh bake ${i}`}
+              fill
+              className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+            />
           </div>
         ))}
       </div>
