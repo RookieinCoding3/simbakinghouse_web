@@ -7,8 +7,6 @@ import type { Category } from '@/types/product'
  * @returns Promise<Category[]> - Array of category objects
  */
 export async function fetchCategories(): Promise<Category[]> {
-  console.log('🔥 Firebase: Starting categories fetch...')
-
   try {
     const categoriesRef = collection(db, 'categories')
 
@@ -16,22 +14,17 @@ export async function fetchCategories(): Promise<Category[]> {
     let q
     try {
       q = query(categoriesRef, orderBy('order', 'asc'))
-      console.log('✓ Query built with orderBy(order)')
     } catch (orderError) {
       try {
         q = query(categoriesRef, orderBy('name', 'asc'))
-        console.log('✓ Query built with orderBy(name)')
       } catch {
         q = categoriesRef
-        console.log('✓ Query without ordering')
       }
     }
 
     const querySnapshot = await getDocs(q)
-    console.log(`✓ Query completed! Found ${querySnapshot.size} categories`)
 
     if (querySnapshot.empty) {
-      console.warn('⚠️ No categories found in Firestore collection "categories"')
       return []
     }
 
@@ -50,15 +43,9 @@ export async function fetchCategories(): Promise<Category[]> {
       categories.push(category)
     })
 
-    console.log(`✅ Successfully fetched ${categories.length} categories`)
     return categories
 
   } catch (error: any) {
-    console.error('❌ Firestore Error fetching categories:', error)
-    console.error('Error code:', error.code)
-    console.error('Error message:', error.message)
-
-    // Return empty array instead of throwing to allow graceful degradation
     return []
   }
 }

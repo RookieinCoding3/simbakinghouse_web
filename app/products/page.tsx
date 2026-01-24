@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import type { Product } from '@/types/product'
 import { fetchProducts } from '@/lib/firebase/products'
 import { getUniqueCategoriesFromProducts } from '@/lib/firebase/categories'
@@ -11,7 +11,6 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<string[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -28,13 +27,11 @@ export default function ProductsPage() {
         setError(null)
         const fetchedProducts = await fetchProducts()
         setProducts(fetchedProducts)
-        setFilteredProducts(fetchedProducts)
 
         // Extract unique categories from products
         const uniqueCategories = getUniqueCategoriesFromProducts(fetchedProducts)
         setCategories(uniqueCategories)
       } catch (err: any) {
-        console.error('Error loading products:', err)
         setError(err.message || 'Failed to load products')
       } finally {
         setLoading(false)
@@ -44,8 +41,8 @@ export default function ProductsPage() {
     loadProducts()
   }, [])
 
-  // Filter products when category or search changes
-  useEffect(() => {
+  // Filter products when category or search changes (memoized)
+  const filteredProducts = useMemo(() => {
     let result = products
 
     // Filter by category
@@ -64,18 +61,18 @@ export default function ProductsPage() {
       )
     }
 
-    setFilteredProducts(result)
+    return result
   }, [selectedCategory, searchQuery, products])
 
-  const handleProductClick = (product: Product) => {
+  const handleProductClick = useCallback((product: Product) => {
     setSelectedProduct(product)
     setIsModalOpen(true)
-  }
+  }, [])
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setIsModalOpen(false)
     setSelectedProduct(null)
-  }
+  }, [])
 
   return (
     <main className="min-h-screen bg-bakery-dark pt-24 pb-16">

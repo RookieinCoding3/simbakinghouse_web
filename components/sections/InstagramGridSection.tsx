@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+
 export default function InstagramGridSection() {
   // Placeholder Instagram-style posts
   const posts = [
@@ -52,14 +54,12 @@ export default function InstagramGridSection() {
               style={{ animationDelay: `${index * 80}ms` }}
             >
               {/* Image */}
-              <img
+              <Image
                 src={post.image}
                 alt={post.alt}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement
-                  target.src = '/images/placeholder-product.jpg'
-                }}
+                fill
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-110"
               />
 
               {/* Hover Overlay */}

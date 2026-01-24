@@ -20,10 +20,8 @@ export default function ProductsSection() {
         setLoading(true)
         setError(null)
         const data = await fetchProducts()
-        console.log('Firestore Data:', data)
         setProducts(data)
       } catch (err) {
-        console.error('Error loading products:', err)
         setError('Failed to load products. Please try again later.')
       } finally {
         setLoading(false)

@@ -1,13 +1,21 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import type { Product } from '@/types/product'
 import { fetchProductsByIds } from '@/lib/firebase/products'
 import ProductGrid from '@/components/products/ProductGrid'
 import ProductModal from '@/components/products/ProductModal'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import Button from '@/components/ui/Button'
+
+// Top 3 Best Sellers IDs (moved outside component to prevent re-creation)
+const BEST_SELLER_IDS = [
+  'k7KIV3aYXZG33EDmEqJg',    // Left
+  '3pTEcScO5E9hombgGEmL',    // Middle
+  '1KAQVQF1g9ZnJhslJ2Wd'     // Right
+]
 
 export default function FeaturedProductsSection() {
   const [products, setProducts] = useState<Product[]>([])
@@ -16,24 +24,15 @@ export default function FeaturedProductsSection() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  // Top 3 Best Sellers IDs
-  const bestSellerIds = [
-    'k7KIV3aYXZG33EDmEqJg',    // Left
-    '3pTEcScO5E9hombgGEmL',    // Middle
-    '1KAQVQF1g9ZnJhslJ2Wd'     // Right
-  ]
-
   useEffect(() => {
     async function loadFeaturedProducts() {
       try {
         setLoading(true)
         setError(null)
         // Fetch the top 3 best sellers by their IDs
-        const data = await fetchProductsByIds(bestSellerIds)
-        console.log('Firestore Data (Best Sellers):', data)
+        const data = await fetchProductsByIds(BEST_SELLER_IDS)
         setProducts(data)
       } catch (err) {
-        console.error('Error loading featured products:', err)
         setError('Failed to load featured products. Please try again later.')
       } finally {
         setLoading(false)
@@ -43,15 +42,15 @@ export default function FeaturedProductsSection() {
     loadFeaturedProducts()
   }, [])
 
-  const handleProductClick = (product: Product) => {
+  const handleProductClick = useCallback((product: Product) => {
     setSelectedProduct(product)
     setIsModalOpen(true)
-  }
+  }, [])
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setIsModalOpen(false)
     setTimeout(() => setSelectedProduct(null), 300)
-  }
+  }, [])
 
   return (
     <section
@@ -118,14 +117,12 @@ export default function FeaturedProductsSection() {
                   onClick={() => handleProductClick(product)}
                 >
                   <div className="aspect-[3/4] relative">
-                    <img
+                    <Image
                       src={product.imageUrl || '/images/placeholder-product.jpg'}
                       alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement
-                        target.src = '/images/placeholder-product.jpg'
-                      }}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     {/* Base dark overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>

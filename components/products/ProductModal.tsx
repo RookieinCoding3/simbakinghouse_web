@@ -38,7 +38,8 @@ export default function ProductModal({
 
   const handleOrderNow = () => {
     // Direct link to Google Form
-    window.open('https://forms.gle/AufdJFLrqhPzSh61A', '_blank', 'noopener,noreferrer')
+    const formUrl = process.env.NEXT_PUBLIC_GOOGLE_FORM_URL || 'https://forms.gle/AufdJFLrqhPzSh61A'
+    window.open(formUrl, '_blank', 'noopener,noreferrer')
   }
 
   return (
