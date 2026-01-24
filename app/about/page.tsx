@@ -90,7 +90,7 @@ export default function AboutPage() {
               Come Talk Baking
             </h2>
             <p className="font-body text-bakery-brown/60 text-base md:text-lg">
-              It's not just about selling ingredients.
+              It&apos;s not just about selling ingredients.
             </p>
           </div>
           <div className="grid md:grid-cols-2 gap-6">
@@ -99,8 +99,8 @@ export default function AboutPage() {
                 Ask Questions
               </h3>
               <p className="font-body text-bakery-brown/70 leading-relaxed">
-                People drop by to ask about proofing times, oven temps, or why their dough didn't rise.
-                We talk about what worked and what didn't.
+                People drop by to ask about proofing times, oven temps, or why their dough didn&apos;t rise.
+                We talk about what worked and what didn&apos;t.
               </p>
             </div>
             <div className="bg-bakery-brown p-8 space-y-4 rounded-lg text-bakery-cream">
@@ -108,8 +108,8 @@ export default function AboutPage() {
                 New to Baking?
               </h3>
               <p className="font-body text-bakery-cream/80 leading-relaxed">
-                Never made bread before? No problem. We'll help you pick flour, explain measurements,
-                and walk you through it. Your first loaf probably won't be perfect. That's normal.
+                Never made bread before? No problem. We&apos;ll help you pick flour, explain measurements,
+                and walk you through it. Your first loaf probably won&apos;t be perfect. That&apos;s normal.
               </p>
             </div>
           </div>
@@ -140,7 +140,7 @@ export default function AboutPage() {
             Need Baking Supplies?
           </h2>
           <p className="font-body text-bakery-brown/60 text-lg">
-            Stop by the shop. We're open daily 6:30 AM to 1:00 PM.
+            Stop by the shop. We&apos;re open daily 6:30 AM to 1:00 PM.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
             <Link
