@@ -1,6 +1,26 @@
-import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore'
+import { collection, getDocs, query, orderBy, limit, DocumentData } from 'firebase/firestore'
 import { db } from './config'
 import type { Product } from '@/types/product'
+
+/**
+ * Map Firestore document data to Product object
+ * Handles flexible field naming from different database structures
+ */
+function mapDocumentToProduct(docId: string, data: DocumentData): Product {
+  return {
+    id: docId,
+    name: data.name || data.title || data.productName || data.Name || 'Untitled Product',
+    description: data.description || data.desc || data.Description || data.details || '',
+    price: data.price || data.Price || data.cost || 0,
+    imageUrl: data.imageUrl || data.image || data.imageURL || data.photo || data.photoURL || '/images/placeholder-product.jpg',
+    category: data.category || data.Category || 'Uncategorized',
+    featured: data.featured ?? false,
+    inStock: data.inStock ?? true,
+    stockQuantity: data.stockQuantity ?? 0,
+    createdAt: data.createdAt?.toDate?.(),
+    updatedAt: data.updatedAt?.toDate?.(),
+  }
+}
 
 /**
  * Fetch products from the Firestore 'products' collection
@@ -32,24 +52,7 @@ export async function fetchProducts(limitCount?: number): Promise<Product[]> {
 
     const products: Product[] = []
     querySnapshot.forEach((doc) => {
-      const data = doc.data()
-
-      // Flexible field mapping to handle different database structures
-      const product: Product = {
-        id: doc.id,
-        name: data.name || data.title || data.productName || data.Name || 'Untitled Product',
-        description: data.description || data.desc || data.Description || data.details || '',
-        price: data.price || data.Price || data.cost || 0,
-        imageUrl: data.imageUrl || data.image || data.imageURL || data.photo || data.photoURL || '/images/placeholder-product.jpg',
-        category: data.category || data.Category || 'Uncategorized',
-        featured: data.featured ?? false,
-        inStock: data.inStock ?? true,
-        stockQuantity: data.stockQuantity ?? 0,
-        createdAt: data.createdAt?.toDate?.(),
-        updatedAt: data.updatedAt?.toDate?.(),
-      }
-
-      products.push(product)
+      products.push(mapDocumentToProduct(doc.id, doc.data()))
     })
 
     return products
@@ -72,21 +75,7 @@ export async function fetchProductById(id: string): Promise<Product | null> {
     let product: Product | null = null
     querySnapshot.forEach((doc) => {
       if (doc.id === id) {
-        const data = doc.data()
-
-        product = {
-          id: doc.id,
-          name: data.name || data.title || data.productName || 'Untitled Product',
-          description: data.description || data.desc || data.Description || '',
-          price: data.price || data.Price || 0,
-          imageUrl: data.imageUrl || data.image || data.imageURL || data.photo || '/images/placeholder-product.jpg',
-          category: data.category || data.Category || 'Uncategorized',
-          featured: data.featured ?? false,
-          inStock: data.inStock ?? true,
-          stockQuantity: data.stockQuantity ?? 0,
-          createdAt: data.createdAt?.toDate?.(),
-          updatedAt: data.updatedAt?.toDate?.(),
-        }
+        product = mapDocumentToProduct(doc.id, doc.data())
       }
     })
 
@@ -111,21 +100,7 @@ export async function fetchProductsByIds(ids: string[]): Promise<Product[]> {
 
     querySnapshot.forEach((doc) => {
       if (ids.includes(doc.id)) {
-        const data = doc.data()
-        const product: Product = {
-          id: doc.id,
-          name: data.name || data.title || data.productName || 'Untitled Product',
-          description: data.description || data.desc || data.Description || '',
-          price: data.price || data.Price || 0,
-          imageUrl: data.imageUrl || data.image || data.imageURL || data.photo || '/images/placeholder-product.jpg',
-          category: data.category || data.Category || 'Uncategorized',
-          featured: data.featured ?? false,
-          inStock: data.inStock ?? true,
-          stockQuantity: data.stockQuantity ?? 0,
-          createdAt: data.createdAt?.toDate?.(),
-          updatedAt: data.updatedAt?.toDate?.(),
-        }
-        productMap.set(doc.id, product)
+        productMap.set(doc.id, mapDocumentToProduct(doc.id, doc.data()))
       }
     })
 

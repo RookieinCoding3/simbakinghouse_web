@@ -5,6 +5,14 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useScrollThrottle } from '@/lib/hooks/useScrollThrottle'
 
+// Navigation menu items
+const NAV_ITEMS = [
+  { name: 'Home', path: '/' },
+  { name: 'About', path: '/about' },
+  { name: 'Products', path: '/products' },
+  { name: 'Location', path: '/location' },
+]
+
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -38,12 +46,7 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
-            {[
-              { name: 'Home', path: '/' },
-              { name: 'About', path: '/about' },
-              { name: 'Products', path: '/products' },
-              { name: 'Location', path: '/location' },
-            ].map((item) => (
+            {NAV_ITEMS.map((item) => (
               <Link
                 key={item.path}
                 href={item.path}
@@ -102,12 +105,7 @@ export default function Header() {
         >
           <div className="py-6 border-t border-bakery-cream/10">
             <div className="flex flex-col space-y-1">
-              {[
-                { name: 'Home', path: '/' },
-                { name: 'About Us', path: '/about' },
-                { name: 'Products', path: '/products' },
-                { name: 'Location', path: '/location' },
-              ].map((item, index) => (
+              {NAV_ITEMS.map((item, index) => (
                 <Link
                   key={item.path}
                   href={item.path}
