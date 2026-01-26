@@ -13,6 +13,9 @@ import SimsChoiceSpotlight from '@/components/products/SimsChoiceSpotlight'
 import MobileFilterDrawer from '@/components/products/MobileFilterDrawer'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
+// Psychology: Show 12 items at a time to prevent choice overload
+const ITEMS_PER_PAGE = 12
+
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<string[]>([])
@@ -23,6 +26,9 @@ export default function ProductsPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Load More state - Psychology: Gives user control and "finish line"
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE)
 
   // Debounce timer ref for search logging
   const searchLogTimer = useRef<NodeJS.Timeout | null>(null)
@@ -50,6 +56,11 @@ export default function ProductsPage() {
 
     loadProducts()
   }, [])
+
+  // Reset visible count when filters change
+  useEffect(() => {
+    setVisibleCount(ITEMS_PER_PAGE)
+  }, [selectedCategory, searchQuery])
 
   // Track search queries with debounce (log after 1.5s of no typing)
   useEffect(() => {
@@ -98,6 +109,19 @@ export default function ProductsPage() {
     return result
   }, [selectedCategory, searchQuery, products])
 
+  // Get currently displayed products (Load More logic)
+  const displayedProducts = useMemo(() => {
+    return filteredProducts.slice(0, visibleCount)
+  }, [filteredProducts, visibleCount])
+
+  // Check if there are more products to load
+  const hasMore = visibleCount < filteredProducts.length
+
+  // Load more products - Psychology: Dopamine hit from "discovering" more
+  const loadMore = useCallback(() => {
+    setVisibleCount(prev => prev + ITEMS_PER_PAGE)
+  }, [])
+
   const handleProductClick = useCallback((product: Product) => {
     setSelectedProduct(product)
     setIsModalOpen(true)
@@ -118,17 +142,17 @@ export default function ProductsPage() {
 
   return (
     <main className="min-h-screen bg-bakery-dark pt-20">
-      {/* 1. Minimal Hero - Very compact on mobile */}
-      <section className="py-8 md:py-16 text-center px-4">
-        <h1 className="font-heading text-bakery-cream text-3xl md:text-7xl tracking-wide">
-          COLLECTION
+      {/* 1. COMPACT HERO - Short and sweet on mobile */}
+      <section className="py-10 md:py-20 text-center px-4">
+        <h1 className="font-heading text-bakery-cream text-4xl md:text-8xl tracking-tighter">
+          THE COLLECTION
         </h1>
-        <p className="font-body text-bakery-cream/40 text-xs md:text-lg mt-2 italic uppercase tracking-widest">
-          {products.length > 0 ? `${products.length} items` : ''} personally curated for your road
+        <p className="font-body text-bakery-accent/60 text-[10px] md:text-lg mt-4 uppercase tracking-[0.3em]">
+          Hand-picked for your home kitchen
         </p>
 
-        {/* Search Bar - Hidden on mobile (use filter drawer instead) */}
-        <div className="hidden md:block max-w-xl mx-auto mt-8">
+        {/* Search Bar - Desktop only */}
+        <div className="hidden md:block max-w-xl mx-auto mt-10">
           <div className="relative">
             <input
               type="text"
@@ -163,7 +187,7 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Sim's Choice Spotlight - Desktop only to reduce mobile clutter */}
+      {/* Sim's Choice Spotlight - Desktop only */}
       {!loading && !error && featuredProducts.length > 0 && !selectedCategory && !searchQuery && (
         <div className="hidden md:block">
           <SimsChoiceSpotlight
@@ -175,10 +199,9 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* 2. THE FIX: Light & Airy Grid Section for Mobile */}
-      {/* Cream background on mobile to reduce visual fatigue, dark on desktop */}
-      <section className="bg-bakery-cream md:bg-transparent rounded-t-[2.5rem] md:rounded-none">
-        <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl py-10 md:py-12">
+      {/* 2. THE LIGHT GRID - Cream background on mobile for fresh feeling */}
+      <section className="bg-bakery-cream md:bg-transparent rounded-t-[3rem] md:rounded-none">
+        <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl py-12">
           {loading ? (
             <div className="flex justify-center items-center py-20">
               <LoadingSpinner />
@@ -190,18 +213,18 @@ export default function ProductsPage() {
           ) : (
             <>
               {/* Results Info Bar */}
-              <div className="flex justify-between items-center mb-6 md:mb-8 px-1">
-                <p className="font-body text-[10px] md:text-sm uppercase tracking-widest text-bakery-brown/50 md:text-bakery-cream/50">
-                  Showing {filteredProducts.length} {filteredProducts.length === 1 ? 'bake' : 'bakes'}
+              <div className="flex justify-between items-center mb-8 px-1">
+                <p className="font-body text-[10px] md:text-sm uppercase tracking-widest text-bakery-brown/40 md:text-bakery-cream/40">
+                  Showing {displayedProducts.length} of {filteredProducts.length} essentials
                   {selectedCategory && (
                     <span className="ml-1 text-bakery-accent">in {selectedCategory}</span>
                   )}
                 </p>
 
-                {/* Mobile Filter Button - Inline */}
+                {/* Mobile Filter Button */}
                 <button
                   onClick={() => setIsFilterOpen(true)}
-                  className="md:hidden font-heading text-bakery-brown text-sm tracking-widest border-b border-bakery-brown/30 pb-0.5 hover:border-bakery-accent hover:text-bakery-accent transition-colors"
+                  className="md:hidden font-heading text-bakery-brown text-sm tracking-widest border-b border-bakery-brown/30 pb-0.5 hover:text-bakery-accent transition-colors"
                 >
                   FILTER
                 </button>
@@ -215,7 +238,7 @@ export default function ProductsPage() {
                     }}
                     className="hidden md:block font-body text-bakery-accent/70 text-xs uppercase tracking-widest hover:text-bakery-accent transition-colors"
                   >
-                    Clear
+                    Clear filters
                   </button>
                 )}
               </div>
@@ -223,7 +246,7 @@ export default function ProductsPage() {
               {/* Product Grid */}
               {filteredProducts.length === 0 ? (
                 <div className="text-center py-12 md:py-20">
-                  <p className="font-body text-bakery-brown/70 md:text-bakery-cream/70 text-base md:text-lg mb-3 md:mb-4">
+                  <p className="font-body text-bakery-brown/70 md:text-bakery-cream/70 text-base md:text-lg mb-4">
                     No products found
                   </p>
                   <button
@@ -231,23 +254,53 @@ export default function ProductsPage() {
                       setSelectedCategory(null)
                       setSearchQuery('')
                     }}
-                    className="font-body text-bakery-accent hover:text-bakery-accent/80 transition-colors underline text-sm md:text-base"
+                    className="font-body text-bakery-accent hover:text-bakery-accent/80 transition-colors underline text-sm"
                   >
                     Clear filters and show all
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 lg:gap-8">
-                  {filteredProducts.map((product, index) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      onClick={() => handleProductClick(product)}
-                      animationDelay={index < 20 ? index * 50 : undefined}
-                      responsiveTheme={true}
-                    />
-                  ))}
-                </div>
+                <>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
+                    {displayedProducts.map((product, index) => (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        onClick={() => handleProductClick(product)}
+                        index={index}
+                        responsiveTheme={true}
+                      />
+                    ))}
+                  </div>
+
+                  {/* LOAD MORE - Psychology: Finish line + Discovery dopamine */}
+                  {hasMore && (
+                    <div className="mt-16 md:mt-20 text-center pb-8">
+                      <p className="font-body text-bakery-brown/40 md:text-bakery-cream/40 text-[10px] uppercase tracking-widest mb-6">
+                        You&apos;ve explored {displayedProducts.length} of {filteredProducts.length} curated essentials
+                      </p>
+                      <button
+                        onClick={loadMore}
+                        className="group relative inline-flex items-center gap-4 px-12 py-5 border-2 border-bakery-brown md:border-bakery-accent text-bakery-brown md:text-bakery-accent font-heading tracking-[0.2em] text-sm hover:bg-bakery-brown md:hover:bg-bakery-accent hover:text-white md:hover:text-bakery-dark transition-all duration-500"
+                      >
+                        <span>DISCOVER MORE</span>
+                        <span className="group-hover:translate-x-1 transition-transform">→</span>
+
+                        {/* Subtle glow effect */}
+                        <div className="absolute inset-0 -z-10 bg-bakery-accent/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* End of Collection Message */}
+                  {!hasMore && filteredProducts.length > ITEMS_PER_PAGE && (
+                    <div className="mt-16 text-center pb-8">
+                      <p className="font-body text-bakery-brown/30 md:text-bakery-cream/30 text-[10px] uppercase tracking-widest">
+                        You&apos;ve seen all {filteredProducts.length} essentials
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}
@@ -261,15 +314,12 @@ export default function ProductsPage() {
         onClose={handleCloseModal}
       />
 
-      {/* Floating Mobile Filter Button - Only show when scrolled */}
+      {/* Floating Mobile Filter Button */}
       <button
         onClick={() => setIsFilterOpen(true)}
-        className="md:hidden fixed bottom-6 right-6 z-50 w-14 h-14 bg-bakery-brown text-bakery-cream rounded-full shadow-lg flex items-center justify-center hover:bg-bakery-dark transition-colors"
-        aria-label="Open filters"
+        className="md:hidden fixed bottom-10 left-1/2 -translate-x-1/2 z-40 bg-bakery-brown text-bakery-cream px-8 py-4 rounded-full font-heading text-xs tracking-widest shadow-2xl flex items-center gap-2 hover:bg-bakery-dark transition-colors"
       >
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-        </svg>
+        <span>✨</span> FILTER BY CATEGORY
       </button>
 
       {/* Mobile Filter Drawer */}

@@ -15,14 +15,14 @@ const NAV_ITEMS = [
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
   const pathname = usePathname()
 
   const isActive = (path: string) => pathname === path
 
   // Handle scroll effect with throttling
   const handleScroll = useCallback(() => {
-    setScrolled(window.scrollY > 20)
+    setIsScrolled(window.scrollY > 20)
   }, [])
 
   useScrollThrottle(handleScroll, 100)
@@ -41,19 +41,21 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? 'bg-bakery-dark/98 shadow-lg border-b border-bakery-accent/20'
-          : 'bg-bakery-dark/95 backdrop-blur-md'
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        isScrolled
+          ? 'bg-bakery-dark/95 backdrop-blur-xl py-3 border-b border-bakery-accent/20 shadow-lg'
+          : 'bg-gradient-to-b from-bakery-dark/80 to-transparent py-4 md:py-6'
       }`}
     >
-      {/* Increased height for better mobile tapping: h-20 on mobile, h-24 on desktop */}
-      <nav className="container mx-auto px-6 h-20 md:h-24 flex items-center justify-between">
-        {/* Brand - Larger and more prominent */}
-        <Link href="/" className="group" onClick={() => setMobileMenuOpen(false)}>
-          <h1 className="font-heading text-bakery-accent text-2xl md:text-3xl tracking-widest group-hover:tracking-[0.2em] transition-all duration-300">
-            SIM BAKING HOUSE
-          </h1>
+      <nav className="container mx-auto px-6 flex items-center justify-between">
+        {/* Brand with Logo Circle */}
+        <Link href="/" className="group flex items-center gap-3" onClick={() => setMobileMenuOpen(false)}>
+          <div className="w-10 h-10 bg-bakery-accent rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(212,165,116,0.4)] group-hover:shadow-[0_0_25px_rgba(212,165,116,0.6)] transition-shadow duration-300">
+            <span className="text-bakery-brown font-heading text-xl">S</span>
+          </div>
+          <span className="font-heading text-bakery-accent text-xl md:text-2xl tracking-[0.15em] group-hover:text-bakery-cream transition-colors duration-300">
+            SIM BAKING
+          </span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -62,10 +64,10 @@ export default function Header() {
             <Link
               key={item.path}
               href={item.path}
-              className={`font-body text-sm tracking-wide transition-colors duration-200 ${
+              className={`font-body text-sm tracking-wide transition-all duration-300 hover:translate-y-[-2px] ${
                 isActive(item.path)
                   ? 'text-bakery-accent'
-                  : 'text-bakery-cream/80 hover:text-bakery-accent'
+                  : 'text-bakery-cream/70 hover:text-bakery-accent'
               }`}
             >
               {item.name}
@@ -77,26 +79,24 @@ export default function Header() {
             href={process.env.NEXT_PUBLIC_GOOGLE_FORM_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-6 py-2.5 bg-bakery-accent hover:bg-bakery-accent/90 text-bakery-dark font-heading text-sm tracking-wider rounded transition-colors duration-200"
+            className="px-6 py-2.5 bg-bakery-accent hover:bg-bakery-accent/90 text-bakery-dark font-heading text-sm tracking-wider rounded-full shadow-[0_0_20px_rgba(212,165,116,0.3)] hover:shadow-[0_0_30px_rgba(212,165,116,0.5)] transition-all duration-300"
           >
             ORDER NOW
           </a>
         </div>
 
-        {/* REFINED Mobile Menu Button - Bigger, Visible, High Contrast */}
+        {/* HIGH CONTRAST Mobile Menu Toggle */}
         <button
-          className="lg:hidden p-3 -mr-2 text-bakery-cream bg-white/10 hover:bg-white/20 rounded-full border border-white/20 transition-all duration-300"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="lg:hidden w-12 h-12 flex items-center justify-center bg-bakery-accent/10 border border-bakery-accent/30 rounded-full text-bakery-accent active:scale-90 hover:bg-bakery-accent/20 transition-all duration-300"
           aria-label="Toggle menu"
           aria-expanded={mobileMenuOpen}
         >
           {mobileMenuOpen ? (
-            // X Icon - 28px for better visibility
             <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           ) : (
-            // Menu Icon - 28px for better visibility
             <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
@@ -104,29 +104,41 @@ export default function Header() {
         </button>
       </nav>
 
-      {/* Full-Screen Mobile Menu Overlay */}
+      {/* Full-Screen Mobile Menu with Glassmorphism */}
       <div
-        className={`lg:hidden fixed inset-0 top-20 bg-bakery-dark z-50 transition-all duration-500 ease-out ${
+        className={`lg:hidden fixed inset-0 top-0 bg-bakery-dark/98 backdrop-blur-xl z-40 transition-all duration-500 ease-out ${
           mobileMenuOpen
             ? 'opacity-100 translate-y-0'
-            : 'opacity-0 -translate-y-4 pointer-events-none'
+            : 'opacity-0 -translate-y-full pointer-events-none'
         }`}
       >
-        <div className="h-full flex flex-col p-10 space-y-6">
+        {/* Close button inside menu */}
+        <div className="absolute top-4 right-6">
+          <button
+            onClick={() => setMobileMenuOpen(false)}
+            className="w-12 h-12 flex items-center justify-center bg-bakery-accent/10 border border-bakery-accent/30 rounded-full text-bakery-accent"
+          >
+            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="h-full flex flex-col justify-center px-10 space-y-8">
           {NAV_ITEMS.map((item, index) => (
             <Link
               key={item.path}
               href={item.path}
               onClick={() => setMobileMenuOpen(false)}
-              className={`font-heading text-5xl uppercase tracking-tight transition-all duration-300 ${
+              className={`font-heading text-5xl uppercase tracking-tight transition-all duration-500 ${
                 isActive(item.path)
                   ? 'text-bakery-accent'
-                  : 'text-bakery-cream hover:text-bakery-accent hover:translate-x-2'
+                  : 'text-bakery-cream hover:text-bakery-accent hover:translate-x-4'
               }`}
               style={{
                 transitionDelay: mobileMenuOpen ? `${index * 75}ms` : '0ms',
                 opacity: mobileMenuOpen ? 1 : 0,
-                transform: mobileMenuOpen ? 'translateX(0)' : 'translateX(-20px)'
+                transform: mobileMenuOpen ? 'translateX(0)' : 'translateX(-30px)'
               }}
             >
               {item.name}
@@ -138,10 +150,10 @@ export default function Header() {
             href={process.env.NEXT_PUBLIC_GOOGLE_FORM_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-auto mb-10 py-5 bg-bakery-accent hover:bg-bakery-accent/90 text-bakery-dark font-heading text-xl tracking-[0.2em] rounded-sm text-center transition-all duration-300"
+            className="mt-8 py-5 bg-bakery-accent hover:bg-bakery-accent/90 text-bakery-dark font-heading text-xl tracking-[0.2em] rounded-full text-center shadow-[0_0_30px_rgba(212,165,116,0.4)] transition-all duration-300"
             onClick={() => setMobileMenuOpen(false)}
             style={{
-              transitionDelay: mobileMenuOpen ? '300ms' : '0ms',
+              transitionDelay: mobileMenuOpen ? '350ms' : '0ms',
               opacity: mobileMenuOpen ? 1 : 0
             }}
           >

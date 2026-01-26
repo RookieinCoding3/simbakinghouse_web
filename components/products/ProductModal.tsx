@@ -130,37 +130,53 @@ export default function ProductModal({
               </p>
             </div>
 
-            {/* Total Value & Terms Footer */}
-            <div className="mt-8 pt-6 border-t border-bakery-brown/10">
+            {/* PSYCHOLOGY: Quality Commitment - Positive Reframing */}
+            <div className="mt-6 p-4 bg-bakery-accent/5 rounded-xl border border-bakery-accent/10">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-bakery-accent text-sm">✨</span>
+                <h4 className="font-heading text-bakery-accent text-[10px] tracking-widest uppercase">
+                  Our Quality Promise
+                </h4>
+              </div>
+              <p className="font-body text-bakery-brown/60 text-[11px] leading-relaxed">
+                To ensure the absolute freshness of our artisan supplies,
+                <span className="text-bakery-brown/80 font-medium"> all sales are final and non-refundable.</span> Thank you for trusting our craft.
+              </p>
+            </div>
+
+            {/* Total Value & CTA Footer */}
+            <div className="mt-6 pt-6 border-t border-bakery-brown/10">
               <div className="flex justify-between items-end mb-6">
                 <div>
-                  <p className="text-[9px] uppercase tracking-widest text-bakery-brown/40 font-heading">
-                    Price
+                  <p className="text-[10px] uppercase tracking-widest text-bakery-brown/40 font-heading">
+                    Total Value
                   </p>
-                  <span className="font-heading text-3xl md:text-4xl text-bakery-brown">
+                  <span className="font-heading text-4xl text-bakery-brown">
                     RM {product.price.toFixed(2)}
                   </span>
                 </div>
 
-                {/* MANDATORY POLICY */}
-                <div className="text-right max-w-[140px]">
-                  <p className="text-[8px] md:text-[9px] text-bakery-brown/50 font-body uppercase leading-tight italic">
-                    * Important: All goods sold are non-refundable.
-                  </p>
-                </div>
+                {/* Stock Status */}
+                {product.inStock && product.stockQuantity <= 5 && product.stockQuantity > 0 && (
+                  <div className="text-right">
+                    <span className="text-red-500 text-[10px] font-heading uppercase tracking-wider animate-pulse">
+                      Only {product.stockQuantity} left
+                    </span>
+                  </div>
+                )}
               </div>
 
               <Button
                 variant="primary"
                 size="lg"
                 onClick={handleOrderNow}
-                className="w-full py-4 md:py-5 text-lg tracking-[0.2em] shadow-xl hover:scale-[1.01] transition-transform"
+                className="w-full py-5 text-xl tracking-[0.2em] shadow-xl hover:scale-[1.01] transition-transform bg-bakery-brown hover:bg-bakery-dark"
                 disabled={!product.inStock}
               >
-                {product.inStock ? 'ADD TO MY ORDER' : 'OUT OF STOCK'}
+                {product.inStock ? 'ORDER FOR PICKUP' : 'OUT OF STOCK'}
               </Button>
 
-              <p className="font-body text-bakery-brown/50 text-xs text-center mt-3">
+              <p className="font-body text-bakery-brown/40 text-[10px] text-center mt-4 uppercase tracking-wider">
                 You&apos;ll be redirected to our order form
               </p>
             </div>
