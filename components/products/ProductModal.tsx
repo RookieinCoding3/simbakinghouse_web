@@ -3,7 +3,6 @@
 import { useEffect } from 'react'
 import Image from 'next/image'
 import type { Product } from '@/types/product'
-import { cn } from '@/lib/utils/cn'
 import Button from '@/components/ui/Button'
 import ProductBadge from './ProductBadge'
 
@@ -11,30 +10,6 @@ interface ProductModalProps {
   product: Product | null
   isOpen: boolean
   onClose: () => void
-}
-
-function getProductBenefits(product: Product) {
-  const benefits: { icon: string; text: string }[] = []
-
-  if (product.difficultyLevel === 'beginner') {
-    benefits.push({ icon: '🌱', text: 'Perfect for beginners' })
-  }
-
-  if (product.badges?.includes('sourdough-essential')) {
-    benefits.push({ icon: '🍞', text: 'Essential for sourdough baking' })
-  }
-
-  if (product.featured) {
-    benefits.push({ icon: '⭐', text: 'Handpicked by Sim' })
-  }
-
-  // Generic benefits
-  benefits.push(
-    { icon: '✓', text: 'Premium quality ingredients' },
-    { icon: '✓', text: 'Available for pre-order' }
-  )
-
-  return benefits
 }
 
 export default function ProductModal({
@@ -50,7 +25,6 @@ export default function ProductModal({
 
     if (isOpen) {
       document.addEventListener('keydown', handleEscape)
-      // Prevent body scroll when modal is open
       document.body.style.overflow = 'hidden'
     }
 
@@ -63,12 +37,9 @@ export default function ProductModal({
   if (!isOpen || !product) return null
 
   const handleOrderNow = () => {
-    // Direct link to Google Form
     const formUrl = process.env.NEXT_PUBLIC_GOOGLE_FORM_URL || 'https://forms.gle/AufdJFLrqhPzSh61A'
     window.open(formUrl, '_blank', 'noopener,noreferrer')
   }
-
-  const benefits = getProductBenefits(product)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
@@ -80,7 +51,7 @@ export default function ProductModal({
       />
 
       {/* Modal Content */}
-      <div className="relative bg-bakery-cream rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto animate-scale-in paper-texture">
+      <div className="relative bg-bakery-cream rounded-sm shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto animate-scale-in">
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -114,13 +85,8 @@ export default function ProductModal({
           </div>
 
           {/* Product Details */}
-          <div className="p-6 md:p-8 space-y-5">
-            {/* Product Name & Badges */}
-            <div className="space-y-3">
-              <h2 className="font-heading text-bakery-brown text-2xl md:text-3xl lg:text-4xl tracking-wide animate-fade-in">
-                {product.name}
-              </h2>
-
+          <div className="flex flex-col h-full p-6 md:p-8">
+            <div className="flex-1 space-y-6">
               {/* Badges */}
               {product.badges && product.badges.length > 0 && (
                 <div className="flex flex-wrap gap-2">
@@ -129,67 +95,56 @@ export default function ProductModal({
                   ))}
                 </div>
               )}
-            </div>
 
-            {/* Mentor's Road Note - Aesthetic styling */}
-            {product.mentorNote && (
-              <div className="bg-bakery-accent/5 border-l-2 border-bakery-accent p-4 rounded-r-lg animate-fade-in-delayed">
-                <h4 className="font-heading text-bakery-accent text-xs tracking-[0.2em] mb-2 uppercase">Sim&apos;s Road Note</h4>
-                <p className="font-body text-bakery-brown/80 italic text-sm leading-relaxed">
-                  &quot;{product.mentorNote}&quot;
+              {/* Product Name */}
+              <h2 className="font-heading text-bakery-brown text-3xl md:text-4xl tracking-tight uppercase animate-fade-in">
+                {product.name}
+              </h2>
+
+              {/* Mentor Note - Personalized and supportive */}
+              <div className="bg-bakery-accent/5 border-l-2 border-bakery-accent p-4 rounded-r-sm animate-fade-in-delayed">
+                <p className="italic text-bakery-brown/80 font-body text-sm">
+                  &quot;Sim&apos;s Tip: {product.mentorNote || "A premium essential for your home kitchen."}&quot;
                 </p>
               </div>
-            )}
 
-            {/* Price & Stock - Clean aesthetic */}
-            <div className="flex items-baseline justify-between border-b border-bakery-brown/10 pb-4 animate-fade-in">
-              <span className="font-heading text-bakery-brown text-3xl md:text-4xl">
-                RM {product.price.toFixed(2)}
-              </span>
-              <span className={cn(
-                "font-body text-xs uppercase tracking-widest",
-                product.inStock ? "text-green-700" : "text-red-700"
-              )}>
-                {product.inStock ? "● Freshly Available" : "● Out of Stock"}
-              </span>
-            </div>
-
-            {/* Product Description */}
-            <div className="animate-fade-in-delayed">
-              <h3 className="font-heading text-bakery-brown text-lg md:text-xl mb-2 tracking-wide">
-                Description
-              </h3>
-              <p className="font-body text-bakery-brown/80 text-sm md:text-base leading-relaxed">
+              {/* Description */}
+              <p className="font-body text-bakery-brown/70 leading-relaxed text-base animate-fade-in-delayed">
                 {product.description}
               </p>
             </div>
 
-            {/* Product Info */}
-            <div className="bg-bakery-accent/5 rounded-lg p-4 space-y-2 animate-fade-in-delayed-more">
-              {benefits.map((benefit, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <span className="w-5 h-5 flex items-center justify-center text-bakery-accent text-sm">
-                    {benefit.icon}
-                  </span>
-                  <span className="font-body text-bakery-brown/70 text-sm">
-                    {benefit.text}
+            {/* Footer with Price and Policy */}
+            <div className="mt-8 pt-6 border-t border-bakery-brown/10">
+              <div className="flex justify-between items-end mb-6">
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-bakery-brown/40 mb-1 font-heading font-bold">
+                    Total Value
+                  </p>
+                  <span className="font-heading text-3xl md:text-4xl text-bakery-brown leading-none">
+                    RM {product.price.toFixed(2)}
                   </span>
                 </div>
-              ))}
-            </div>
 
-            {/* Order Button */}
-            <div className="pt-2 animate-fade-in-delayed-more">
+                {/* Non-refundable Policy */}
+                <div className="text-right">
+                  <p className="text-[9px] text-bakery-brown/40 font-body uppercase tracking-tight leading-tight max-w-[120px]">
+                    * Please note: All goods sold are non-refundable.
+                  </p>
+                </div>
+              </div>
+
               <Button
                 variant="primary"
                 size="lg"
                 onClick={handleOrderNow}
-                className="w-full text-base md:text-lg tracking-widest hover-scale"
+                className="w-full py-4 md:py-5 text-lg md:text-xl tracking-[0.2em] shadow-2xl hover:scale-[1.01] transition-transform"
                 disabled={!product.inStock}
               >
-                {product.inStock ? 'ORDER NOW' : 'OUT OF STOCK'}
+                {product.inStock ? 'ADD TO MY ORDER' : 'OUT OF STOCK'}
               </Button>
-              <p className="font-body text-bakery-brown/60 text-xs text-center mt-3">
+
+              <p className="font-body text-bakery-brown/50 text-xs text-center mt-3">
                 You&apos;ll be redirected to our order form
               </p>
             </div>

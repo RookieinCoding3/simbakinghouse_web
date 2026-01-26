@@ -7,34 +7,39 @@ interface ProductBadgeProps {
   size?: 'sm' | 'md'
 }
 
-const BADGE_MAP: Record<string, { label: string; style: string }> = {
+const BADGE_MAP: Record<string, { label: string; style: string; icon: string }> = {
   'sims-secret': {
     label: "Sim's Secret",
-    style: "bg-purple-500/10 text-purple-300 border-purple-500/20"
+    style: "border-purple-400/20 text-purple-300 bg-purple-950/10",
+    icon: "✨"
   },
   'beginner-friendly': {
-    label: "Beginner Friendly",
-    style: "bg-green-500/10 text-green-300 border-green-500/20"
+    label: "Beginner Road",
+    style: "border-green-400/20 text-green-300 bg-green-950/10",
+    icon: "🌱"
   },
   'sourdough-essential': {
-    label: "Sourdough Essential",
-    style: "bg-bakery-accent/10 text-bakery-accent border-bakery-accent/20"
+    label: "Artisan Base",
+    style: "border-bakery-accent/20 text-bakery-accent bg-bakery-accent/5",
+    icon: "🍞"
   },
   'sims-choice': {
-    label: "Sim's Choice",
-    style: "bg-bakery-accent text-bakery-dark border-bakery-accent shadow-[0_0_15px_rgba(212,165,116,0.3)]"
+    label: "House Choice",
+    style: "border-bakery-accent bg-bakery-accent text-bakery-dark font-bold",
+    icon: "⭐"
   }
 }
 
 export default function ProductBadge({ type, size = 'sm' }: ProductBadgeProps) {
-  const config = BADGE_MAP[type] || { label: type, style: "bg-white/10 text-white border-white/20" }
+  const config = BADGE_MAP[type] || { label: type, style: "border-white/10 text-white/50 bg-white/5", icon: "•" }
 
   return (
     <span className={cn(
-      "inline-flex items-center justify-center rounded-full border backdrop-blur-md font-heading tracking-widest uppercase animate-fade-in",
-      size === 'sm' ? "px-2 py-0.5 text-[8px]" : "px-3 py-1 text-[10px]",
+      "inline-flex items-center gap-1.5 rounded-sm border backdrop-blur-md px-2 py-0.5 font-heading tracking-[0.2em] uppercase transition-all duration-500",
+      size === 'sm' ? "text-[8px]" : "text-[10px]",
       config.style
     )}>
+      <span className="opacity-70">{config.icon}</span>
       {config.label}
     </span>
   )
