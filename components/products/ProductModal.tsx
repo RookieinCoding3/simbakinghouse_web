@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import type { Product } from '@/types/product'
 import Button from '@/components/ui/Button'
 import ProductBadge from './ProductBadge'
+import { logProductView, logOrderIntent } from '@/lib/firebase/analytics'
 
 interface ProductModalProps {
   product: Product | null
@@ -17,6 +18,9 @@ export default function ProductModal({
   isOpen,
   onClose,
 }: ProductModalProps) {
+  // Track which product was last logged to prevent duplicates
+  const lastLoggedProductId = useRef<string | null>(null)
+
   // Handle ESC key to close modal
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -34,9 +38,21 @@ export default function ProductModal({
     }
   }, [isOpen, onClose])
 
+  // Track product view for business intelligence
+  useEffect(() => {
+    if (isOpen && product && product.id !== lastLoggedProductId.current) {
+      lastLoggedProductId.current = product.id
+      logProductView(product.id, product.name, product.category)
+    }
+  }, [isOpen, product])
+
   if (!isOpen || !product) return null
 
   const handleOrderNow = () => {
+    // Track order intent for business intelligence
+    if (product) {
+      logOrderIntent(product.id, product.name, product.price)
+    }
     const formUrl = process.env.NEXT_PUBLIC_GOOGLE_FORM_URL || 'https://forms.gle/AufdJFLrqhPzSh61A'
     window.open(formUrl, '_blank', 'noopener,noreferrer')
   }

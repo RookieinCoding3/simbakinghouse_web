@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import type { Product } from '@/types/product'
 import { fetchProducts } from '@/lib/firebase/products'
 import { getUniqueCategoriesFromProducts } from '@/lib/firebase/categories'
 import { enhanceWithDemoData } from '@/lib/demo/mentorData'
+import { logSearchQuery, logCategoryFilter } from '@/lib/firebase/analytics'
 import CategoryNav from '@/components/products/CategoryNav'
 import ProductCard from '@/components/products/ProductCard'
 import ProductModal from '@/components/products/ProductModal'
@@ -22,6 +23,9 @@ export default function ProductsPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Debounce timer ref for search logging
+  const searchLogTimer = useRef<NodeJS.Timeout | null>(null)
 
   // Fetch products on mount
   useEffect(() => {
@@ -46,6 +50,25 @@ export default function ProductsPage() {
 
     loadProducts()
   }, [])
+
+  // Track search queries with debounce (log after 1.5s of no typing)
+  useEffect(() => {
+    if (searchLogTimer.current) {
+      clearTimeout(searchLogTimer.current)
+    }
+
+    if (searchQuery.trim().length >= 2) {
+      searchLogTimer.current = setTimeout(() => {
+        logSearchQuery(searchQuery)
+      }, 1500)
+    }
+
+    return () => {
+      if (searchLogTimer.current) {
+        clearTimeout(searchLogTimer.current)
+      }
+    }
+  }, [searchQuery])
 
   // Get featured products for spotlight
   const featuredProducts = useMemo(() => {
@@ -83,6 +106,14 @@ export default function ProductsPage() {
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false)
     setSelectedProduct(null)
+  }, [])
+
+  // Track category selection for business intelligence
+  const handleCategoryChange = useCallback((category: string | null) => {
+    setSelectedCategory(category)
+    if (category) {
+      logCategoryFilter(category)
+    }
   }, [])
 
   return (
@@ -129,7 +160,7 @@ export default function ProductsPage() {
           <CategoryNav
             categories={categories}
             selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
+            onCategoryChange={handleCategoryChange}
           />
         </div>
       )}
@@ -228,7 +259,7 @@ export default function ProductsPage() {
         onClose={() => setIsFilterOpen(false)}
         categories={categories}
         selectedCategory={selectedCategory}
-        onSelectCategory={setSelectedCategory}
+        onSelectCategory={handleCategoryChange}
         totalProducts={filteredProducts.length}
       />
     </main>
