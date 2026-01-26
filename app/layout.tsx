@@ -122,8 +122,8 @@ const jsonLd = {
       description:
         'Premium baking supplies shop in Penang offering cake premix, baking ingredients, tools and accessories. Specializing in butter cake premix, German cookies, and sourdough essentials.',
       url: 'https://simbakinghouse.com',
-      telephone: '+60-XXX-XXXXXXX',
-      email: 'hello@simbakinghouse.com',
+      telephone: '+60-12-401-9334',
+      email: 'simbakinghouse25@gmail.com',
       image: 'https://simbakinghouse.com/og-image.jpg',
       logo: 'https://simbakinghouse.com/SBH_tab.png',
       priceRange: 'RM',
