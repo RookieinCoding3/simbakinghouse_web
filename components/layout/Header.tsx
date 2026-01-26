@@ -48,10 +48,14 @@ export default function Header() {
       }`}
     >
       <nav className="container mx-auto px-6 flex items-center justify-between">
-        {/* Brand with Logo Circle */}
+        {/* Brand with Logo */}
         <Link href="/" className="group flex items-center gap-3" onClick={() => setMobileMenuOpen(false)}>
-          <div className="w-10 h-10 bg-bakery-accent rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(212,165,116,0.4)] group-hover:shadow-[0_0_25px_rgba(212,165,116,0.6)] transition-shadow duration-300">
-            <span className="text-bakery-brown font-heading text-xl">S</span>
+          <div className="relative w-10 h-10 rounded-full overflow-hidden shadow-[0_0_15px_rgba(212,165,116,0.4)] group-hover:shadow-[0_0_25px_rgba(212,165,116,0.6)] transition-shadow duration-300">
+            <img
+              src="/SBH_tab.png"
+              alt="Sim Baking House"
+              className="w-full h-full object-cover"
+            />
           </div>
           <span className="font-heading text-bakery-accent text-xl md:text-2xl tracking-[0.15em] group-hover:text-bakery-cream transition-colors duration-300">
             SIM BAKING
