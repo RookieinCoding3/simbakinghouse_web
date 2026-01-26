@@ -22,8 +22,8 @@ function ProductCard({ product, onClick, animationDelay }: ProductCardProps) {
           : undefined
       }}
     >
-      {/* Visual Container: Minimalist & Tactile */}
-      <div className="relative aspect-square overflow-hidden bg-bakery-cream/5 md:bg-transparent">
+      {/* Visual Container - Aesthetic with thin borders */}
+      <div className="relative aspect-square overflow-hidden rounded-sm border border-bakery-cream/10 group-hover:border-bakery-accent/30 transition-all duration-700">
         <Image
           src={product.imageUrl || '/images/placeholder-product.jpg'}
           alt={product.name}
@@ -56,20 +56,20 @@ function ProductCard({ product, onClick, animationDelay }: ProductCardProps) {
 
         {/* Out of Stock - Mobile */}
         {!product.inStock && (
-          <div className="absolute inset-0 bg-bakery-dark/60 flex items-center justify-center md:hidden">
-            <span className="bg-bakery-dark text-bakery-cream px-3 py-1 text-[10px] uppercase tracking-widest border border-bakery-cream/20">
+          <div className="absolute inset-0 bg-bakery-dark/50 backdrop-blur-sm flex items-center justify-center md:hidden">
+            <span className="bg-bakery-dark/80 backdrop-blur-md text-bakery-cream px-3 py-1 text-[10px] uppercase tracking-widest border border-bakery-cream/10 rounded-full">
               Sold Out
             </span>
           </div>
         )}
 
-        {/* Elegant Hover Overlay (Desktop only) */}
-        <div className="absolute inset-0 bg-bakery-dark/60 opacity-0 group-hover:opacity-100 transition-opacity duration-500 hidden md:flex flex-col items-center justify-center p-6">
-          <span className="border-2 border-bakery-accent text-bakery-accent px-4 py-2 font-heading tracking-widest text-xs uppercase">
+        {/* Glass-morphism Hover Overlay (Desktop only) */}
+        <div className="absolute inset-0 bg-bakery-dark/50 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500 hidden md:flex flex-col items-center justify-center p-6">
+          <span className="border border-bakery-accent/60 text-bakery-accent px-4 py-2 font-heading tracking-widest text-xs uppercase backdrop-blur-md bg-bakery-dark/20 rounded-sm">
             {!product.inStock ? 'Sold Out' : 'View Details'}
           </span>
           {product.mentorNote && product.inStock && (
-            <p className="text-bakery-cream/80 text-xs text-center mt-3 line-clamp-2 max-w-[90%]">
+            <p className="text-bakery-cream/70 text-xs text-center mt-3 line-clamp-2 max-w-[90%] italic">
               {product.mentorNote.length > 60 ? `${product.mentorNote.slice(0, 60)}...` : product.mentorNote}
             </p>
           )}
@@ -82,10 +82,10 @@ function ProductCard({ product, onClick, animationDelay }: ProductCardProps) {
           {product.name}
         </h3>
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mt-1">
-          <p className="text-bakery-accent/50 text-[10px] uppercase tracking-wide hidden md:block">
+          <p className="text-bakery-cream/40 text-[10px] uppercase tracking-wide hidden md:block">
             {product.category}
           </p>
-          <p className="font-body text-bakery-accent text-base md:text-lg">
+          <p className="font-heading text-bakery-accent text-base md:text-lg">
             RM {product.price.toFixed(2)}
           </p>
         </div>

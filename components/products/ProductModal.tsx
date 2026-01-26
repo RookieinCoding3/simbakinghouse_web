@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import Image from 'next/image'
 import type { Product } from '@/types/product'
+import { cn } from '@/lib/utils/cn'
 import Button from '@/components/ui/Button'
 import ProductBadge from './ProductBadge'
 
@@ -114,15 +115,15 @@ export default function ProductModal({
 
           {/* Product Details */}
           <div className="p-6 md:p-8 space-y-5">
-            {/* Product Name */}
-            <div>
+            {/* Product Name & Badges */}
+            <div className="space-y-3">
               <h2 className="font-heading text-bakery-brown text-2xl md:text-3xl lg:text-4xl tracking-wide animate-fade-in">
                 {product.name}
               </h2>
 
               {/* Badges */}
               {product.badges && product.badges.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-3">
+                <div className="flex flex-wrap gap-2">
                   {product.badges.map(badge => (
                     <ProductBadge key={badge} type={badge} size="md" />
                   ))}
@@ -130,52 +131,28 @@ export default function ProductModal({
               )}
             </div>
 
-            {/* Price & Stock Section */}
-            <div className="flex items-center justify-between bg-bakery-accent/10 rounded-lg p-4 animate-fade-in">
-              <div>
-                <p className="font-body text-bakery-brown/60 text-xs uppercase tracking-wide">
-                  Price
-                </p>
-                <p className="font-heading text-bakery-brown text-2xl md:text-3xl">
-                  RM {product.price.toFixed(2)}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="font-body text-bakery-brown/60 text-xs uppercase tracking-wide">
-                  Availability
-                </p>
-                <p className={`font-body text-sm font-medium ${product.inStock ? 'text-green-700' : 'text-red-700'}`}>
-                  {product.inStock
-                    ? product.stockQuantity > 0
-                      ? `${product.stockQuantity} in stock`
-                      : 'In Stock'
-                    : 'Out of Stock'
-                  }
-                </p>
-              </div>
-            </div>
-
-            {/* Mentor's Note */}
+            {/* Mentor's Road Note - Aesthetic styling */}
             {product.mentorNote && (
-              <div className="bg-bakery-accent/5 border-l-4 border-bakery-accent rounded-r-lg p-4 animate-fade-in-delayed">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-bakery-accent rounded-full flex items-center justify-center">
-                    <span className="text-base">👨‍🍳</span>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-heading text-bakery-brown text-sm md:text-base mb-1 tracking-wide uppercase">
-                      Sim&apos;s Tip
-                    </h3>
-                    <p className="font-body text-bakery-brown/80 text-sm md:text-base leading-relaxed italic">
-                      &quot;{product.mentorNote}&quot;
-                    </p>
-                  </div>
-                </div>
+              <div className="bg-bakery-accent/5 border-l-2 border-bakery-accent p-4 rounded-r-lg animate-fade-in-delayed">
+                <h4 className="font-heading text-bakery-accent text-xs tracking-[0.2em] mb-2 uppercase">Sim&apos;s Road Note</h4>
+                <p className="font-body text-bakery-brown/80 italic text-sm leading-relaxed">
+                  &quot;{product.mentorNote}&quot;
+                </p>
               </div>
             )}
 
-            {/* Divider */}
-            <div className="border-t border-bakery-brown/20 animate-fade-in-delayed"></div>
+            {/* Price & Stock - Clean aesthetic */}
+            <div className="flex items-baseline justify-between border-b border-bakery-brown/10 pb-4 animate-fade-in">
+              <span className="font-heading text-bakery-brown text-3xl md:text-4xl">
+                RM {product.price.toFixed(2)}
+              </span>
+              <span className={cn(
+                "font-body text-xs uppercase tracking-widest",
+                product.inStock ? "text-green-700" : "text-red-700"
+              )}>
+                {product.inStock ? "● Freshly Available" : "● Out of Stock"}
+              </span>
+            </div>
 
             {/* Product Description */}
             <div className="animate-fade-in-delayed">
@@ -188,13 +165,13 @@ export default function ProductModal({
             </div>
 
             {/* Product Info */}
-            <div className="bg-bakery-accent/10 rounded-lg p-4 space-y-2 animate-fade-in-delayed-more">
+            <div className="bg-bakery-accent/5 rounded-lg p-4 space-y-2 animate-fade-in-delayed-more">
               {benefits.map((benefit, index) => (
                 <div key={index} className="flex items-center space-x-2">
                   <span className="w-5 h-5 flex items-center justify-center text-bakery-accent text-sm">
                     {benefit.icon}
                   </span>
-                  <span className="font-body text-bakery-brown/80 text-sm">
+                  <span className="font-body text-bakery-brown/70 text-sm">
                     {benefit.text}
                   </span>
                 </div>

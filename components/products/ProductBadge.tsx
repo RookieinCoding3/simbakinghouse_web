@@ -1,56 +1,41 @@
 'use client'
 
-import { memo } from 'react'
+import { cn } from '@/lib/utils/cn'
 
 interface ProductBadgeProps {
   type: string
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md'
 }
 
-const BADGE_CONFIG: Record<string, { label: string; bgColor: string; textColor: string }> = {
+const BADGE_MAP: Record<string, { label: string; style: string }> = {
   'sims-secret': {
     label: "Sim's Secret",
-    bgColor: 'bg-purple-900/90',
-    textColor: 'text-purple-200',
+    style: "bg-purple-500/10 text-purple-300 border-purple-500/20"
   },
   'beginner-friendly': {
-    label: 'Beginner Friendly',
-    bgColor: 'bg-green-900/90',
-    textColor: 'text-green-200',
+    label: "Beginner Friendly",
+    style: "bg-green-500/10 text-green-300 border-green-500/20"
   },
   'sourdough-essential': {
-    label: 'Sourdough Essential',
-    bgColor: 'bg-bakery-accent/90',
-    textColor: 'text-bakery-dark',
+    label: "Sourdough Essential",
+    style: "bg-bakery-accent/10 text-bakery-accent border-bakery-accent/20"
   },
   'sims-choice': {
     label: "Sim's Choice",
-    bgColor: 'bg-bakery-accent',
-    textColor: 'text-bakery-dark',
-  },
+    style: "bg-bakery-accent text-bakery-dark border-bakery-accent shadow-[0_0_15px_rgba(212,165,116,0.3)]"
+  }
 }
 
-const SIZE_CLASSES = {
-  sm: 'px-2 py-0.5 text-[9px]',
-  md: 'px-3 py-1 text-[10px]',
-  lg: 'px-4 py-1.5 text-xs',
-}
-
-function ProductBadge({ type, size = 'md' }: ProductBadgeProps) {
-  const config = BADGE_CONFIG[type]
-
-  if (!config) return null
+export default function ProductBadge({ type, size = 'sm' }: ProductBadgeProps) {
+  const config = BADGE_MAP[type] || { label: type, style: "bg-white/10 text-white border-white/20" }
 
   return (
-    <span
-      className={`
-        inline-block font-heading uppercase tracking-wider backdrop-blur-sm
-        ${config.bgColor} ${config.textColor} ${SIZE_CLASSES[size]}
-      `}
-    >
+    <span className={cn(
+      "inline-flex items-center justify-center rounded-full border backdrop-blur-md font-heading tracking-widest uppercase animate-fade-in",
+      size === 'sm' ? "px-2 py-0.5 text-[8px]" : "px-3 py-1 text-[10px]",
+      config.style
+    )}>
       {config.label}
     </span>
   )
 }
-
-export default memo(ProductBadge)
