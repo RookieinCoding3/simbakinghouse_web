@@ -9,6 +9,7 @@ import CategoryNav from '@/components/products/CategoryNav'
 import ProductCard from '@/components/products/ProductCard'
 import ProductModal from '@/components/products/ProductModal'
 import SimsChoiceSpotlight from '@/components/products/SimsChoiceSpotlight'
+import MobileFilterDrawer from '@/components/products/MobileFilterDrawer'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 export default function ProductsPage() {
@@ -18,6 +19,7 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -84,29 +86,29 @@ export default function ProductsPage() {
   }, [])
 
   return (
-    <main className="min-h-screen bg-bakery-dark pt-24 pb-16">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-b from-bakery-brown to-bakery-dark py-8 md:py-16 mb-4 md:mb-8">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl text-center">
-          <h1 className="font-heading text-bakery-cream text-3xl sm:text-5xl md:text-6xl mb-3 md:mb-4 tracking-wider">
-            DISCOVER OUR COLLECTION
+    <main className="min-h-screen bg-bakery-dark pt-24 pb-24 md:pb-16">
+      {/* Hero Section - Compact for Mobile */}
+      <section className="relative bg-gradient-to-b from-bakery-brown to-bakery-dark py-6 md:py-16 mb-2 md:mb-8">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="font-heading text-bakery-cream text-2xl sm:text-5xl md:text-6xl mb-1 md:mb-4 tracking-wider">
+            OUR COLLECTION
           </h1>
-          <p className="font-body text-bakery-cream/80 text-sm sm:text-lg md:text-xl max-w-2xl mx-auto mb-6 md:mb-8">
-            Premium baking supplies, ingredients, and tools for all your baking needs
+          <p className="hidden md:block font-body text-bakery-cream/80 text-sm md:text-xl max-w-2xl mx-auto mb-8">
+            Premium baking supplies personally curated for your road.
           </p>
 
-          {/* Search Bar */}
-          <div className="max-w-2xl mx-auto">
+          {/* Search Bar - Slimmer on Mobile */}
+          <div className="max-w-xl mx-auto mt-4">
             <div className="relative">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search products, ingredients, tools..."
-                className="w-full px-4 md:px-6 py-3 md:py-4 pr-10 md:pr-12 bg-bakery-cream/10 backdrop-blur-sm border border-bakery-cream/20 rounded-full text-bakery-cream placeholder:text-bakery-cream/40 font-body text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-bakery-accent transition-all"
+                placeholder="Search ingredients..."
+                className="w-full px-5 py-2.5 md:py-4 bg-bakery-cream/5 border border-bakery-cream/10 rounded-full text-bakery-cream placeholder:text-bakery-cream/40 font-body text-xs md:text-base focus:outline-none focus:ring-1 focus:ring-bakery-accent/50 transition-all"
               />
               <svg
-                className="absolute right-3 md:right-5 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-bakery-accent"
+                className="absolute right-4 md:right-5 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-bakery-accent/60"
                 fill="none"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -121,13 +123,15 @@ export default function ProductsPage() {
         </div>
       </section>
 
-      {/* Category Navigation */}
+      {/* Category Navigation - Desktop Only */}
       {!loading && !error && (
-        <CategoryNav
-          categories={categories}
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-        />
+        <div className="hidden md:block">
+          <CategoryNav
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+          />
+        </div>
       )}
 
       {/* Sim's Choice Spotlight */}
@@ -141,7 +145,7 @@ export default function ProductsPage() {
       )}
 
       {/* Main Content */}
-      <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-7xl mt-6 md:mt-12">
+      <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-7xl mt-4 md:mt-12">
         {loading ? (
           <div className="flex justify-center items-center py-20">
             <LoadingSpinner />
@@ -152,20 +156,12 @@ export default function ProductsPage() {
           </div>
         ) : (
           <>
-            {/* Results Count */}
+            {/* Results Count - Minimalist */}
             <div className="flex items-center justify-between mb-4 md:mb-8">
-              <p className="font-body text-bakery-cream/70 text-xs md:text-base">
-                Showing <span className="text-bakery-accent font-medium">{filteredProducts.length}</span>{' '}
-                {filteredProducts.length === 1 ? 'product' : 'products'}
+              <p className="font-body text-bakery-cream/50 text-[10px] md:text-sm uppercase tracking-widest">
+                {filteredProducts.length} {filteredProducts.length === 1 ? 'item' : 'items'}
                 {selectedCategory && (
-                  <span className="ml-2">
-                    in <span className="text-bakery-accent font-medium">{selectedCategory}</span>
-                  </span>
-                )}
-                {searchQuery && (
-                  <span className="ml-2">
-                    for &quot;<span className="text-bakery-accent font-medium">{searchQuery}</span>&quot;
-                  </span>
+                  <span className="ml-1 text-bakery-accent">in {selectedCategory}</span>
                 )}
               </p>
               {(selectedCategory || searchQuery) && (
@@ -174,14 +170,14 @@ export default function ProductsPage() {
                     setSelectedCategory(null)
                     setSearchQuery('')
                   }}
-                  className="font-body text-bakery-accent text-xs md:text-sm hover:text-bakery-accent/80 transition-colors underline"
+                  className="font-body text-bakery-accent/70 text-[10px] md:text-xs uppercase tracking-widest hover:text-bakery-accent transition-colors"
                 >
-                  Clear all
+                  Clear
                 </button>
               )}
             </div>
 
-            {/* Product Grid */}
+            {/* Product Grid - Tighter gaps on mobile */}
             {filteredProducts.length === 0 ? (
               <div className="text-center py-12 md:py-20">
                 <p className="font-body text-bakery-cream/70 text-base md:text-lg mb-3 md:mb-4">No products found</p>
@@ -196,7 +192,7 @@ export default function ProductsPage() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6 lg:gap-8">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 lg:gap-8">
                 {filteredProducts.map((product, index) => (
                   <ProductCard
                     key={product.id}
@@ -216,6 +212,24 @@ export default function ProductsPage() {
         product={selectedProduct}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
+      />
+
+      {/* Minimalist Mobile Filter Trigger */}
+      <button
+        onClick={() => setIsFilterOpen(true)}
+        className="md:hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-bakery-accent text-bakery-dark px-8 py-4 rounded-full font-heading text-sm tracking-[0.2em] shadow-[0_10px_30px_rgba(212,165,116,0.4)] flex items-center gap-2 animate-fade-in-up"
+      >
+        <span className="text-[10px]">✨</span> FILTER COLLECTION
+      </button>
+
+      {/* Mobile Filter Drawer */}
+      <MobileFilterDrawer
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+        totalProducts={filteredProducts.length}
       />
     </main>
   )

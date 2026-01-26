@@ -89,7 +89,7 @@ export default function ProductModal({
             <div className="flex-1 space-y-6">
               {/* Badges */}
               {product.badges && product.badges.length > 0 && (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-3">
                   {product.badges.map(badge => (
                     <ProductBadge key={badge} type={badge} size="md" />
                   ))}
@@ -114,22 +114,22 @@ export default function ProductModal({
               </p>
             </div>
 
-            {/* Footer with Price and Policy */}
+            {/* Total Value & Terms Footer */}
             <div className="mt-8 pt-6 border-t border-bakery-brown/10">
               <div className="flex justify-between items-end mb-6">
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest text-bakery-brown/40 mb-1 font-heading font-bold">
-                    Total Value
+                  <p className="text-[9px] uppercase tracking-widest text-bakery-brown/40 font-heading">
+                    Price
                   </p>
-                  <span className="font-heading text-3xl md:text-4xl text-bakery-brown leading-none">
+                  <span className="font-heading text-3xl md:text-4xl text-bakery-brown">
                     RM {product.price.toFixed(2)}
                   </span>
                 </div>
 
-                {/* Non-refundable Policy */}
-                <div className="text-right">
-                  <p className="text-[9px] text-bakery-brown/40 font-body uppercase tracking-tight leading-tight max-w-[120px]">
-                    * Please note: All goods sold are non-refundable.
+                {/* MANDATORY POLICY */}
+                <div className="text-right max-w-[140px]">
+                  <p className="text-[8px] md:text-[9px] text-bakery-brown/50 font-body uppercase leading-tight italic">
+                    * Important: All goods sold are non-refundable.
                   </p>
                 </div>
               </div>
@@ -138,7 +138,7 @@ export default function ProductModal({
                 variant="primary"
                 size="lg"
                 onClick={handleOrderNow}
-                className="w-full py-4 md:py-5 text-lg md:text-xl tracking-[0.2em] shadow-2xl hover:scale-[1.01] transition-transform"
+                className="w-full py-4 md:py-5 text-lg tracking-[0.2em] shadow-xl hover:scale-[1.01] transition-transform"
                 disabled={!product.inStock}
               >
                 {product.inStock ? 'ADD TO MY ORDER' : 'OUT OF STOCK'}
