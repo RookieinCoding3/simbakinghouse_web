@@ -1,6 +1,5 @@
 'use client'
 
-import { X } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import ProductBadge from './ProductBadge'
 
@@ -43,7 +42,9 @@ export default function MobileFilterDrawer({
             Filter Bakes
           </h2>
           <button onClick={onClose} className="text-bakery-cream/50 hover:text-bakery-accent transition-colors">
-            <X size={24} />
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
