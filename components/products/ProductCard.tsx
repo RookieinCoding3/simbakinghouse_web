@@ -3,17 +3,24 @@
 import { memo } from 'react'
 import Image from 'next/image'
 import type { Product } from '@/types/product'
+import ProductBadge from './ProductBadge'
 
 interface ProductCardProps {
   product: Product
   onClick: () => void
+  animationDelay?: number
 }
 
-function ProductCard({ product, onClick }: ProductCardProps) {
+function ProductCard({ product, onClick, animationDelay }: ProductCardProps) {
   return (
     <div
       onClick={onClick}
       className="group cursor-pointer flex flex-col space-y-2 md:space-y-3"
+      style={{
+        animation: animationDelay !== undefined
+          ? `fadeInUp 0.6s ease-out ${animationDelay}ms backwards`
+          : undefined
+      }}
     >
       {/* Visual Container: Minimalist & Tactile */}
       <div className="relative aspect-square overflow-hidden bg-bakery-cream/5 md:bg-transparent">
@@ -31,6 +38,22 @@ function ProductCard({ product, onClick }: ProductCardProps) {
           }}
         />
 
+        {/* Featured badge - top left */}
+        {product.featured && (
+          <div className="absolute top-2 left-2 z-10">
+            <ProductBadge type="sims-choice" size="sm" />
+          </div>
+        )}
+
+        {/* Other badges - top right (max 2) */}
+        {product.badges && product.badges.length > 0 && (
+          <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
+            {product.badges.slice(0, 2).map(badge => (
+              <ProductBadge key={badge} type={badge} size="sm" />
+            ))}
+          </div>
+        )}
+
         {/* Out of Stock - Mobile */}
         {!product.inStock && (
           <div className="absolute inset-0 bg-bakery-dark/60 flex items-center justify-center md:hidden">
@@ -41,10 +64,15 @@ function ProductCard({ product, onClick }: ProductCardProps) {
         )}
 
         {/* Elegant Hover Overlay (Desktop only) */}
-        <div className="absolute inset-0 bg-bakery-dark/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 hidden md:flex items-center justify-center p-6">
-          <span className="border border-bakery-accent text-bakery-accent px-4 py-2 font-heading tracking-widest text-xs uppercase">
-            {!product.inStock ? 'Sold Out' : 'Discover'}
+        <div className="absolute inset-0 bg-bakery-dark/60 opacity-0 group-hover:opacity-100 transition-opacity duration-500 hidden md:flex flex-col items-center justify-center p-6">
+          <span className="border-2 border-bakery-accent text-bakery-accent px-4 py-2 font-heading tracking-widest text-xs uppercase">
+            {!product.inStock ? 'Sold Out' : 'View Details'}
           </span>
+          {product.mentorNote && product.inStock && (
+            <p className="text-bakery-cream/80 text-xs text-center mt-3 line-clamp-2 max-w-[90%]">
+              {product.mentorNote.length > 60 ? `${product.mentorNote.slice(0, 60)}...` : product.mentorNote}
+            </p>
+          )}
         </div>
       </div>
 

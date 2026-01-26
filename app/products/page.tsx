@@ -4,9 +4,11 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import type { Product } from '@/types/product'
 import { fetchProducts } from '@/lib/firebase/products'
 import { getUniqueCategoriesFromProducts } from '@/lib/firebase/categories'
+import { enhanceWithDemoData } from '@/lib/demo/mentorData'
 import CategoryNav from '@/components/products/CategoryNav'
 import ProductCard from '@/components/products/ProductCard'
 import ProductModal from '@/components/products/ProductModal'
+import SimsChoiceSpotlight from '@/components/products/SimsChoiceSpotlight'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 
 export default function ProductsPage() {
@@ -26,10 +28,12 @@ export default function ProductsPage() {
         setLoading(true)
         setError(null)
         const fetchedProducts = await fetchProducts()
-        setProducts(fetchedProducts)
+        // Enhance with demo mentor data
+        const enhancedProducts = enhanceWithDemoData(fetchedProducts)
+        setProducts(enhancedProducts)
 
         // Extract unique categories from products
-        const uniqueCategories = getUniqueCategoriesFromProducts(fetchedProducts)
+        const uniqueCategories = getUniqueCategoriesFromProducts(enhancedProducts)
         setCategories(uniqueCategories)
       } catch (err: any) {
         setError(err.message || 'Failed to load products')
@@ -40,6 +44,11 @@ export default function ProductsPage() {
 
     loadProducts()
   }, [])
+
+  // Get featured products for spotlight
+  const featuredProducts = useMemo(() => {
+    return products.filter(p => p.featured).slice(0, 5)
+  }, [products])
 
   // Filter products when category or search changes (memoized)
   const filteredProducts = useMemo(() => {
@@ -121,6 +130,16 @@ export default function ProductsPage() {
         />
       )}
 
+      {/* Sim's Choice Spotlight */}
+      {!loading && !error && featuredProducts.length > 0 && !selectedCategory && !searchQuery && (
+        <SimsChoiceSpotlight
+          products={featuredProducts}
+          onProductClick={handleProductClick}
+          title="Sim's Starter Kit"
+          subtitle="Everything you need to begin your baking journey"
+        />
+      )}
+
       {/* Main Content */}
       <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-7xl mt-6 md:mt-12">
         {loading ? (
@@ -178,11 +197,12 @@ export default function ProductsPage() {
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6 lg:gap-8">
-                {filteredProducts.map((product) => (
+                {filteredProducts.map((product, index) => (
                   <ProductCard
                     key={product.id}
                     product={product}
                     onClick={() => handleProductClick(product)}
+                    animationDelay={index < 20 ? index * 50 : undefined}
                   />
                 ))}
               </div>

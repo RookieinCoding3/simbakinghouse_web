@@ -19,6 +19,10 @@ function mapDocumentToProduct(docId: string, data: DocumentData): Product {
     stockQuantity: data.stockQuantity ?? 0,
     createdAt: data.createdAt?.toDate?.(),
     updatedAt: data.updatedAt?.toDate?.(),
+    // Mentor-focused fields (flexible naming support)
+    mentorNote: data.mentorNote || data.mentor_note || data.tip,
+    badges: Array.isArray(data.badges) ? data.badges : undefined,
+    difficultyLevel: data.difficultyLevel || data.difficulty_level || data.difficulty,
   }
 }
 
