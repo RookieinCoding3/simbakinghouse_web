@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useScrollThrottle } from '@/lib/hooks/useScrollThrottle'
@@ -27,114 +27,128 @@ export default function Header() {
 
   useScrollThrottle(handleScroll, 100)
 
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [mobileMenuOpen])
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
           ? 'bg-bakery-dark/98 shadow-lg border-b border-bakery-accent/20'
-          : 'bg-bakery-dark/95 backdrop-blur-sm'
+          : 'bg-bakery-dark/95 backdrop-blur-md'
       }`}
     >
-      <nav className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-        <div className="flex items-center justify-between h-16 md:h-18">
-          {/* Minimal Brand */}
-          <Link href="/" className="group">
-            <h1 className="font-heading text-bakery-accent text-xl md:text-2xl tracking-[0.15em] group-hover:tracking-[0.2em] transition-all duration-300">
-              SIM BAKING HOUSE
-            </h1>
-          </Link>
+      {/* Increased height for better mobile tapping: h-20 on mobile, h-24 on desktop */}
+      <nav className="container mx-auto px-6 h-20 md:h-24 flex items-center justify-between">
+        {/* Brand - Larger and more prominent */}
+        <Link href="/" className="group" onClick={() => setMobileMenuOpen(false)}>
+          <h1 className="font-heading text-bakery-accent text-2xl md:text-3xl tracking-widest group-hover:tracking-[0.2em] transition-all duration-300">
+            SIM BAKING HOUSE
+          </h1>
+        </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
-            {NAV_ITEMS.map((item) => (
-              <Link
-                key={item.path}
-                href={item.path}
-                className={`font-body text-sm tracking-wide transition-colors duration-200 ${
-                  isActive(item.path)
-                    ? 'text-bakery-accent'
-                    : 'text-bakery-cream/80 hover:text-bakery-accent'
-                }`}
-              >
-                {item.name}
-              </Link>
-            ))}
-
-            {/* Order Now CTA Button */}
-            <a
-              href={process.env.NEXT_PUBLIC_GOOGLE_FORM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-6 py-2 bg-bakery-accent hover:bg-bakery-accent/90 text-bakery-dark font-heading text-sm tracking-wider rounded transition-colors duration-200"
+        {/* Desktop Navigation */}
+        <div className="hidden lg:flex items-center space-x-8">
+          {NAV_ITEMS.map((item) => (
+            <Link
+              key={item.path}
+              href={item.path}
+              className={`font-body text-sm tracking-wide transition-colors duration-200 ${
+                isActive(item.path)
+                  ? 'text-bakery-accent'
+                  : 'text-bakery-cream/80 hover:text-bakery-accent'
+              }`}
             >
-              ORDER NOW
-            </a>
-          </div>
+              {item.name}
+            </Link>
+          ))}
 
-          {/* Mobile Menu Button */}
-          <button
-            className="lg:hidden relative w-10 h-10 text-bakery-cream flex items-center justify-center"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
+          {/* Order Now CTA Button */}
+          <a
+            href={process.env.NEXT_PUBLIC_GOOGLE_FORM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-6 py-2.5 bg-bakery-accent hover:bg-bakery-accent/90 text-bakery-dark font-heading text-sm tracking-wider rounded transition-colors duration-200"
           >
-            <div className="relative w-6 h-5 flex flex-col justify-between">
-              <span
-                className={`block w-full h-0.5 bg-current transform transition-all duration-300 ${
-                  mobileMenuOpen ? 'rotate-45 translate-y-2' : ''
-                }`}
-              ></span>
-              <span
-                className={`block w-full h-0.5 bg-current transition-all duration-300 ${
-                  mobileMenuOpen ? 'opacity-0' : 'opacity-100'
-                }`}
-              ></span>
-              <span
-                className={`block w-full h-0.5 bg-current transform transition-all duration-300 ${
-                  mobileMenuOpen ? '-rotate-45 -translate-y-2' : ''
-                }`}
-              ></span>
-            </div>
-          </button>
+            ORDER NOW
+          </a>
         </div>
 
-        {/* Mobile Menu - Slide Down */}
-        <div
-          className={`lg:hidden overflow-hidden transition-all duration-500 ease-in-out ${
-            mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-          }`}
+        {/* REFINED Mobile Menu Button - Bigger, Visible, High Contrast */}
+        <button
+          className="lg:hidden p-3 -mr-2 text-bakery-cream bg-white/10 hover:bg-white/20 rounded-full border border-white/20 transition-all duration-300"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Toggle menu"
+          aria-expanded={mobileMenuOpen}
         >
-          <div className="py-6 border-t border-bakery-cream/10">
-            <div className="flex flex-col space-y-1">
-              {NAV_ITEMS.map((item, index) => (
-                <Link
-                  key={item.path}
-                  href={item.path}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`px-4 py-3 font-body text-lg tracking-wide transition-all duration-300 rounded-lg ${
-                    isActive(item.path)
-                      ? 'text-bakery-accent bg-bakery-accent/10'
-                      : 'text-bakery-cream hover:text-bakery-accent hover:bg-bakery-cream/5'
-                  }`}
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  {item.name}
-                </Link>
-              ))}
-
-              {/* Mobile Order Button */}
-              <a
-                href={process.env.NEXT_PUBLIC_GOOGLE_FORM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 mx-4 px-6 py-3 bg-bakery-accent hover:bg-bakery-accent/90 text-bakery-dark font-heading text-base tracking-wider rounded transition-all duration-300 text-center"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                ORDER NOW
-              </a>
-            </div>
-          </div>
-        </div>
+          {mobileMenuOpen ? (
+            // X Icon - 28px for better visibility
+            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            // Menu Icon - 28px for better visibility
+            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          )}
+        </button>
       </nav>
+
+      {/* Full-Screen Mobile Menu Overlay */}
+      <div
+        className={`lg:hidden fixed inset-0 top-20 bg-bakery-dark z-50 transition-all duration-500 ease-out ${
+          mobileMenuOpen
+            ? 'opacity-100 translate-y-0'
+            : 'opacity-0 -translate-y-4 pointer-events-none'
+        }`}
+      >
+        <div className="h-full flex flex-col p-10 space-y-6">
+          {NAV_ITEMS.map((item, index) => (
+            <Link
+              key={item.path}
+              href={item.path}
+              onClick={() => setMobileMenuOpen(false)}
+              className={`font-heading text-5xl uppercase tracking-tight transition-all duration-300 ${
+                isActive(item.path)
+                  ? 'text-bakery-accent'
+                  : 'text-bakery-cream hover:text-bakery-accent hover:translate-x-2'
+              }`}
+              style={{
+                transitionDelay: mobileMenuOpen ? `${index * 75}ms` : '0ms',
+                opacity: mobileMenuOpen ? 1 : 0,
+                transform: mobileMenuOpen ? 'translateX(0)' : 'translateX(-20px)'
+              }}
+            >
+              {item.name}
+            </Link>
+          ))}
+
+          {/* Mobile Order Button */}
+          <a
+            href={process.env.NEXT_PUBLIC_GOOGLE_FORM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-auto mb-10 py-5 bg-bakery-accent hover:bg-bakery-accent/90 text-bakery-dark font-heading text-xl tracking-[0.2em] rounded-sm text-center transition-all duration-300"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{
+              transitionDelay: mobileMenuOpen ? '300ms' : '0ms',
+              opacity: mobileMenuOpen ? 1 : 0
+            }}
+          >
+            ORDER NOW
+          </a>
+        </div>
+      </div>
     </header>
   )
 }

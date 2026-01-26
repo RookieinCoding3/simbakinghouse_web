@@ -117,39 +117,37 @@ export default function ProductsPage() {
   }, [])
 
   return (
-    <main className="min-h-screen bg-bakery-dark pt-24 pb-24 md:pb-16">
-      {/* Hero Section - Compact for Mobile */}
-      <section className="relative bg-gradient-to-b from-bakery-brown to-bakery-dark py-6 md:py-16 mb-2 md:mb-8">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="font-heading text-bakery-cream text-2xl sm:text-5xl md:text-6xl mb-1 md:mb-4 tracking-wider">
-            OUR COLLECTION
-          </h1>
-          <p className="hidden md:block font-body text-bakery-cream/80 text-sm md:text-xl max-w-2xl mx-auto mb-8">
-            Premium baking supplies personally curated for your road.
-          </p>
+    <main className="min-h-screen bg-bakery-dark pt-20">
+      {/* 1. Minimal Hero - Very compact on mobile */}
+      <section className="py-8 md:py-16 text-center px-4">
+        <h1 className="font-heading text-bakery-cream text-3xl md:text-7xl tracking-wide">
+          COLLECTION
+        </h1>
+        <p className="font-body text-bakery-cream/40 text-xs md:text-lg mt-2 italic uppercase tracking-widest">
+          {products.length > 0 ? `${products.length} items` : ''} personally curated for your road
+        </p>
 
-          {/* Search Bar - Slimmer on Mobile */}
-          <div className="max-w-xl mx-auto mt-4">
-            <div className="relative">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search ingredients..."
-                className="w-full px-5 py-2.5 md:py-4 bg-bakery-cream/5 border border-bakery-cream/10 rounded-full text-bakery-cream placeholder:text-bakery-cream/40 font-body text-xs md:text-base focus:outline-none focus:ring-1 focus:ring-bakery-accent/50 transition-all"
-              />
-              <svg
-                className="absolute right-4 md:right-5 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-bakery-accent/60"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
+        {/* Search Bar - Hidden on mobile (use filter drawer instead) */}
+        <div className="hidden md:block max-w-xl mx-auto mt-8">
+          <div className="relative">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search ingredients..."
+              className="w-full px-6 py-4 bg-bakery-cream/5 border border-bakery-cream/10 rounded-full text-bakery-cream placeholder:text-bakery-cream/40 font-body text-base focus:outline-none focus:ring-1 focus:ring-bakery-accent/50 transition-all"
+            />
+            <svg
+              className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-bakery-accent/60"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
           </div>
         </div>
       </section>
@@ -165,78 +163,96 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Sim's Choice Spotlight */}
+      {/* Sim's Choice Spotlight - Desktop only to reduce mobile clutter */}
       {!loading && !error && featuredProducts.length > 0 && !selectedCategory && !searchQuery && (
-        <SimsChoiceSpotlight
-          products={featuredProducts}
-          onProductClick={handleProductClick}
-          title="Sim's Starter Kit"
-          subtitle="Everything you need to begin your baking journey"
-        />
+        <div className="hidden md:block">
+          <SimsChoiceSpotlight
+            products={featuredProducts}
+            onProductClick={handleProductClick}
+            title="Sim's Starter Kit"
+            subtitle="Everything you need to begin your baking journey"
+          />
+        </div>
       )}
 
-      {/* Main Content */}
-      <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-7xl mt-4 md:mt-12">
-        {loading ? (
-          <div className="flex justify-center items-center py-20">
-            <LoadingSpinner />
-          </div>
-        ) : error ? (
-          <div className="text-center py-20">
-            <p className="font-body text-bakery-cream/70 text-lg">{error}</p>
-          </div>
-        ) : (
-          <>
-            {/* Results Count - Minimalist */}
-            <div className="flex items-center justify-between mb-4 md:mb-8">
-              <p className="font-body text-bakery-cream/50 text-[10px] md:text-sm uppercase tracking-widest">
-                {filteredProducts.length} {filteredProducts.length === 1 ? 'item' : 'items'}
-                {selectedCategory && (
-                  <span className="ml-1 text-bakery-accent">in {selectedCategory}</span>
-                )}
-              </p>
-              {(selectedCategory || searchQuery) && (
-                <button
-                  onClick={() => {
-                    setSelectedCategory(null)
-                    setSearchQuery('')
-                  }}
-                  className="font-body text-bakery-accent/70 text-[10px] md:text-xs uppercase tracking-widest hover:text-bakery-accent transition-colors"
-                >
-                  Clear
-                </button>
-              )}
+      {/* 2. THE FIX: Light & Airy Grid Section for Mobile */}
+      {/* Cream background on mobile to reduce visual fatigue, dark on desktop */}
+      <section className="bg-bakery-cream md:bg-transparent rounded-t-[2.5rem] md:rounded-none">
+        <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl py-10 md:py-12">
+          {loading ? (
+            <div className="flex justify-center items-center py-20">
+              <LoadingSpinner />
             </div>
+          ) : error ? (
+            <div className="text-center py-20">
+              <p className="font-body text-bakery-brown/70 md:text-bakery-cream/70 text-lg">{error}</p>
+            </div>
+          ) : (
+            <>
+              {/* Results Info Bar */}
+              <div className="flex justify-between items-center mb-6 md:mb-8 px-1">
+                <p className="font-body text-[10px] md:text-sm uppercase tracking-widest text-bakery-brown/50 md:text-bakery-cream/50">
+                  Showing {filteredProducts.length} {filteredProducts.length === 1 ? 'bake' : 'bakes'}
+                  {selectedCategory && (
+                    <span className="ml-1 text-bakery-accent">in {selectedCategory}</span>
+                  )}
+                </p>
 
-            {/* Product Grid - Tighter gaps on mobile */}
-            {filteredProducts.length === 0 ? (
-              <div className="text-center py-12 md:py-20">
-                <p className="font-body text-bakery-cream/70 text-base md:text-lg mb-3 md:mb-4">No products found</p>
+                {/* Mobile Filter Button - Inline */}
                 <button
-                  onClick={() => {
-                    setSelectedCategory(null)
-                    setSearchQuery('')
-                  }}
-                  className="font-body text-bakery-accent hover:text-bakery-accent/80 transition-colors underline text-sm md:text-base"
+                  onClick={() => setIsFilterOpen(true)}
+                  className="md:hidden font-heading text-bakery-brown text-sm tracking-widest border-b border-bakery-brown/30 pb-0.5 hover:border-bakery-accent hover:text-bakery-accent transition-colors"
                 >
-                  Clear filters and show all
+                  FILTER
                 </button>
+
+                {/* Desktop Clear Button */}
+                {(selectedCategory || searchQuery) && (
+                  <button
+                    onClick={() => {
+                      setSelectedCategory(null)
+                      setSearchQuery('')
+                    }}
+                    className="hidden md:block font-body text-bakery-accent/70 text-xs uppercase tracking-widest hover:text-bakery-accent transition-colors"
+                  >
+                    Clear
+                  </button>
+                )}
               </div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 lg:gap-8">
-                {filteredProducts.map((product, index) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onClick={() => handleProductClick(product)}
-                    animationDelay={index < 20 ? index * 50 : undefined}
-                  />
-                ))}
-              </div>
-            )}
-          </>
-        )}
-      </div>
+
+              {/* Product Grid */}
+              {filteredProducts.length === 0 ? (
+                <div className="text-center py-12 md:py-20">
+                  <p className="font-body text-bakery-brown/70 md:text-bakery-cream/70 text-base md:text-lg mb-3 md:mb-4">
+                    No products found
+                  </p>
+                  <button
+                    onClick={() => {
+                      setSelectedCategory(null)
+                      setSearchQuery('')
+                    }}
+                    className="font-body text-bakery-accent hover:text-bakery-accent/80 transition-colors underline text-sm md:text-base"
+                  >
+                    Clear filters and show all
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 lg:gap-8">
+                  {filteredProducts.map((product, index) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      onClick={() => handleProductClick(product)}
+                      animationDelay={index < 20 ? index * 50 : undefined}
+                      responsiveTheme={true}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </section>
 
       {/* Product Modal */}
       <ProductModal
@@ -245,12 +261,15 @@ export default function ProductsPage() {
         onClose={handleCloseModal}
       />
 
-      {/* Minimalist Mobile Filter Trigger */}
+      {/* Floating Mobile Filter Button - Only show when scrolled */}
       <button
         onClick={() => setIsFilterOpen(true)}
-        className="md:hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-bakery-accent text-bakery-dark px-8 py-4 rounded-full font-heading text-sm tracking-[0.2em] shadow-[0_10px_30px_rgba(212,165,116,0.4)] flex items-center gap-2 animate-fade-in-up"
+        className="md:hidden fixed bottom-6 right-6 z-50 w-14 h-14 bg-bakery-brown text-bakery-cream rounded-full shadow-lg flex items-center justify-center hover:bg-bakery-dark transition-colors"
+        aria-label="Open filters"
       >
-        <span className="text-[10px]">✨</span> FILTER COLLECTION
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+        </svg>
       </button>
 
       {/* Mobile Filter Drawer */}
