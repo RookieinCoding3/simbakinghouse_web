@@ -97,7 +97,7 @@ export default function AboutPage() {
         {[1, 2, 3, 4, 5].map((i) => (
           <div key={i} className="relative aspect-square overflow-hidden group">
             <Image
-              src={`/images/gallery/fresh-bake-${i}.svg`}
+              src={`/images/gallery/fresh-bake-${i}.jpg`}
               alt={`Fresh bake ${i}`}
               fill
               className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
