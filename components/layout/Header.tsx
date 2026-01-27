@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useScrollThrottle } from '@/lib/hooks/useScrollThrottle'
+import { cn } from '@/lib/utils/cn'
 
 // Navigation menu items
 const NAV_ITEMS = [
@@ -20,9 +21,9 @@ export default function Header() {
 
   const isActive = (path: string) => pathname === path
 
-  // Handle scroll effect with throttling
+  // Handle scroll - switch to solid header after 50px
   const handleScroll = useCallback(() => {
-    setIsScrolled(window.scrollY > 20)
+    setIsScrolled(window.scrollY > 50)
   }, [])
 
   useScrollThrottle(handleScroll, 100)
@@ -41,27 +42,22 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      className={cn(
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
+        // THE FIX: Switch background based on scroll for visibility on light sections
         isScrolled
-          ? 'bg-bakery-dark/95 backdrop-blur-xl py-3 border-b border-bakery-accent/20 shadow-lg'
-          : 'bg-gradient-to-b from-bakery-dark/80 to-transparent py-4 md:py-6'
-      }`}
+          ? "bg-bakery-dark py-4 shadow-xl border-b border-bakery-accent/20"
+          : "bg-transparent py-6"
+      )}
     >
       <nav className="container mx-auto px-6 flex items-center justify-between">
-        {/* Brand with Logo */}
-        <Link href="/" className="group flex items-center gap-3" onClick={() => setMobileMenuOpen(false)}>
-          {/* Circular Logo Container */}
-          <div className="relative w-11 h-11 md:w-12 md:h-12 rounded-full overflow-hidden bg-bakery-cream shadow-[0_0_15px_rgba(212,165,116,0.4)] group-hover:shadow-[0_0_25px_rgba(212,165,116,0.6)] transition-all duration-300 flex-shrink-0">
-            <img
-              src="/SBH_logo.svg"
-              alt="Sim Baking House"
-              className="w-full h-full object-cover scale-[1.2]"
-            />
-          </div>
-          {/* Brand Name */}
-          <span className="font-heading text-bakery-accent text-lg md:text-xl tracking-[0.1em] group-hover:text-bakery-cream transition-colors duration-300">
-            SIM BAKING HOUSE
-          </span>
+        {/* Brand - Text Only */}
+        <Link
+          href="/"
+          className="font-heading text-bakery-accent text-xl md:text-2xl tracking-[0.2em] hover:text-bakery-cream transition-colors duration-300"
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          SIM BAKING HOUSE
         </Link>
 
         {/* Desktop Navigation */}
@@ -70,11 +66,12 @@ export default function Header() {
             <Link
               key={item.path}
               href={item.path}
-              className={`font-body text-sm tracking-wide transition-all duration-300 hover:translate-y-[-2px] ${
+              className={cn(
+                "font-body text-sm tracking-wide transition-all duration-300 hover:translate-y-[-2px]",
                 isActive(item.path)
-                  ? 'text-bakery-accent'
-                  : 'text-bakery-cream/70 hover:text-bakery-accent'
-              }`}
+                  ? "text-bakery-accent"
+                  : "text-bakery-cream/70 hover:text-bakery-accent"
+              )}
             >
               {item.name}
             </Link>
@@ -91,40 +88,41 @@ export default function Header() {
           </a>
         </div>
 
-        {/* HIGH CONTRAST Mobile Menu Toggle */}
+        {/* HIGH CONTRAST Mobile Menu Toggle - Always Visible */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="lg:hidden w-12 h-12 flex items-center justify-center bg-bakery-accent/10 border border-bakery-accent/30 rounded-full text-bakery-accent active:scale-90 hover:bg-bakery-accent/20 transition-all duration-300"
+          className="lg:hidden w-12 h-12 flex items-center justify-center bg-bakery-accent text-bakery-brown rounded-full shadow-lg active:scale-90 transition-all duration-300"
           aria-label="Toggle menu"
           aria-expanded={mobileMenuOpen}
         >
           {mobileMenuOpen ? (
-            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           ) : (
-            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           )}
         </button>
       </nav>
 
-      {/* Full-Screen Mobile Menu with Glassmorphism */}
+      {/* Full-Screen Mobile Menu */}
       <div
-        className={`lg:hidden fixed inset-0 top-0 bg-bakery-dark/98 backdrop-blur-xl z-40 transition-all duration-500 ease-out ${
+        className={cn(
+          "lg:hidden fixed inset-0 top-0 bg-bakery-dark z-40 transition-all duration-500 ease-out",
           mobileMenuOpen
-            ? 'opacity-100 translate-y-0'
-            : 'opacity-0 -translate-y-full pointer-events-none'
-        }`}
+            ? "opacity-100 visible"
+            : "opacity-0 invisible"
+        )}
       >
         {/* Close button inside menu */}
-        <div className="absolute top-4 right-6">
+        <div className="absolute top-6 right-6">
           <button
             onClick={() => setMobileMenuOpen(false)}
-            className="w-12 h-12 flex items-center justify-center bg-bakery-accent/10 border border-bakery-accent/30 rounded-full text-bakery-accent"
+            className="w-12 h-12 flex items-center justify-center bg-bakery-accent text-bakery-brown rounded-full shadow-lg"
           >
-            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -136,11 +134,12 @@ export default function Header() {
               key={item.path}
               href={item.path}
               onClick={() => setMobileMenuOpen(false)}
-              className={`font-heading text-5xl uppercase tracking-tight transition-all duration-500 ${
+              className={cn(
+                "font-heading text-5xl uppercase tracking-tight transition-all duration-500",
                 isActive(item.path)
-                  ? 'text-bakery-accent'
-                  : 'text-bakery-cream hover:text-bakery-accent hover:translate-x-4'
-              }`}
+                  ? "text-bakery-accent"
+                  : "text-bakery-cream hover:text-bakery-accent hover:translate-x-4"
+              )}
               style={{
                 transitionDelay: mobileMenuOpen ? `${index * 75}ms` : '0ms',
                 opacity: mobileMenuOpen ? 1 : 0,

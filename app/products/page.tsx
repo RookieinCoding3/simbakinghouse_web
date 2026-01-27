@@ -142,37 +142,24 @@ export default function ProductsPage() {
 
   return (
     <main className="min-h-screen bg-bakery-dark pt-20">
-      {/* 1. COMPACT HERO - Short and sweet on mobile */}
-      <section className="py-10 md:py-20 text-center px-4">
-        <h1 className="font-heading text-bakery-cream text-4xl md:text-8xl tracking-tighter">
+      {/* 1. HERO with Search - Clean & Minimal */}
+      <section className="py-12 md:py-20 text-center px-4">
+        <h1 className="font-heading text-bakery-cream text-4xl md:text-8xl tracking-tighter mb-8">
           THE COLLECTION
         </h1>
-        <p className="font-body text-bakery-accent/60 text-[10px] md:text-lg mt-4 uppercase tracking-[0.3em]">
-          Hand-picked for your home kitchen
-        </p>
 
-        {/* Search Bar - Desktop only */}
-        <div className="hidden md:block max-w-xl mx-auto mt-10">
-          <div className="relative">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search ingredients..."
-              className="w-full px-6 py-4 bg-bakery-cream/5 border border-bakery-cream/10 rounded-full text-bakery-cream placeholder:text-bakery-cream/40 font-body text-base focus:outline-none focus:ring-1 focus:ring-bakery-accent/50 transition-all"
-            />
-            <svg
-              className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-bakery-accent/60"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
+        {/* THE SEARCH BAR - Minimalist & Clean */}
+        <div className="max-w-md mx-auto relative group">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="What are you baking today?"
+            className="w-full bg-bakery-cream/5 border border-bakery-cream/10 rounded-full py-4 px-8 text-bakery-cream placeholder:text-bakery-cream/30 font-body text-sm focus:outline-none focus:border-bakery-accent/50 focus:bg-bakery-cream/10 transition-all"
+          />
+          <span className="absolute right-6 top-1/2 -translate-y-1/2 text-bakery-cream/30 text-lg">
+            🔍
+          </span>
         </div>
       </section>
 
