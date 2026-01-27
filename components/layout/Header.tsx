@@ -49,14 +49,19 @@ export default function Header() {
     >
       <nav className="container mx-auto px-6 flex items-center justify-between">
         {/* Brand with Logo */}
-        <Link href="/" className="group flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-          <div className="relative h-12 md:h-14 w-auto">
+        <Link href="/" className="group flex items-center gap-3" onClick={() => setMobileMenuOpen(false)}>
+          {/* Circular Logo Container */}
+          <div className="relative w-11 h-11 md:w-12 md:h-12 rounded-full overflow-hidden bg-bakery-cream shadow-[0_0_15px_rgba(212,165,116,0.4)] group-hover:shadow-[0_0_25px_rgba(212,165,116,0.6)] transition-all duration-300 flex-shrink-0">
             <img
               src="/SBH_logo.svg"
               alt="Sim Baking House"
-              className="h-full w-auto object-contain filter drop-shadow-[0_0_8px_rgba(212,165,116,0.3)] group-hover:drop-shadow-[0_0_12px_rgba(212,165,116,0.5)] transition-all duration-300"
+              className="w-full h-full object-cover scale-[1.2]"
             />
           </div>
+          {/* Brand Name */}
+          <span className="font-heading text-bakery-accent text-lg md:text-xl tracking-[0.1em] group-hover:text-bakery-cream transition-colors duration-300">
+            SIM BAKING HOUSE
+          </span>
         </Link>
 
         {/* Desktop Navigation */}
