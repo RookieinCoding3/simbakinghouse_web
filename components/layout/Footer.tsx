@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { CONTACT_TEL_URL, CONTACT_WHATSAPP_URL, OPENING_HOURS } from '@/lib/config/contact'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -57,7 +58,7 @@ export default function Footer() {
                   <span className="font-body text-sm">Penang, Malaysia</span>
                 </Link>
                 <p className="font-body text-bakery-cream/60 text-xs">
-                  Daily: 6:30 AM - 1:00 PM
+                  {OPENING_HOURS}
                 </p>
               </div>
             </div>
@@ -69,7 +70,7 @@ export default function Footer() {
               </h3>
               <div className="space-y-2">
                 <a
-                  href="tel:+60123456789"
+                  href={CONTACT_TEL_URL}
                   className="flex items-center justify-center md:justify-start space-x-2 text-bakery-cream/80 hover:text-bakery-accent transition-colors duration-200 group"
                 >
                   <svg
@@ -142,7 +143,7 @@ export default function Footer() {
                   </svg>
                 </a>
                 <a
-                  href="https://wa.me/60123456789"
+                  href={CONTACT_WHATSAPP_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-bakery-cream/80 hover:text-bakery-accent transition-all duration-200 hover:scale-110"

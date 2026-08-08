@@ -3,6 +3,17 @@ import { db } from './config'
 import type { Product } from '@/types/product'
 
 /**
+ * Mirrors the soft-delete convention the iOS app writes: a missing
+ * isActive is treated as active, a missing isDeleted is treated as not-deleted.
+ * Only an explicit isActive === false or isDeleted === true hides a product.
+ */
+function isProductVisible(data: DocumentData): boolean {
+  const isActive = data.isActive !== false
+  const isDeleted = data.isDeleted === true
+  return isActive && !isDeleted
+}
+
+/**
  * Map Firestore document data to Product object
  * Handles flexible field naming from different database structures
  */
@@ -56,7 +67,10 @@ export async function fetchProducts(limitCount?: number): Promise<Product[]> {
 
     const products: Product[] = []
     querySnapshot.forEach((doc) => {
-      products.push(mapDocumentToProduct(doc.id, doc.data()))
+      const data = doc.data()
+      if (isProductVisible(data)) {
+        products.push(mapDocumentToProduct(doc.id, data))
+      }
     })
 
     return products
@@ -78,8 +92,9 @@ export async function fetchProductById(id: string): Promise<Product | null> {
 
     let product: Product | null = null
     querySnapshot.forEach((doc) => {
-      if (doc.id === id) {
-        product = mapDocumentToProduct(doc.id, doc.data())
+      const data = doc.data()
+      if (doc.id === id && isProductVisible(data)) {
+        product = mapDocumentToProduct(doc.id, data)
       }
     })
 
@@ -103,8 +118,9 @@ export async function fetchProductsByIds(ids: string[]): Promise<Product[]> {
     const productMap = new Map<string, Product>()
 
     querySnapshot.forEach((doc) => {
-      if (ids.includes(doc.id)) {
-        productMap.set(doc.id, mapDocumentToProduct(doc.id, doc.data()))
+      const data = doc.data()
+      if (ids.includes(doc.id) && isProductVisible(data)) {
+        productMap.set(doc.id, mapDocumentToProduct(doc.id, data))
       }
     })
 

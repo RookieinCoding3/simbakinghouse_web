@@ -10,6 +10,19 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
+// Firebase's internal heartbeat/installations service tries to open IndexedDB
+// on init regardless of the Firestore cache mode below, and throws an uncaught
+// "Access to storage is not allowed from this context" in storage-restricted
+// contexts (Safari ITP, private browsing, some tracking-protection extensions).
+// It's non-fatal to product fetching, so stop it from surfacing as an uncaught error.
+if (typeof window !== 'undefined') {
+  window.addEventListener('unhandledrejection', (event) => {
+    if (event.reason?.message?.includes('Access to storage is not allowed')) {
+      event.preventDefault()
+    }
+  })
+}
+
 // Initialize Firebase (singleton pattern to prevent multiple instances)
 let app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp()
 

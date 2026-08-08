@@ -1,3 +1,5 @@
+import { CONTACT_WHATSAPP_URL, OPENING_HOURS } from '@/lib/config/contact'
+
 export default function LocationSection() {
   return (
     <section className="py-20 bg-bakery-dark min-h-[80vh] flex items-center">
@@ -22,7 +24,7 @@ export default function LocationSection() {
                   Hours
                 </h3>
                 <p className="font-body text-bakery-cream/70 text-base">
-                  Daily: 6:30 AM — 1:00 PM
+                  {OPENING_HOURS}
                 </p>
                 <p className="font-body text-bakery-accent/80 text-sm mt-1 italic">
                   Fresh supplies available daily
@@ -34,7 +36,7 @@ export default function LocationSection() {
                   Connect
                 </h3>
                 <a
-                  href="https://wa.me/60123456789"
+                  href={CONTACT_WHATSAPP_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-body text-bakery-accent hover:text-bakery-accent/80 text-base transition-colors inline-block hover:underline"

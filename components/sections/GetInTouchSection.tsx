@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { CONTACT_WHATSAPP_URL, OPENING_HOURS } from '@/lib/config/contact'
 
 export default function GetInTouchSection() {
   return (
@@ -38,13 +39,13 @@ export default function GetInTouchSection() {
               Penang, Malaysia
             </p>
             <p className="font-body text-bakery-accent text-sm font-semibold">
-              Daily: 6:30 AM - 1:00 PM
+              {OPENING_HOURS}
             </p>
           </Link>
 
           {/* WhatsApp Us */}
           <a
-            href="https://wa.me/60123456789"
+            href={CONTACT_WHATSAPP_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="group bg-white/10 hover:bg-white/15 backdrop-blur-sm rounded-2xl p-8 text-center transition-all duration-300 hover:scale-105 border border-bakery-accent/20 hover:border-bakery-accent/40"

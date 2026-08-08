@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Bebas_Neue, Playfair_Display } from 'next/font/google'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import { CONTACT_PHONE_E164 } from '@/lib/config/contact'
 import './globals.css'
 
 const bebasNeue = Bebas_Neue({
@@ -19,43 +20,14 @@ const playfairDisplay = Playfair_Display({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://simbakinghouse.com'),
+  metadataBase: new URL('https://www.simbakinghouse.com.my'),
   title: {
     default: 'Sim Baking House | Baking Supplies & Premix Penang | Bayan Lepas',
     template: '%s | Sim Baking House Penang',
   },
   description:
     'Your trusted baking supplies shop in Penang. Premium cake premix, bread ingredients, baking tools & accessories. Located in Bayan Lepas. Order fresh butter cake premix, German cookies, sourdough essentials. Best prices in Penang, Malaysia.',
-  keywords: [
-    // Primary keywords
-    'baking supplies Penang',
-    'baking shop Penang',
-    'baking ingredients Penang',
-    'cake premix Penang',
-    'baking tools Penang',
-    // Location-specific
-    'Bayan Lepas bakery supplies',
-    'baking store Bayan Lepas',
-    'Penang baking shop',
-    'bakery ingredients Penang Malaysia',
-    // Product-specific
-    'butter cake premix Malaysia',
-    'German cookies premix',
-    'sourdough starter Penang',
-    'bread flour Penang',
-    'cake decorating supplies Penang',
-    'baking equipment Malaysia',
-    // Intent-based
-    'where to buy baking supplies Penang',
-    'best baking shop near me Penang',
-    'halal baking ingredients Penang',
-    'home baking supplies Malaysia',
-    'professional baking tools Penang',
-    // Brand
-    'Sim Baking House',
-    'SBH Penang',
-  ],
-  authors: [{ name: 'Sim Baking House', url: 'https://simbakinghouse.com' }],
+  authors: [{ name: 'Sim Baking House', url: 'https://www.simbakinghouse.com.my' }],
   creator: 'Sim Baking House',
   publisher: 'Sim Baking House',
   formatDetection: {
@@ -76,7 +48,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_MY',
-    url: 'https://simbakinghouse.com',
+    url: 'https://www.simbakinghouse.com.my',
     siteName: 'Sim Baking House',
     title: 'Sim Baking House | Best Baking Supplies in Penang',
     description:
@@ -109,7 +81,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: 'https://simbakinghouse.com',
+    canonical: 'https://www.simbakinghouse.com.my',
   },
   category: 'Shopping',
   classification: 'Baking Supplies Store',
@@ -121,16 +93,16 @@ const jsonLd = {
   '@graph': [
     {
       '@type': 'LocalBusiness',
-      '@id': 'https://simbakinghouse.com/#business',
+      '@id': 'https://www.simbakinghouse.com.my/#business',
       name: 'Sim Baking House',
       alternateName: 'SBH Penang',
       description:
         'Premium baking supplies shop in Penang offering cake premix, baking ingredients, tools and accessories. Specializing in butter cake premix, German cookies, and sourdough essentials.',
-      url: 'https://simbakinghouse.com',
-      telephone: '+60-12-401-9334',
+      url: 'https://www.simbakinghouse.com.my',
+      telephone: CONTACT_PHONE_E164,
       email: 'simbakinghouse25@gmail.com',
-      image: 'https://simbakinghouse.com/og-image.jpg',
-      logo: 'https://simbakinghouse.com/SBH_tab.png',
+      image: 'https://www.simbakinghouse.com.my/og-image.jpg',
+      logo: 'https://www.simbakinghouse.com.my/SBH_tab.png',
       priceRange: 'RM',
       currenciesAccepted: 'MYR',
       paymentAccepted: 'Cash, Bank Transfer, Online Payment',
@@ -199,37 +171,37 @@ const jsonLd = {
     },
     {
       '@type': 'WebSite',
-      '@id': 'https://simbakinghouse.com/#website',
-      url: 'https://simbakinghouse.com',
+      '@id': 'https://www.simbakinghouse.com.my/#website',
+      url: 'https://www.simbakinghouse.com.my',
       name: 'Sim Baking House',
       description: 'Baking supplies and premix shop in Penang, Malaysia',
       publisher: {
-        '@id': 'https://simbakinghouse.com/#business',
+        '@id': 'https://www.simbakinghouse.com.my/#business',
       },
       potentialAction: {
         '@type': 'SearchAction',
         target: {
           '@type': 'EntryPoint',
-          urlTemplate: 'https://simbakinghouse.com/products?search={search_term_string}',
+          urlTemplate: 'https://www.simbakinghouse.com.my/products?search={search_term_string}',
         },
         'query-input': 'required name=search_term_string',
       },
     },
     {
       '@type': 'BreadcrumbList',
-      '@id': 'https://simbakinghouse.com/#breadcrumb',
+      '@id': 'https://www.simbakinghouse.com.my/#breadcrumb',
       itemListElement: [
         {
           '@type': 'ListItem',
           position: 1,
           name: 'Home',
-          item: 'https://simbakinghouse.com',
+          item: 'https://www.simbakinghouse.com.my',
         },
         {
           '@type': 'ListItem',
           position: 2,
           name: 'Products',
-          item: 'https://simbakinghouse.com/products',
+          item: 'https://www.simbakinghouse.com.my/products',
         },
       ],
     },
