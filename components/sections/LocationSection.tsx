@@ -1,4 +1,5 @@
 import { CONTACT_WHATSAPP_URL, OPENING_HOURS } from '@/lib/config/contact'
+import ObfuscatedEmailLink from '@/components/ui/ObfuscatedEmailLink'
 
 export default function LocationSection() {
   return (
@@ -44,12 +45,11 @@ export default function LocationSection() {
                   WhatsApp Us Directly
                 </a>
                 <br />
-                <a
-                  href="mailto:simbakinghouse25@gmail.com"
+                <ObfuscatedEmailLink
                   className="font-body text-bakery-accent hover:text-bakery-accent/80 text-base transition-colors inline-block hover:underline mt-2"
                 >
-                  simbakinghouse25@gmail.com
-                </a>
+                  Email Us Directly
+                </ObfuscatedEmailLink>
               </div>
             </div>
           </div>

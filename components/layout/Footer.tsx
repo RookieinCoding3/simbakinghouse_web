@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { CONTACT_TEL_URL, CONTACT_WHATSAPP_URL, OPENING_HOURS } from '@/lib/config/contact'
+import ObfuscatedEmailLink from '@/components/ui/ObfuscatedEmailLink'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -86,8 +87,7 @@ export default function Footer() {
                   </svg>
                   <span className="font-body text-sm">Call Us</span>
                 </a>
-                <a
-                  href="mailto:simbakinghouse25@gmail.com"
+                <ObfuscatedEmailLink
                   className="flex items-center justify-center md:justify-start space-x-2 text-bakery-cream/80 hover:text-bakery-accent transition-colors duration-200 group"
                 >
                   <svg
@@ -102,7 +102,7 @@ export default function Footer() {
                     <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                   <span className="font-body text-sm">Email Us</span>
-                </a>
+                </ObfuscatedEmailLink>
               </div>
             </div>
 

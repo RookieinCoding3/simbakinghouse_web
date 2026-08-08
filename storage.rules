@@ -1,0 +1,48 @@
+rules_version = '2';
+
+// Sim Baking House — Firebase Storage security rules
+//
+// Verified against the live bucket (2026-08-08) via unauthenticated REST
+// calls: uploads were already rejected (403), directory listing was
+// already rejected (403), and even a direct (non-token) file read was
+// rejected (403) — product images on the live site load only because
+// each file carries its own per-file download token
+// (?alt=media&token=...), which is a Firebase-specific mechanism that
+// bypasses these rules by design. This file formalizes explicit public
+// read for the two paths the site actually serves images from, and
+// keeps everything else — reads and writes — admin-only/denied.
+//
+// Deploy: paste into Firebase Console > Storage > Rules, or
+// `firebase deploy --only storage` if the CLI is set up.
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isAdmin() {
+      return request.auth != null &&
+        firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid));
+    }
+
+    // Product photos and category icons — public read (also reachable
+    // via download tokens regardless), admin-only write. 5MB cap and an
+    // image-only content-type check stop someone with write access from
+    // parking arbitrary large files here at your bucket's expense.
+    match /product/{fileName} {
+      allow read: if true;
+      allow write: if isAdmin()
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    match /icons/{fileName} {
+      allow read: if true;
+      allow write: if isAdmin()
+        && request.resource.size < 2 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // Deny-by-default for every other path, including any not yet used.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

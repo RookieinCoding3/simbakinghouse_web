@@ -1,0 +1,75 @@
+rules_version = '2';
+
+// Sim Baking House — Firestore security rules
+//
+// Verified against the live project (2026-08-08) via unauthenticated REST
+// calls: writes to every existing collection were already rejected (403),
+// and only `products`/`categories` allowed public reads. This file
+// formalizes that behavior explicitly and adds an admin-write path for
+// the upcoming iOS admin screen — nothing here weakens what's live today.
+//
+// Deploy: paste into Firebase Console > Firestore Database > Rules,
+// or `firebase deploy --only firestore:rules` if the CLI is set up.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // True only for a UID explicitly allow-listed in /admins.
+    // That collection is itself unwritable from any client (see below),
+    // so this cannot be self-granted — it can only be set from the
+    // Firebase Console or a trusted backend (e.g. Admin SDK).
+    function isAdmin() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // Product catalog — public storefront read, admin-only write.
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin()
+        // Basic shape guard so a compromised/careless admin session can't
+        // write a type that breaks the site (e.g. price as a string).
+        && request.resource.data.name is string
+        && request.resource.data.price is number
+        && request.resource.data.price >= 0
+        && request.resource.data.category is string;
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Admin allowlist. Doc ID = Firebase Auth UID. Intentionally has no
+    // client-writable path at all — add/remove admins via the Firebase
+    // Console (Firestore Data tab) or a trusted backend script, never
+    // from the app.
+    match /admins/{uid} {
+      allow read, write: if false;
+    }
+
+    // Analytics collections. The browser never writes to these directly —
+    // app/api/analytics/route.ts validates and rate-limits events, then
+    // writes via the Admin SDK, which authenticates as a trusted service
+    // and bypasses these rules entirely. That's intentional: it's what
+    // lets analytics work without ever opening public write access here.
+    // Keep these closed to every client, always.
+    match /searchLogs/{docId} {
+      allow read, write: if false;
+    }
+    match /categoryLogs/{docId} {
+      allow read, write: if false;
+    }
+    match /orderIntents/{docId} {
+      allow read, write: if false;
+    }
+    match /productViews/{docId} {
+      allow read, write: if false;
+    }
+
+    // Deny-by-default for anything not explicitly matched above,
+    // including collections that don't exist yet.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

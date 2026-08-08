@@ -1,27 +1,10 @@
-'use client'
+// Client-side analytics helpers. These never touch Firestore directly —
+// they POST to /api/analytics, which validates, rate-limits, and writes
+// server-side via the Admin SDK. Firestore's client-facing rules stay
+// fully closed for these collections; no public write access is opened.
+//
+// Every function here fails silently: analytics must never break the page.
 
-import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, limit } from 'firebase/firestore'
-import { db } from './config'
-
-interface ProductViewLog {
-  productId: string
-  productName: string
-  category: string
-  timestamp: any
-  sessionId: string
-  referrer: string
-  userAgent: string
-}
-
-interface ProductViewStats {
-  productId: string
-  productName: string
-  category: string
-  viewCount: number
-  lastViewed: Date
-}
-
-// Generate a simple session ID for tracking
 function getSessionId(): string {
   if (typeof window === 'undefined') return 'server'
 
@@ -33,133 +16,52 @@ function getSessionId(): string {
   return sessionId
 }
 
+async function sendEvent(payload: Record<string, unknown>): Promise<void> {
+  try {
+    await fetch('/api/analytics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId: getSessionId(), ...payload }),
+      keepalive: true,
+    })
+  } catch {
+    // Network error, offline, ad blocker, whatever — never surface this.
+  }
+}
+
 /**
- * Log a product view to Firestore for analytics
- * Called when a user opens a product modal
+ * Log a product view. Called when a user opens a product modal.
  */
 export async function logProductView(
   productId: string,
   productName: string,
   category: string
 ): Promise<void> {
-  try {
-    const viewLog: ProductViewLog = {
-      productId,
-      productName,
-      category,
-      timestamp: serverTimestamp(),
-      sessionId: getSessionId(),
-      referrer: typeof document !== 'undefined' ? document.referrer : '',
-      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
-    }
-
-    await addDoc(collection(db, 'productViews'), viewLog)
-  } catch (error) {
-    // Silently fail - analytics should never break the user experience
-    console.warn('Analytics log failed:', error)
-  }
+  await sendEvent({ type: 'product_view', productId, productName, category })
 }
 
 /**
- * Log a search query for understanding customer intent
+ * Log a search query for understanding customer intent.
  */
 export async function logSearchQuery(query: string): Promise<void> {
   if (!query.trim() || query.length < 2) return
-
-  try {
-    await addDoc(collection(db, 'searchLogs'), {
-      query: query.toLowerCase().trim(),
-      timestamp: serverTimestamp(),
-      sessionId: getSessionId(),
-    })
-  } catch (error) {
-    console.warn('Search log failed:', error)
-  }
+  await sendEvent({ type: 'search', query: query.toLowerCase().trim() })
 }
 
 /**
- * Log category filter usage
+ * Log category filter usage.
  */
 export async function logCategoryFilter(category: string): Promise<void> {
-  try {
-    await addDoc(collection(db, 'categoryLogs'), {
-      category,
-      timestamp: serverTimestamp(),
-      sessionId: getSessionId(),
-    })
-  } catch (error) {
-    console.warn('Category log failed:', error)
-  }
+  await sendEvent({ type: 'category_filter', category })
 }
 
 /**
- * Log order button clicks (conversion tracking)
+ * Log order button clicks (conversion tracking).
  */
 export async function logOrderIntent(
   productId: string,
   productName: string,
   price: number
 ): Promise<void> {
-  try {
-    await addDoc(collection(db, 'orderIntents'), {
-      productId,
-      productName,
-      price,
-      timestamp: serverTimestamp(),
-      sessionId: getSessionId(),
-    })
-  } catch (error) {
-    console.warn('Order intent log failed:', error)
-  }
-}
-
-/**
- * Fetch top viewed products for business insights
- * Use this in an admin dashboard or for featured product decisions
- */
-export async function getTopViewedProducts(days: number = 7): Promise<ProductViewStats[]> {
-  try {
-    const startDate = new Date()
-    startDate.setDate(startDate.getDate() - days)
-
-    const viewsRef = collection(db, 'productViews')
-    const q = query(
-      viewsRef,
-      where('timestamp', '>=', startDate),
-      orderBy('timestamp', 'desc'),
-      limit(500)
-    )
-
-    const snapshot = await getDocs(q)
-
-    // Aggregate views by product
-    const viewCounts = new Map<string, ProductViewStats>()
-
-    snapshot.forEach((doc) => {
-      const data = doc.data()
-      const existing = viewCounts.get(data.productId)
-
-      if (existing) {
-        existing.viewCount++
-        if (data.timestamp?.toDate() > existing.lastViewed) {
-          existing.lastViewed = data.timestamp.toDate()
-        }
-      } else {
-        viewCounts.set(data.productId, {
-          productId: data.productId,
-          productName: data.productName,
-          category: data.category,
-          viewCount: 1,
-          lastViewed: data.timestamp?.toDate() || new Date(),
-        })
-      }
-    })
-
-    // Sort by view count descending
-    return Array.from(viewCounts.values())
-      .sort((a, b) => b.viewCount - a.viewCount)
-  } catch (error) {
-    console.warn('Failed to fetch top viewed products:', error)
-    return []
-  }
+  await sendEvent({ type: 'order_intent', productId, productName, price })
 }
