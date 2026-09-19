@@ -8,18 +8,18 @@ interface ProductBadgeProps {
 }
 
 const BADGE_MAP: Record<string, { label: string; color: string; icon: string }> = {
-  'sims-secret': { label: "SECRET", color: "text-purple-400", icon: "✨" },
-  'beginner-friendly': { label: "BEGINNER", color: "text-green-400", icon: "🌱" },
-  'sourdough-essential': { label: "ARTISAN", color: "text-bakery-accent", icon: "🍞" },
-  'sims-choice': { label: "SIM'S CHOICE", color: "text-bakery-accent", icon: "⭐" }
+  'sims-secret': { label: "SECRET", color: "text-clay", icon: "✨" },
+  'beginner-friendly': { label: "BEGINNER", color: "text-clay", icon: "🌱" },
+  'sourdough-essential': { label: "ARTISAN", color: "text-clay", icon: "🍞" },
+  'sims-choice': { label: "SIM'S CHOICE", color: "text-clay", icon: "⭐" }
 }
 
 export default function ProductBadge({ type, size = 'sm' }: ProductBadgeProps) {
-  const config = BADGE_MAP[type] || { label: type, color: "text-white/50", icon: "•" }
+  const config = BADGE_MAP[type] || { label: type, color: "text-ink/50", icon: "•" }
 
   return (
     <span className={cn(
-      "inline-flex items-center gap-1 font-heading tracking-[0.25em] uppercase transition-all duration-500",
+      "inline-flex items-center gap-1 font-body font-semibold tracking-[0.25em] uppercase transition-all duration-500",
       size === 'sm' ? "text-[7px]" : "text-[9px]",
       config.color
     )}>

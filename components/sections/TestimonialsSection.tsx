@@ -60,94 +60,44 @@ export default function TestimonialsSection() {
     setCurrentIndex((prev) => (prev + 1) % testimonials.length)
   }
 
+  const current = testimonials[currentIndex]
+
   return (
-    <section className="py-16 md:py-24 bg-bakery-dark paper-texture">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
-        {/* Section Header */}
-        <div className="text-center mb-12 animate-fade-in-up">
-          <p className="font-body text-bakery-accent text-sm sm:text-base tracking-widest uppercase mb-3">
-            Customer Stories
-          </p>
-          <h2 className="font-heading text-bakery-cream text-4xl sm:text-5xl md:text-6xl mb-4">
-            WHAT PEOPLE SAY
-          </h2>
-          <p className="font-body text-bakery-cream/80 text-lg max-w-2xl mx-auto">
-            Hear from our valued customers
-          </p>
-        </div>
-
-        {/* Testimonial Carousel */}
-        <div className="relative">
-          {/* Testimonial Card */}
-          <div className="bg-bakery-cream rounded-2xl p-8 md:p-12 shadow-2xl min-h-[320px] md:min-h-[280px] flex flex-col justify-between">
-            {/* Stars */}
-            <div className="flex items-center justify-center space-x-1 mb-6">
-              {[...Array(testimonials[currentIndex].rating)].map((_, i) => (
-                <svg
-                  key={i}
-                  className="w-6 h-6 text-bakery-accent"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-              ))}
-            </div>
-
-            {/* Quote */}
-            <blockquote className="text-center mb-8">
-              <p className="font-body text-bakery-brown/90 text-lg md:text-xl leading-relaxed italic">
-                &ldquo;{testimonials[currentIndex].text}&rdquo;
-              </p>
-            </blockquote>
-
-            {/* Author */}
-            <div className="text-center">
-              <p className="font-heading text-bakery-brown text-xl mb-1">
-                {testimonials[currentIndex].name}
-              </p>
-              <p className="font-body text-bakery-brown/60 text-sm">
-                {testimonials[currentIndex].location}
-              </p>
-            </div>
-          </div>
-
-          {/* Navigation Arrows */}
-          <button
-            onClick={handlePrev}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-12 w-12 h-12 rounded-full bg-bakery-accent text-white flex items-center justify-center hover:bg-bakery-accent/90 transition-colors duration-200 shadow-lg"
-            aria-label="Previous testimonial"
-          >
-            <svg className="w-6 h-6" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-              <path d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-
-          <button
-            onClick={handleNext}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-12 w-12 h-12 rounded-full bg-bakery-accent text-white flex items-center justify-center hover:bg-bakery-accent/90 transition-colors duration-200 shadow-lg"
-            aria-label="Next testimonial"
-          >
-            <svg className="w-6 h-6" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-              <path d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-
-          {/* Dots Indicator */}
-          <div className="flex items-center justify-center space-x-2 mt-8">
-            {testimonials.map((_, index) => (
+    <section className="bg-sand border-y border-[#E5DDD2] py-24">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+          <div className="lg:col-span-4 space-y-6">
+            <h2 className="text-xs uppercase tracking-[0.25em] font-semibold text-ink">Customer stories</h2>
+            <div className="flex items-center gap-3">
               <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                  index === currentIndex
-                    ? 'bg-bakery-accent w-8'
-                    : 'bg-bakery-cream/40 hover:bg-bakery-cream/60'
-                }`}
-                aria-label={`Go to testimonial ${index + 1}`}
-              />
-            ))}
+                onClick={handlePrev}
+                className="w-10 h-10 border border-ink/30 text-ink flex items-center justify-center hover:bg-ink hover:text-paper transition-colors"
+                aria-label="Previous testimonial"
+              >
+                &larr;
+              </button>
+              <button
+                onClick={handleNext}
+                className="w-10 h-10 border border-ink/30 text-ink flex items-center justify-center hover:bg-ink hover:text-paper transition-colors"
+                aria-label="Next testimonial"
+              >
+                &rarr;
+              </button>
+              <span className="text-[11px] tracking-widest text-muted ml-2">
+                {String(currentIndex + 1).padStart(2, '0')} / {String(testimonials.length).padStart(2, '0')}
+              </span>
+            </div>
           </div>
+
+          <figure className="lg:col-span-8 min-h-[260px] flex flex-col justify-between gap-8">
+            <blockquote className="font-heading text-2xl sm:text-3xl lg:text-4xl leading-snug text-ink">
+              &ldquo;{current.text}&rdquo;
+            </blockquote>
+            <figcaption className="text-xs">
+              <p className="uppercase tracking-widest font-semibold text-ink">{current.name}</p>
+              <p className="mt-1 text-muted">{current.location}</p>
+            </figcaption>
+          </figure>
         </div>
       </div>
     </section>

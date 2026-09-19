@@ -20,7 +20,7 @@ function LoadingSpinner({
     <div className={cn('flex items-center justify-center', className)}>
       <div
         className={cn(
-          'animate-spin rounded-full border-bakery-accent border-t-transparent',
+          'animate-spin rounded-full border-clay border-t-transparent',
           sizeStyles[size]
         )}
         role="status"

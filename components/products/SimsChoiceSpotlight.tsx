@@ -20,11 +20,11 @@ export default function SimsChoiceSpotlight({
   if (!products || products.length === 0) return null
 
   return (
-    <section className="py-12 bg-gradient-to-b from-bakery-dark to-transparent">
+    <section className="py-12 border-b border-line">
       <div className="container mx-auto px-4">
         <div className="text-center mb-10">
-          <h2 className="font-heading text-bakery-accent text-4xl tracking-tighter">{title.toUpperCase()}</h2>
-          <p className="font-body text-bakery-cream/50 italic text-sm">{subtitle}</p>
+          <h2 className="font-heading text-ink text-4xl">{title}</h2>
+          <p className="font-body text-muted text-xs">{subtitle}</p>
         </div>
 
         <div className="flex space-x-6 overflow-x-auto pb-8 no-scrollbar snap-x px-4 md:justify-center">
@@ -35,7 +35,7 @@ export default function SimsChoiceSpotlight({
               className="flex-shrink-0 w-[260px] snap-center group cursor-pointer animate-fade-in-up"
               style={{ animationDelay: `${i * 100}ms` }}
             >
-              <div className="relative aspect-[4/5] overflow-hidden rounded-sm border border-bakery-cream/10 group-hover:border-bakery-accent/40 transition-all duration-700">
+              <div className="relative aspect-[4/5] overflow-hidden border border-line group-hover:border-ink/30 transition-all duration-700">
                 <Image
                   src={product.imageUrl || '/images/placeholder-product.jpg'}
                   alt={product.name}
@@ -43,13 +43,13 @@ export default function SimsChoiceSpotlight({
                   sizes="260px"
                   className="object-cover group-hover:scale-110 transition-transform duration-1000"
                 />
-                <div className="absolute top-3 left-3">
+                <div className="absolute top-3 left-3 bg-paper/90 px-2.5 py-1.5">
                   <ProductBadge type="sims-choice" size="md" />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-bakery-dark/80 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4">
-                  <h3 className="font-heading text-bakery-cream text-xl uppercase leading-tight">{product.name}</h3>
-                  <p className="text-bakery-accent text-sm mt-1 font-heading">RM {product.price.toFixed(2)}</p>
+                  <h3 className="font-heading text-white text-2xl leading-tight">{product.name}</h3>
+                  <p className="text-white/90 text-xs mt-1 tracking-wider">RM {product.price.toFixed(2)}</p>
                 </div>
               </div>
             </div>

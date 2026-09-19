@@ -1,19 +1,20 @@
 import type { Metadata } from 'next'
-import { Bebas_Neue, Playfair_Display } from 'next/font/google'
+import { Instrument_Serif, Plus_Jakarta_Sans } from 'next/font/google'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import { CONTACT_PHONE_E164 } from '@/lib/config/contact'
 import './globals.css'
 
-const bebasNeue = Bebas_Neue({
+const instrumentSerif = Instrument_Serif({
   weight: '400',
+  style: ['normal', 'italic'],
   subsets: ['latin'],
   variable: '--font-heading',
   display: 'swap',
 })
 
-const playfairDisplay = Playfair_Display({
-  weight: ['400', '500', '600', '700'],
+const plusJakartaSans = Plus_Jakarta_Sans({
+  weight: ['300', '400', '500', '600', '700'],
   subsets: ['latin'],
   variable: '--font-body',
   display: 'swap',
@@ -216,7 +217,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${bebasNeue.variable} ${playfairDisplay.variable}`}
+      className={`${instrumentSerif.variable} ${plusJakartaSans.variable}`}
     >
       <head>
         <script

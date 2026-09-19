@@ -15,12 +15,12 @@ export default function ProductsError({
   }, [error])
 
   return (
-    <main className="min-h-screen bg-bakery-dark pt-20 flex items-center justify-center px-4">
+    <main className="min-h-screen bg-paper flex items-center justify-center px-4">
       <div className="text-center max-w-md">
-        <h1 className="font-heading text-bakery-cream text-3xl mb-4 tracking-wide">
-          COULDN&apos;T LOAD OUR PRODUCTS
+        <h1 className="font-heading text-ink text-4xl mb-4">
+          Couldn&apos;t load our products
         </h1>
-        <p className="font-body text-bakery-cream/70 text-base mb-8">
+        <p className="font-body text-ink/70 text-base mb-8">
           Something went wrong fetching our catalog. Sorry about that — message us
           on WhatsApp and we&apos;ll help you find what you need directly.
         </p>
@@ -29,13 +29,13 @@ export default function ProductsError({
             href={CONTACT_WHATSAPP_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-green-600 hover:bg-green-500 text-white font-heading tracking-widest text-sm transition-colors rounded-full"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-ink hover:bg-clay text-paper font-body font-medium uppercase tracking-widest text-xs transition-colors"
           >
-            WHATSAPP US
+            WhatsApp us
           </a>
           <button
             onClick={reset}
-            className="font-body text-bakery-accent hover:text-bakery-accent/80 text-sm underline transition-colors"
+            className="font-body text-clay hover:text-clay/80 text-sm underline transition-colors"
           >
             Try again
           </button>

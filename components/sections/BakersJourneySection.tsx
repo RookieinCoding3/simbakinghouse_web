@@ -1,49 +1,48 @@
-'use client'
-
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function BakersJourneySection() {
   return (
-    <section className="py-12 md:py-16 bg-white">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
-        <div className="text-center">
-          {/* Badge */}
-          <div className="inline-block bg-bakery-accent/10 rounded-full px-6 py-2 mb-6">
-            <span className="font-heading text-bakery-accent text-sm tracking-widest">
-              EST. 2017
-            </span>
+    <section id="story" className="bg-sand border-b border-[#E5DDD2] py-24">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+          {/* Left: story text */}
+          <div className="lg:col-span-5 space-y-6">
+            <h2 className="text-xs uppercase tracking-[0.25em] font-semibold text-ink">
+              Family founded, Penang rooted
+            </h2>
+            <p className="font-heading text-3xl sm:text-4xl leading-tight text-ink">
+              Baking is more than following recipes.
+            </p>
+            <p className="text-xs sm:text-sm text-muted leading-relaxed">
+              Crafting joy since 2017 in the heart of Penang. We open our doors at 6:30 AM, personally guiding
+              home bakers, small bakeries and weekend enthusiasts with tested recipes and honest advice. From
+              sunrise dough to golden-brown perfection, we honour tradition while creating memories one bite at a time.
+            </p>
+            <div className="pt-2">
+              <Link
+                href="/about"
+                className="text-xs uppercase tracking-widest text-ink font-medium inline-flex items-center gap-2 hover:gap-3 transition-all"
+              >
+                Our story &rarr;
+              </Link>
+            </div>
           </div>
 
-          {/* Story Snippet */}
-          <h2 className="font-heading text-bakery-brown text-3xl sm:text-4xl md:text-5xl mb-6">
-            THE BAKER&apos;S JOURNEY
-          </h2>
-
-          <p className="font-body text-bakery-brown/80 text-lg md:text-xl leading-relaxed max-w-3xl mx-auto mb-8">
-            Crafting joy since 2017 in the heart of Penang. Our journey began with a simple belief:
-            that baking is more than just following recipes—it&apos;s about pouring love, care, and dedication
-            into every creation. From sunrise dough to golden-brown perfection, we honor tradition while
-            creating memories one bite at a time.
-          </p>
-
-          {/* CTA */}
-          <Link
-            href="/about"
-            className="inline-flex items-center space-x-2 text-bakery-accent hover:text-bakery-accent/80 font-body text-base tracking-wide transition-colors duration-200 group"
-          >
-            <span>Read Our Full Story</span>
-            <svg
-              className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-200"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </Link>
+          {/* Right: two photos */}
+          <div className="lg:col-span-7 grid grid-cols-2 gap-4 sm:gap-6">
+            {[2, 3].map((n) => (
+              <div key={n} className="relative aspect-[4/3] bg-[#E3DACE] overflow-hidden">
+                <Image
+                  src={`/images/gallery/fresh-bake-${n}.jpg`}
+                  alt="Fresh bakes from Sim Baking House"
+                  fill
+                  sizes="(max-width: 1024px) 50vw, 400px"
+                  className="object-cover"
+                />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function LocationPage() {
   return (
-    <main className="min-h-screen pt-16 md:pt-20">
+    <main className="min-h-screen">
       <LocationSection />
     </main>
   )

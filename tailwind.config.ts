@@ -9,16 +9,16 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        heading: ['var(--font-heading)', 'sans-serif'],
-        body: ['var(--font-body)', 'serif'],
+        heading: ['var(--font-heading)', 'Georgia', 'serif'],
+        body: ['var(--font-body)', 'sans-serif'],
       },
       colors: {
-        bakery: {
-          brown: '#2D1B14',
-          cream: '#F5F1E8',
-          accent: '#D4A574',
-          dark: '#221712',
-        },
+        paper: '#FAF8F5',
+        ink: '#1F1D1B',
+        sand: '#F2ECE3',
+        line: '#EAE4DC',
+        clay: '#7A4031',
+        muted: '#665F58',
       },
     },
   },

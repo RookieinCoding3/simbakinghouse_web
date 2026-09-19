@@ -44,18 +44,18 @@ export default function ProductsSection() {
   return (
     <section
       id="products"
-      className="py-16 md:py-24 bg-bakery-dark"
+      className="py-16 md:py-24 bg-paper"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         {/* Section Header */}
         <div className="text-center mb-12 md:mb-16">
-          <p className="font-body text-bakery-accent text-sm sm:text-base tracking-widest uppercase mb-2">
+          <p className="font-body text-clay text-sm sm:text-base tracking-widest uppercase mb-2">
             Our Selection
           </p>
-          <h2 className="font-heading text-bakery-cream text-4xl sm:text-5xl md:text-6xl mb-4">
+          <h2 className="font-heading text-ink text-4xl sm:text-5xl md:text-6xl mb-4">
             PRODUCTS
           </h2>
-          <p className="font-body text-bakery-cream/80 text-lg max-w-2xl mx-auto">
+          <p className="font-body text-ink/80 text-lg max-w-2xl mx-auto">
             Explore our handcrafted selection of breads, pastries, and cakes
           </p>
         </div>
@@ -64,7 +64,7 @@ export default function ProductsSection() {
         {loading && (
           <div className="flex flex-col items-center justify-center py-20">
             <LoadingSpinner size="lg" />
-            <p className="font-body text-bakery-cream/70 mt-4 text-lg">
+            <p className="font-body text-ink/70 mt-4 text-lg">
               Loading our delicious products...
             </p>
           </div>
@@ -88,7 +88,7 @@ export default function ProductsSection() {
               <p className="font-body text-red-400 text-lg">{error}</p>
               <button
                 onClick={() => window.location.reload()}
-                className="mt-4 font-heading text-bakery-cream hover:text-bakery-accent transition-colors duration-200"
+                className="mt-4 font-heading text-ink hover:text-clay transition-colors duration-200"
               >
                 Try Again
               </button>

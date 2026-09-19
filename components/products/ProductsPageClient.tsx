@@ -121,11 +121,11 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
   }, [])
 
   return (
-    <main className="min-h-screen bg-bakery-dark pt-20">
+    <main className="min-h-screen bg-paper">
       {/* 1. HERO with Search - Clean & Minimal */}
       <section className="py-12 md:py-20 text-center px-4">
-        <h1 className="font-heading text-bakery-cream text-4xl md:text-8xl tracking-tighter mb-8">
-          THE COLLECTION
+        <h1 className="font-heading text-ink text-5xl md:text-7xl mb-8">
+          The collection
         </h1>
 
         {/* THE SEARCH BAR - Minimalist & Clean */}
@@ -135,11 +135,8 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="What are you baking today?"
-            className="w-full bg-bakery-cream/5 border border-bakery-cream/10 rounded-full py-4 px-8 text-bakery-cream placeholder:text-bakery-cream/30 font-body text-sm focus:outline-none focus:border-bakery-accent/50 focus:bg-bakery-cream/10 transition-all"
+            className="w-full bg-white border border-line py-4 px-6 text-ink placeholder:text-ink/40 font-body text-sm focus:outline-none focus:border-ink/40 transition-all"
           />
-          <span className="absolute right-6 top-1/2 -translate-y-1/2 text-bakery-cream/30 text-lg">
-            🔍
-          </span>
         </div>
       </section>
 
@@ -165,21 +162,21 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
       )}
 
       {/* 2. THE LIGHT GRID - Cream background on mobile for fresh feeling */}
-      <section className="bg-bakery-cream md:bg-transparent rounded-t-[3rem] md:rounded-none">
+      <section className="bg-transparent">
         <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-7xl py-12">
           {/* Results Info Bar */}
           <div className="flex justify-between items-center mb-8 px-1">
-            <p className="font-body text-[10px] md:text-sm uppercase tracking-widest text-bakery-brown/40 md:text-bakery-cream/40">
+            <p className="font-body text-[10px] md:text-sm uppercase tracking-widest text-ink/50">
               Showing {displayedProducts.length} of {filteredProducts.length} essentials
               {selectedCategory && (
-                <span className="ml-1 text-bakery-accent">in {selectedCategory}</span>
+                <span className="ml-1 text-clay">in {selectedCategory}</span>
               )}
             </p>
 
             {/* Mobile Filter Button */}
             <button
               onClick={() => setIsFilterOpen(true)}
-              className="md:hidden font-heading text-bakery-brown text-sm tracking-widest border-b border-bakery-brown/30 pb-0.5 hover:text-bakery-accent transition-colors"
+              className="md:hidden font-body text-ink text-xs uppercase font-medium tracking-widest border-b border-ink/30 pb-0.5 hover:text-clay transition-colors"
             >
               FILTER
             </button>
@@ -191,7 +188,7 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
                   setSelectedCategory(null)
                   setSearchQuery('')
                 }}
-                className="hidden md:block font-body text-bakery-accent/70 text-xs uppercase tracking-widest hover:text-bakery-accent transition-colors"
+                className="hidden md:block font-body text-clay/70 text-xs uppercase tracking-widest hover:text-clay transition-colors"
               >
                 Clear filters
               </button>
@@ -201,7 +198,7 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
           {/* Product Grid */}
           {filteredProducts.length === 0 ? (
             <div className="text-center py-12 md:py-20">
-              <p className="font-body text-bakery-brown/70 md:text-bakery-cream/70 text-base md:text-lg mb-4">
+              <p className="font-body text-ink/70 text-base md:text-lg mb-4">
                 No products found
               </p>
               <button
@@ -209,7 +206,7 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
                   setSelectedCategory(null)
                   setSearchQuery('')
                 }}
-                className="font-body text-bakery-accent hover:text-bakery-accent/80 transition-colors underline text-sm"
+                className="font-body text-clay hover:text-clay/80 transition-colors underline text-sm"
               >
                 Clear filters and show all
               </button>
@@ -231,18 +228,18 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
               {/* LOAD MORE - Psychology: Finish line + Discovery dopamine */}
               {hasMore && (
                 <div className="mt-16 md:mt-20 text-center pb-8">
-                  <p className="font-body text-bakery-brown/40 md:text-bakery-cream/40 text-[10px] uppercase tracking-widest mb-6">
+                  <p className="font-body text-ink/50 text-[10px] uppercase tracking-widest mb-6">
                     You&apos;ve explored {displayedProducts.length} of {filteredProducts.length} curated essentials
                   </p>
                   <button
                     onClick={loadMore}
-                    className="group relative inline-flex items-center gap-4 px-12 py-5 border-2 border-bakery-brown md:border-bakery-accent text-bakery-brown md:text-bakery-accent font-heading tracking-[0.2em] text-sm hover:bg-bakery-brown md:hover:bg-bakery-accent hover:text-white md:hover:text-bakery-dark transition-all duration-500"
+                    className="group relative inline-flex items-center gap-4 px-12 py-5 border border-ink text-ink font-body font-medium uppercase tracking-[0.2em] text-xs hover:bg-ink hover:text-paper transition-all duration-500"
                   >
                     <span>DISCOVER MORE</span>
                     <span className="group-hover:translate-x-1 transition-transform">→</span>
 
                     {/* Subtle glow effect */}
-                    <div className="absolute inset-0 -z-10 bg-bakery-accent/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute inset-0 -z-10 bg-clay/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>
                 </div>
               )}
@@ -250,7 +247,7 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
               {/* End of Collection Message */}
               {!hasMore && filteredProducts.length > ITEMS_PER_PAGE && (
                 <div className="mt-16 text-center pb-8">
-                  <p className="font-body text-bakery-brown/30 md:text-bakery-cream/30 text-[10px] uppercase tracking-widest">
+                  <p className="font-body text-ink/40 text-[10px] uppercase tracking-widest">
                     You&apos;ve seen all {filteredProducts.length} essentials
                   </p>
                 </div>
@@ -270,9 +267,9 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
       {/* Floating Mobile Filter Button */}
       <button
         onClick={() => setIsFilterOpen(true)}
-        className="md:hidden fixed bottom-10 left-1/2 -translate-x-1/2 z-40 bg-bakery-brown text-bakery-cream px-8 py-4 rounded-full font-heading text-xs tracking-widest shadow-2xl flex items-center gap-2 hover:bg-bakery-dark transition-colors"
+        className="md:hidden fixed bottom-10 left-1/2 -translate-x-1/2 z-40 bg-ink text-paper px-8 py-4 font-body font-medium text-[11px] uppercase tracking-widest shadow-xl flex items-center gap-2 hover:bg-clay transition-colors"
       >
-        <span>✨</span> FILTER BY CATEGORY
+        Filter by category
       </button>
 
       {/* Mobile Filter Drawer */}

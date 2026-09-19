@@ -17,25 +17,12 @@ const GetInTouchSection = dynamic(() => import('@/components/sections/GetInTouch
 export default function Home() {
   return (
     <main>
-      {/* 1. Hero Section - High-impact video background */}
       <HeroSection />
-
-      {/* 2. Category Navigation - Help users find what they want */}
       <CategoryNavigationSection />
-
-      {/* 3. Why Choose Us - Establish trust and credibility */}
-      <WhyChooseUsSection />
-
-      {/* 4. Featured Products - Top 3 essentials */}
-      <FeaturedProductsSection />
-
-      {/* 5. Baker's Journey - Story snippet for connection */}
       <BakersJourneySection />
-
-      {/* 6. Testimonials - Social proof and trust */}
+      <FeaturedProductsSection />
+      <WhyChooseUsSection />
       <TestimonialsSection />
-
-      {/* 7. Get In Touch - Multiple contact options */}
       <GetInTouchSection />
 
       {/* Sticky Order Button - Mobile CTA */}

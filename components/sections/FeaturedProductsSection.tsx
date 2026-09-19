@@ -5,10 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import type { Product } from '@/types/product'
 import { fetchProductsByIds } from '@/lib/firebase/products'
-import ProductGrid from '@/components/products/ProductGrid'
 import ProductModal from '@/components/products/ProductModal'
-import LoadingSpinner from '@/components/ui/LoadingSpinner'
-import Button from '@/components/ui/Button'
 
 // Top 3 Best Sellers IDs (moved outside component to prevent re-creation)
 const BEST_SELLER_IDS = [
@@ -54,115 +51,75 @@ export default function FeaturedProductsSection() {
 
   return (
     <section
-      id="featured-products"
-      className="py-16 md:py-24 bg-bakery-dark"
+      id="premixes"
+      className="max-w-[1400px] mx-auto px-6 lg:px-12 py-24 border-b border-line"
     >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-        {/* Section Header */}
-        <div className="text-center mb-12 md:mb-16">
-          <p className="font-body text-bakery-accent text-sm sm:text-base tracking-widest uppercase mb-2">
-            Our Selection
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+        {/* Left: headline */}
+        <div className="lg:col-span-4 space-y-6">
+          <h2 className="text-xs uppercase tracking-[0.25em] font-semibold text-ink">Essentials for all</h2>
+          <p className="text-xs sm:text-sm text-muted leading-relaxed">
+            Our most-loved staples, available daily at our Bayan Lepas storefront or pre-packed for swift morning collection.
           </p>
-          <h2 className="font-heading text-bakery-cream text-4xl sm:text-5xl md:text-6xl mb-4">
-            FEATURED ESSENTIALS
-          </h2>
-          <p className="font-body text-bakery-cream/80 text-lg max-w-2xl mx-auto">
-            Discover our most popular handcrafted creations
-          </p>
+          <div className="pt-2">
+            <Link
+              href="/products"
+              className="text-xs uppercase tracking-widest text-ink font-medium inline-flex items-center gap-2 hover:gap-3 transition-all"
+            >
+              View all products &rarr;
+            </Link>
+          </div>
         </div>
 
-        {/* Loading State - Skeleton */}
-        {loading && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            {[...Array(3)].map((_, index) => (
-              <div
-                key={index}
-                className="relative rounded-lg overflow-hidden shadow-lg animate-pulse"
-              >
-                {/* Skeleton Image */}
-                <div className="aspect-[3/4] bg-bakery-cream/20"></div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Error State */}
-        {error && !loading && (
-          <div className="text-center py-20">
-            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-6 max-w-md mx-auto">
-              <svg
-                className="w-12 h-12 text-red-500 mx-auto mb-4"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p className="font-body text-red-400 text-lg">{error}</p>
+        {/* Right: product grid */}
+        <div className="lg:col-span-8">
+          {loading && (
+            <div className="grid grid-cols-3 gap-4 sm:gap-8">
+              {[...Array(3)].map((_, index) => (
+                <div key={index} className="space-y-3 animate-pulse">
+                  <div className="aspect-square bg-line" />
+                  <div className="h-3 bg-line w-2/3 mx-auto" />
+                </div>
+              ))}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Featured Products - 3 Vertical Images */}
-        {!loading && !error && products.length > 0 && (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          {error && !loading && <p className="text-xs text-clay">{error}</p>}
+
+          {!loading && !error && products.length > 0 && (
+            <div className="grid grid-cols-3 gap-4 sm:gap-8">
               {products.slice(0, 3).map((product) => (
-                <div
+                <button
                   key={product.id}
-                  className="relative group cursor-pointer overflow-hidden rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300"
+                  type="button"
                   onClick={() => handleProductClick(product)}
+                  className="group text-center space-y-3"
                 >
-                  <div className="aspect-[3/4] relative">
+                  <div className="relative aspect-square bg-white border border-line overflow-hidden">
                     <Image
                       src={product.imageUrl || '/images/placeholder-product.jpg'}
                       alt={product.name}
                       fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 1024px) 33vw, 260px"
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    {/* Base dark overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                      <div className="text-center text-white p-4">
-                        <h3 className="font-heading text-2xl mb-2">{product.name}</h3>
-                        <p className="font-body text-bakery-accent text-xl font-semibold">RM {product.price.toFixed(2)}</p>
-                      </div>
-                    </div>
                   </div>
-                </div>
+                  <p className="text-[11px] uppercase tracking-wider text-[#3D3A37] font-medium">
+                    {product.name}
+                  </p>
+                  <p className="text-[11px] tracking-wider text-muted">RM {product.price.toFixed(2)}</p>
+                </button>
               ))}
             </div>
+          )}
 
-            {/* View All Products Button */}
-            <div className="text-center mt-12">
-              <Link href="/products">
-                <Button variant="primary" size="lg" className="text-xl">
-                  VIEW ALL PRODUCTS
-                </Button>
-              </Link>
-            </div>
-          </>
-        )}
-
-        {/* No Products Message */}
-        {!loading && !error && products.length === 0 && (
-          <p className="text-center text-bakery-cream/70 text-lg">
-            No products available at the moment. Check back soon!
-          </p>
-        )}
-
-        {/* Product Modal */}
-        <ProductModal
-          product={selectedProduct}
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-        />
+          {!loading && !error && products.length === 0 && (
+            <p className="text-xs text-muted">No products available at the moment. Check back soon!</p>
+          )}
+        </div>
       </div>
+
+      <ProductModal product={selectedProduct} isOpen={isModalOpen} onClose={handleCloseModal} />
     </section>
   )
 }

@@ -1,96 +1,57 @@
-'use client'
+const BENEFITS = [
+  {
+    title: 'Premium quality',
+    description:
+      'Only premium baking ingredients and supplies, carefully selected to ensure consistent results for your home baking projects.',
+  },
+  {
+    title: 'Expert guidance',
+    description:
+      'Sim personally helps every customer find the right products, sharing tips and recipes from years of baking experience.',
+  },
+  {
+    title: 'Complete range',
+    description:
+      'From basic flour to specialty premixes, baking tools to decorations — everything you need under one roof.',
+  },
+  {
+    title: 'Fresh stock',
+    description:
+      'We track expiry dates carefully, so you always get the freshest ingredients for perfect results.',
+  },
+  {
+    title: 'Personal service',
+    description:
+      'We remember our regulars and their preferences, creating a warm family atmosphere where everyone feels welcome.',
+  },
+  {
+    title: 'Fair prices',
+    description:
+      'Quality baking supplies at honest prices. Great ingredients should be affordable for home bakers.',
+  },
+]
 
 export default function WhyChooseUsSection() {
-  const benefits = [
-    {
-      icon: (
-        <svg className="w-8 h-8 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-      title: "PREMIUM QUALITY",
-      description: "We stock only premium baking ingredients and supplies, carefully selected to ensure consistent results for your home baking projects."
-    },
-    {
-      icon: (
-        <svg className="w-8 h-8 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-          <path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-      title: "EXPERT GUIDANCE",
-      description: "Sim personally helps every customer find the right products for their needs, sharing tips and recipes from years of baking experience."
-    },
-    {
-      icon: (
-        <svg className="w-8 h-8 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-          <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-        </svg>
-      ),
-      title: "COMPLETE RANGE",
-      description: "From basic flour to specialty premixes, baking tools to decorations - we have everything you need under one roof."
-    },
-    {
-      icon: (
-        <svg className="w-8 h-8 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-          <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-      title: "FRESH STOCK",
-      description: "We maintain fresh inventory and track expiry dates carefully, so you always get the freshest ingredients for perfect results."
-    },
-    {
-      icon: (
-        <svg className="w-8 h-8 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-          <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-        </svg>
-      ),
-      title: "PERSONAL SERVICE",
-      description: "We remember our regular customers and their preferences, creating a warm family atmosphere where everyone feels welcome."
-    },
-    {
-      icon: (
-        <svg className="w-8 h-8 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-          <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-      title: "FAIR PRICES",
-      description: "Quality baking supplies at honest prices. We believe great ingredients should be affordable for home bakers."
-    }
-  ]
-
   return (
-    <section className="py-16 md:py-24 bg-bakery-cream paper-texture">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-        {/* Section Header */}
-        <div className="text-center mb-16 animate-fade-in-up">
-          <p className="font-body text-bakery-accent text-sm sm:text-base tracking-widest uppercase mb-3">
-            Our Promise
-          </p>
-          <h2 className="font-heading text-bakery-brown text-4xl sm:text-5xl md:text-6xl mb-4">
-            WHY CHOOSE US
-          </h2>
-          <p className="font-body text-bakery-brown/70 text-lg max-w-2xl mx-auto">
-            Discover what makes Sim Baking House special
+    <section className="max-w-[1400px] mx-auto px-6 lg:px-12 py-24 border-b border-line">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+        <div className="lg:col-span-4 space-y-6">
+          <h2 className="text-xs uppercase tracking-[0.25em] font-semibold text-ink">Why Sim Baking House</h2>
+          <p className="font-heading text-3xl sm:text-4xl leading-tight text-ink">
+            A small shop with a simple promise.
           </p>
         </div>
 
-        {/* Benefits Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {benefits.map((benefit, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-lg p-8 text-center hover:shadow-xl transition-all duration-300 hover-scale animate-fade-in-up"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <div className="w-16 h-16 bg-bakery-accent rounded-full flex items-center justify-center mx-auto mb-6 shimmer">
-                {benefit.icon}
-              </div>
-              <h3 className="font-heading text-bakery-brown text-xl mb-3">
+        <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-10">
+          {BENEFITS.map((benefit, index) => (
+            <div key={benefit.title} className="border-t border-line pt-5 space-y-3">
+              <p className="text-[11px] tracking-widest text-clay font-medium">
+                {String(index + 1).padStart(2, '0')}
+              </p>
+              <h3 className="text-[11px] uppercase tracking-wider text-[#3D3A37] font-semibold">
                 {benefit.title}
               </h3>
-              <p className="font-body text-bakery-brown/70 text-sm leading-relaxed">
-                {benefit.description}
-              </p>
+              <p className="text-xs text-muted leading-relaxed">{benefit.description}</p>
             </div>
           ))}
         </div>

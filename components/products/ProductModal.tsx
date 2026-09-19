@@ -61,17 +61,17 @@ export default function ProductModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-bakery-brown/90 backdrop-blur-sm"
+        className="absolute inset-0 bg-ink/60 backdrop-blur-sm"
         onClick={onClose}
         aria-label="Close modal"
       />
 
       {/* Modal Content */}
-      <div className="relative bg-bakery-cream rounded-sm shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto animate-scale-in">
+      <div className="relative bg-paper shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto animate-scale-in">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 bg-bakery-brown/80 hover:bg-bakery-brown text-bakery-cream rounded-full p-2 transition-colors duration-200"
+          className="absolute top-4 right-4 z-10 bg-paper/90 hover:bg-white text-ink border border-line rounded-full p-2 transition-colors duration-200"
           aria-label="Close"
         >
           <svg
@@ -89,7 +89,7 @@ export default function ProductModal({
 
         <div className="grid md:grid-cols-2 gap-0">
           {/* Product Image */}
-          <div className="relative h-64 md:h-full min-h-[300px] bg-bakery-accent/10">
+          <div className="relative h-64 md:h-full min-h-[300px] bg-clay/10">
             <Image
               src={product.imageUrl || '/images/placeholder-product.jpg'}
               alt={product.name}
@@ -113,45 +113,44 @@ export default function ProductModal({
               )}
 
               {/* Product Name */}
-              <h2 className="font-heading text-bakery-brown text-3xl md:text-4xl tracking-tight uppercase animate-fade-in">
+              <h2 className="font-heading text-ink text-4xl md:text-5xl leading-tight animate-fade-in">
                 {product.name}
               </h2>
 
               {/* Mentor Note - Personalized and supportive */}
-              <div className="bg-bakery-accent/5 border-l-2 border-bakery-accent p-4 rounded-r-sm animate-fade-in-delayed">
-                <p className="italic text-bakery-brown/80 font-body text-sm">
+              <div className="bg-sand border-l border-clay p-4 animate-fade-in-delayed">
+                <p className="italic text-ink/80 font-body text-sm">
                   &quot;Sim&apos;s Tip: {product.mentorNote || "A premium essential for your home kitchen."}&quot;
                 </p>
               </div>
 
               {/* Description */}
-              <p className="font-body text-bakery-brown/70 leading-relaxed text-base animate-fade-in-delayed">
+              <p className="font-body text-ink/70 leading-relaxed text-base animate-fade-in-delayed">
                 {product.description}
               </p>
             </div>
 
             {/* PSYCHOLOGY: Quality Commitment - Positive Reframing */}
-            <div className="mt-6 p-4 bg-bakery-accent/5 rounded-xl border border-bakery-accent/10">
+            <div className="mt-6 p-4 bg-sand border border-line">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-bakery-accent text-sm">✨</span>
-                <h4 className="font-heading text-bakery-accent text-[10px] tracking-widest uppercase">
+                <h4 className="font-body font-semibold text-clay text-[10px] tracking-widest uppercase">
                   Our Quality Promise
                 </h4>
               </div>
-              <p className="font-body text-bakery-brown/60 text-[11px] leading-relaxed">
+              <p className="font-body text-ink/60 text-[11px] leading-relaxed">
                 To ensure the absolute freshness of our artisan supplies,
-                <span className="text-bakery-brown/80 font-medium"> all sales are final and non-refundable.</span> Thank you for trusting our craft.
+                <span className="text-ink/80 font-medium"> all sales are final and non-refundable.</span> Thank you for trusting our craft.
               </p>
             </div>
 
             {/* Total Value & CTA Footer */}
-            <div className="mt-6 pt-6 border-t border-bakery-brown/10">
+            <div className="mt-6 pt-6 border-t border-ink/10">
               <div className="flex justify-between items-end mb-6">
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest text-bakery-brown/40 font-heading">
+                  <p className="text-[10px] uppercase tracking-widest text-ink/50 font-body">
                     Total Value
                   </p>
-                  <span className="font-heading text-4xl text-bakery-brown">
+                  <span className="font-heading text-4xl text-ink">
                     RM {product.price.toFixed(2)}
                   </span>
                 </div>
@@ -159,7 +158,7 @@ export default function ProductModal({
                 {/* Stock Status */}
                 {product.inStock && product.stockQuantity <= 5 && product.stockQuantity > 0 && (
                   <div className="text-right">
-                    <span className="text-red-500 text-[10px] font-heading uppercase tracking-wider animate-pulse">
+                    <span className="text-clay text-[10px] font-body font-semibold uppercase tracking-wider animate-pulse">
                       Only {product.stockQuantity} left
                     </span>
                   </div>
@@ -170,13 +169,13 @@ export default function ProductModal({
                 variant="primary"
                 size="lg"
                 onClick={handleOrderNow}
-                className="w-full py-5 text-xl tracking-[0.2em] shadow-xl hover:scale-[1.01] transition-transform bg-bakery-brown hover:bg-bakery-dark"
+                className="w-full py-5"
                 disabled={!product.inStock}
               >
-                {product.inStock ? 'ORDER FOR PICKUP' : 'OUT OF STOCK'}
+                {product.inStock ? 'Order for pickup' : 'Out of stock'}
               </Button>
 
-              <p className="font-body text-bakery-brown/40 text-[10px] text-center mt-4 uppercase tracking-wider">
+              <p className="font-body text-ink/50 text-[10px] text-center mt-4 uppercase tracking-wider">
                 You&apos;ll be redirected to our order form
               </p>
             </div>

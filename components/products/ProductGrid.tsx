@@ -15,7 +15,7 @@ export default function ProductGrid({
   if (products.length === 0) {
     return (
       <div className="text-center py-16">
-        <p className="font-body text-bakery-cream/70 text-lg">
+        <p className="font-body text-ink/70 text-lg">
           No products available at the moment. Check back soon!
         </p>
       </div>
