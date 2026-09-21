@@ -1,6 +1,5 @@
 import Link from 'next/link'
-import { CONTACT_WHATSAPP_URL, OPENING_HOURS } from '@/lib/config/contact'
-import ObfuscatedEmailLink from '@/components/ui/ObfuscatedEmailLink'
+import { CONTACT_MAILTO_URL, CONTACT_WHATSAPP_URL, OPENING_HOURS } from '@/lib/site'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -33,9 +32,9 @@ export default function Footer() {
             >
               Chat on WhatsApp &rarr;
             </a>
-            <ObfuscatedEmailLink className="block mt-2 hover:text-ink transition-colors">
+            <a href={CONTACT_MAILTO_URL} className="block mt-2 hover:text-ink transition-colors">
               Email us
-            </ObfuscatedEmailLink>
+            </a>
             <div className="mt-3 flex gap-4">
               <a
                 href="https://www.instagram.com/sim_baking_house/"

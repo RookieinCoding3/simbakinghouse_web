@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Instrument_Serif, Plus_Jakarta_Sans } from 'next/font/google'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
-import { CONTACT_PHONE_E164 } from '@/lib/config/contact'
+import { SITE_URL, CONTACT_EMAIL, CONTACT_PHONE_E164 } from '@/lib/site'
 import './globals.css'
 
 const instrumentSerif = Instrument_Serif({
@@ -21,14 +21,14 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.simbakinghouse.com.my'),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: 'Sim Baking House | Baking Supplies & Premix Penang | Bayan Lepas',
     template: '%s | Sim Baking House Penang',
   },
   description:
     'Your trusted baking supplies shop in Penang. Premium cake premix, bread ingredients, baking tools & accessories. Located in Bayan Lepas. Order fresh butter cake premix, German cookies, sourdough essentials. Best prices in Penang, Malaysia.',
-  authors: [{ name: 'Sim Baking House', url: 'https://www.simbakinghouse.com.my' }],
+  authors: [{ name: 'Sim Baking House', url: SITE_URL }],
   creator: 'Sim Baking House',
   publisher: 'Sim Baking House',
   formatDetection: {
@@ -49,7 +49,6 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_MY',
-    url: 'https://www.simbakinghouse.com.my',
     siteName: 'Sim Baking House',
     title: 'Sim Baking House | Best Baking Supplies in Penang',
     description:
@@ -81,9 +80,6 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  alternates: {
-    canonical: 'https://www.simbakinghouse.com.my',
-  },
   category: 'Shopping',
   classification: 'Baking Supplies Store',
 }
@@ -94,16 +90,16 @@ const jsonLd = {
   '@graph': [
     {
       '@type': 'LocalBusiness',
-      '@id': 'https://www.simbakinghouse.com.my/#business',
+      '@id': `${SITE_URL}/#business`,
       name: 'Sim Baking House',
       alternateName: 'SBH Penang',
       description:
         'Premium baking supplies shop in Penang offering cake premix, baking ingredients, tools and accessories. Specializing in butter cake premix, German cookies, and sourdough essentials.',
-      url: 'https://www.simbakinghouse.com.my',
+      url: SITE_URL,
       telephone: CONTACT_PHONE_E164,
-      email: 'simbakinghouse25@gmail.com',
-      image: 'https://www.simbakinghouse.com.my/og-image.jpg',
-      logo: 'https://www.simbakinghouse.com.my/SBH_tab.png',
+      email: CONTACT_EMAIL,
+      image: `${SITE_URL}/og-image.jpg`,
+      logo: `${SITE_URL}/SBH_tab.png`,
       priceRange: 'RM',
       currenciesAccepted: 'MYR',
       paymentAccepted: 'Cash, Bank Transfer, Online Payment',
@@ -172,37 +168,37 @@ const jsonLd = {
     },
     {
       '@type': 'WebSite',
-      '@id': 'https://www.simbakinghouse.com.my/#website',
-      url: 'https://www.simbakinghouse.com.my',
+      '@id': `${SITE_URL}/#website`,
+      url: SITE_URL,
       name: 'Sim Baking House',
       description: 'Baking supplies and premix shop in Penang, Malaysia',
       publisher: {
-        '@id': 'https://www.simbakinghouse.com.my/#business',
+        '@id': `${SITE_URL}/#business`,
       },
       potentialAction: {
         '@type': 'SearchAction',
         target: {
           '@type': 'EntryPoint',
-          urlTemplate: 'https://www.simbakinghouse.com.my/products?search={search_term_string}',
+          urlTemplate: `${SITE_URL}/products?search={search_term_string}`,
         },
         'query-input': 'required name=search_term_string',
       },
     },
     {
       '@type': 'BreadcrumbList',
-      '@id': 'https://www.simbakinghouse.com.my/#breadcrumb',
+      '@id': `${SITE_URL}/#breadcrumb`,
       itemListElement: [
         {
           '@type': 'ListItem',
           position: 1,
           name: 'Home',
-          item: 'https://www.simbakinghouse.com.my',
+          item: SITE_URL,
         },
         {
           '@type': 'ListItem',
           position: 2,
           name: 'Products',
-          item: 'https://www.simbakinghouse.com.my/products',
+          item: `${SITE_URL}/products`,
         },
       ],
     },

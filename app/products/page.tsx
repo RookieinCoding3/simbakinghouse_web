@@ -1,6 +1,14 @@
 import { fetchProducts } from '@/lib/firebase/products'
 import { enhanceWithDemoData } from '@/lib/demo/mentorData'
 import ProductsPageClient from '@/components/products/ProductsPageClient'
+import { pageMetadata } from '@/lib/seo'
+
+export const metadata = pageMetadata({
+  path: '/products',
+  title: 'Products',
+  description:
+    'Baking ingredients, premixes, tools and decorations from Sim Baking House in Bayan Lepas, Penang.',
+})
 
 // Regenerate at most every 5 minutes so stock/price edits show up quickly
 // without every visitor hitting Firestore directly.

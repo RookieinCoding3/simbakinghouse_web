@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
+import { pageMetadata } from '@/lib/seo'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: '/about',
   title: 'Our Journey | Sim Baking House',
   description: "From a lover of baking to a community mentor. Discover Sim's story.",
-}
+})
 
 const LABEL = 'text-xs uppercase tracking-[0.25em] font-semibold text-ink'
 const BODY = 'text-sm text-muted leading-relaxed'

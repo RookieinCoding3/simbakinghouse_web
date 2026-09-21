@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { CONTACT_WHATSAPP_URL, OPENING_HOURS } from '@/lib/config/contact'
+import { CONTACT_WHATSAPP_URL, OPENING_HOURS } from '@/lib/site'
 
 const CELL = 'group bg-paper p-8 md:p-10 space-y-3 hover:bg-sand transition-colors'
 const CELL_LABEL = 'text-[11px] uppercase tracking-wider text-[#3D3A37] font-semibold'

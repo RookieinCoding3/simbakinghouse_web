@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { CONTACT_WHATSAPP_URL } from '@/lib/config/contact'
+import { CONTACT_WHATSAPP_URL } from '@/lib/site'
 
 export default function ProductsError({
   error,

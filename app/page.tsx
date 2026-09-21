@@ -5,6 +5,9 @@ import CategoryNavigationSection from '@/components/sections/CategoryNavigationS
 import FeaturedProductsSection from '@/components/sections/FeaturedProductsSection'
 import BakersJourneySection from '@/components/sections/BakersJourneySection'
 import StickyOrderButton from '@/components/ui/StickyOrderButton'
+import { pageMetadata } from '@/lib/seo'
+
+export const metadata = pageMetadata({ path: '/' })
 
 // Lazy load below-fold sections
 const TestimonialsSection = dynamic(() => import('@/components/sections/TestimonialsSection'), {
