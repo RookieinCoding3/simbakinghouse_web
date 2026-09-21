@@ -1,33 +1,23 @@
 const BENEFITS = [
   {
     title: 'Premium quality',
-    description:
-      'Only premium baking ingredients and supplies, carefully selected to ensure consistent results for your home baking projects.',
+    description: 'Stocked from the same suppliers Penang bakeries use.',
   },
   {
-    title: 'Expert guidance',
-    description:
-      'Sim personally helps every customer find the right products, sharing tips and recipes from years of baking experience.',
+    title: 'Ask Sim',
+    description: "Tell her what you're baking and she'll pick the right premix.",
   },
   {
     title: 'Complete range',
-    description:
-      'From basic flour to specialty premixes, baking tools to decorations — everything you need under one roof.',
+    description: 'Flour, premix, tools, decorations. One stop, no second shop.',
   },
   {
     title: 'Fresh stock',
-    description:
-      'We track expiry dates carefully, so you always get the freshest ingredients for perfect results.',
-  },
-  {
-    title: 'Personal service',
-    description:
-      'We remember our regulars and their preferences, creating a warm family atmosphere where everyone feels welcome.',
+    description: 'Expiry date on every label. We pull stock before it turns.',
   },
   {
     title: 'Fair prices',
-    description:
-      'Quality baking supplies at honest prices. Great ingredients should be affordable for home bakers.',
+    description: 'Retail prices online. Bulk rates for regular bakers, just ask.',
   },
 ]
 
@@ -37,9 +27,6 @@ export default function WhyChooseUsSection() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
         <div className="lg:col-span-4 space-y-6">
           <h2 className="text-xs uppercase tracking-[0.25em] font-semibold text-ink">Why Sim Baking House</h2>
-          <p className="font-heading text-3xl sm:text-4xl leading-tight text-ink">
-            A small shop with a simple promise.
-          </p>
         </div>
 
         <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-10">

@@ -125,7 +125,7 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
       {/* 1. HERO with Search - Clean & Minimal */}
       <section className="py-12 md:py-20 text-center px-4">
         <h1 className="font-heading text-ink text-5xl md:text-7xl mb-8">
-          The collection
+          Products
         </h1>
 
         {/* THE SEARCH BAR - Minimalist & Clean */}
@@ -167,7 +167,7 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
           {/* Results Info Bar */}
           <div className="flex justify-between items-center mb-8 px-1">
             <p className="font-body text-[10px] md:text-sm uppercase tracking-widest text-ink/50">
-              Showing {displayedProducts.length} of {filteredProducts.length} essentials
+              Showing {displayedProducts.length} of {filteredProducts.length} products
               {selectedCategory && (
                 <span className="ml-1 text-clay">in {selectedCategory}</span>
               )}
@@ -178,7 +178,7 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
               onClick={() => setIsFilterOpen(true)}
               className="md:hidden font-body text-ink text-xs uppercase font-medium tracking-widest border-b border-ink/30 pb-0.5 hover:text-clay transition-colors"
             >
-              FILTER
+              Categories
             </button>
 
             {/* Desktop Clear Button */}
@@ -229,7 +229,7 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
               {hasMore && (
                 <div className="mt-16 md:mt-20 text-center pb-8">
                   <p className="font-body text-ink/50 text-[10px] uppercase tracking-widest mb-6">
-                    You&apos;ve explored {displayedProducts.length} of {filteredProducts.length} curated essentials
+                    You&apos;ve explored {displayedProducts.length} of {filteredProducts.length} products
                   </p>
                   <button
                     onClick={loadMore}
@@ -248,7 +248,7 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
               {!hasMore && filteredProducts.length > ITEMS_PER_PAGE && (
                 <div className="mt-16 text-center pb-8">
                   <p className="font-body text-ink/40 text-[10px] uppercase tracking-widest">
-                    You&apos;ve seen all {filteredProducts.length} essentials
+                    You&apos;ve seen all {filteredProducts.length} products
                   </p>
                 </div>
               )}
@@ -269,7 +269,7 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
         onClick={() => setIsFilterOpen(true)}
         className="md:hidden fixed bottom-10 left-1/2 -translate-x-1/2 z-40 bg-ink text-paper px-8 py-4 font-body font-medium text-[11px] uppercase tracking-widest shadow-xl flex items-center gap-2 hover:bg-clay transition-colors"
       >
-        Filter by category
+        Categories
       </button>
 
       {/* Mobile Filter Drawer */}

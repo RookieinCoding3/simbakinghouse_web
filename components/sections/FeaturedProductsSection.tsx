@@ -57,10 +57,7 @@ export default function FeaturedProductsSection() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
         {/* Left: headline */}
         <div className="lg:col-span-4 space-y-6">
-          <h2 className="text-xs uppercase tracking-[0.25em] font-semibold text-ink">Essentials for all</h2>
-          <p className="text-xs sm:text-sm text-muted leading-relaxed">
-            Our most-loved staples, available daily at our Bayan Lepas storefront or pre-packed for swift morning collection.
-          </p>
+          <h2 className="text-xs uppercase tracking-[0.25em] font-semibold text-ink">Best sellers</h2>
           <div className="pt-2">
             <Link
               href="/products"

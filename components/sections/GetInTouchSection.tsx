@@ -10,7 +10,7 @@ export default function GetInTouchSection() {
   return (
     <section className="max-w-[1400px] mx-auto px-6 lg:px-12 py-24">
       <div className="max-w-2xl mb-12 space-y-4">
-        <h2 className="text-xs uppercase tracking-[0.25em] font-semibold text-ink">We&apos;re here to help</h2>
+        <h2 className="text-xs uppercase tracking-[0.25em] font-semibold text-ink">Not sure what to buy?</h2>
         <p className="font-heading text-3xl sm:text-4xl leading-tight text-ink">
           Need baking advice? Can&apos;t find the right ingredient? Sim is always happy to help.
         </p>
@@ -31,17 +31,15 @@ export default function GetInTouchSection() {
           <p className={CELL_LINK}>Start a chat &rarr;</p>
         </a>
 
-        <a
-          href={process.env.NEXT_PUBLIC_GOOGLE_FORM_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={CELL}
-        >
-          <p className={CELL_LABEL}>Place an order</p>
-          <p className="text-xs text-muted leading-relaxed">Fill out our order form</p>
-          <p className="text-xs text-muted leading-relaxed">We&apos;ll prepare your items</p>
-          <p className={CELL_LINK}>Order online &rarr;</p>
-        </a>
+        <div className={CELL}>
+          <p className="text-xs text-muted leading-relaxed">Order online, collect next morning.</p>
+          <Link
+            href="/products"
+            className="inline-block bg-ink hover:bg-clay text-paper font-medium uppercase tracking-widest text-xs px-6 py-3 transition-colors"
+          >
+            Start an order
+          </Link>
+        </div>
       </div>
     </section>
   )

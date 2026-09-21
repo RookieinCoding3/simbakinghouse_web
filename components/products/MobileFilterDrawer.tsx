@@ -42,7 +42,7 @@ export default function MobileFilterDrawer({
         {/* Header */}
         <div className="flex justify-between items-center mb-12">
           <h2 className="font-heading text-ink text-3xl md:text-4xl">
-            Filter
+            Categories
           </h2>
           <button
             onClick={onClose}
@@ -57,9 +57,6 @@ export default function MobileFilterDrawer({
         {/* Category List */}
         <div className="flex-1 space-y-12 overflow-y-auto">
           <div className="space-y-6">
-            <p className="font-body text-ink/30 text-[10px] tracking-[0.3em] uppercase">
-              Collections
-            </p>
             <div className="flex flex-col space-y-4">
               {/* All Products Option */}
               <button
@@ -95,7 +92,7 @@ export default function MobileFilterDrawer({
           {/* Guided Paths - Quick Shortcuts */}
           <div className="pt-8 border-t border-ink/10 space-y-6">
             <p className="font-body text-ink/30 text-[10px] tracking-[0.3em] uppercase">
-              Guided Paths
+              Shop by level
             </p>
             <div className="flex flex-wrap gap-4">
               <div className="cursor-pointer opacity-70 hover:opacity-100 transition-opacity">
@@ -114,13 +111,13 @@ export default function MobileFilterDrawer({
         {/* Footer */}
         <div className="pt-8 mt-8 border-t border-ink/10">
           <p className="font-body text-ink/30 text-[10px] tracking-widest uppercase text-center mb-6">
-            {totalProducts} Curated Essentials
+            {totalProducts} products
           </p>
           <button
             onClick={onClose}
             className="w-full bg-ink text-paper py-4 font-body font-medium text-xs uppercase tracking-[0.2em] hover:bg-clay transition-colors"
           >
-            VIEW COLLECTION
+            View
           </button>
         </div>
       </div>

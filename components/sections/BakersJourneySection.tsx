@@ -15,7 +15,7 @@ export default function BakersJourneySection() {
               Baking is more than following recipes.
             </p>
             <p className="text-xs sm:text-sm text-muted leading-relaxed">
-              Crafting joy since 2017 in the heart of Penang. We open our doors at 6:30 AM, personally guiding
+              Crafting joy since 2017. We personally guide
               home bakers, small bakeries and weekend enthusiasts with tested recipes and honest advice. From
               sunrise dough to golden-brown perfection, we honour tradition while creating memories one bite at a time.
             </p>

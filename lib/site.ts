@@ -14,6 +14,8 @@ export const CONTACT_EMAIL = 'simbakinghouse25@gmail.com'
 export const CONTACT_WHATSAPP_URL = `https://wa.me/${CONTACT_PHONE_NUMBER}`
 export const CONTACT_MAILTO_URL = `mailto:${CONTACT_EMAIL}`
 
-export const OPENING_HOURS = 'Daily: 6:30 AM - 1:00 PM'
+export const SHOP_OPENS_AT = '6:30 AM'
+export const SHOP_CLOSES_AT = '1:00 PM'
+export const OPENING_HOURS = `Daily: ${SHOP_OPENS_AT} - ${SHOP_CLOSES_AT}`
 
 export const absoluteUrl = (path = '/') => `${SITE_URL}${path}`

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { SHOP_OPENS_AT } from '@/lib/site'
 
 export default function HeroSection() {
   return (
@@ -22,7 +23,7 @@ export default function HeroSection() {
 
           <div className="absolute bottom-10 left-6 right-6 sm:left-10 sm:right-10 text-white space-y-3">
             <h1 className="font-heading text-4xl lg:text-5xl font-normal leading-tight">
-              A space for baking, in the heart of Penang.
+              Baking supplies in Bayan Lepas. Open {SHOP_OPENS_AT} daily.
             </h1>
             <Link
               href="/about"

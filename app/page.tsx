@@ -4,7 +4,6 @@ import WhyChooseUsSection from '@/components/sections/WhyChooseUsSection'
 import CategoryNavigationSection from '@/components/sections/CategoryNavigationSection'
 import FeaturedProductsSection from '@/components/sections/FeaturedProductsSection'
 import BakersJourneySection from '@/components/sections/BakersJourneySection'
-import StickyOrderButton from '@/components/ui/StickyOrderButton'
 import { pageMetadata } from '@/lib/seo'
 
 export const metadata = pageMetadata({ path: '/' })
@@ -27,9 +26,6 @@ export default function Home() {
       <WhyChooseUsSection />
       <TestimonialsSection />
       <GetInTouchSection />
-
-      {/* Sticky Order Button - Mobile CTA */}
-      <StickyOrderButton />
     </main>
   )
 }

@@ -38,7 +38,7 @@ export default function CategoryNavigationSection() {
           </h2>
           <p className="text-xs sm:text-sm text-muted leading-relaxed">
             From premium flours to tried-and-tested premixes, baking tools and finishing touches. We keep fresh,
-            small-batch stock with carefully tracked expiry dates so your home and commercial bakes rise with total consistency.
+            small-batch stock so your home and commercial bakes rise with total consistency.
           </p>
           <div className="pt-2">
             <Link
