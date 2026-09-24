@@ -17,12 +17,21 @@ function isProductVisible(data: DocumentData): boolean {
  * Map Firestore document data to Product object
  * Handles flexible field naming from different database structures
  */
+/** Reads the first field that is actually a number, so a genuinely-zero price
+ *  isn't confused with "no price set" (which falls through to undefined). */
+function readPrice(data: DocumentData): number | undefined {
+  for (const value of [data.price, data.Price, data.cost]) {
+    if (typeof value === 'number' && !Number.isNaN(value)) return value
+  }
+  return undefined
+}
+
 function mapDocumentToProduct(docId: string, data: DocumentData): Product {
   return {
     id: docId,
     name: data.name || data.title || data.productName || data.Name || 'Untitled Product',
     description: data.description || data.desc || data.Description || data.details || '',
-    price: data.price || data.Price || data.cost || 0,
+    price: readPrice(data),
     imageUrl: data.imageUrl || data.image || data.imageURL || data.photo || data.photoURL || '/images/placeholder-product.jpg',
     category: data.category || data.Category || 'Uncategorized',
     featured: data.featured ?? false,

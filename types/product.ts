@@ -2,7 +2,8 @@ export interface Product {
   id: string
   name: string
   description: string
-  price: number
+  /** undefined means no price has been set — show "Ask for price", never hide the card */
+  price?: number
   imageUrl: string
   category: string
   featured: boolean

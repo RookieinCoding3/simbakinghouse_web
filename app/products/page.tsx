@@ -2,6 +2,7 @@ import { fetchProducts } from '@/lib/firebase/products'
 import { enhanceWithDemoData } from '@/lib/demo/mentorData'
 import ProductsPageClient from '@/components/products/ProductsPageClient'
 import { pageMetadata } from '@/lib/seo'
+import { productListJsonLd } from '@/lib/structuredData'
 
 export const metadata = pageMetadata({
   path: '/products',
@@ -23,5 +24,13 @@ export default async function ProductsPage() {
   const products = await fetchProducts()
   const enhancedProducts = enhanceWithDemoData(products)
 
-  return <ProductsPageClient initialProducts={enhancedProducts} />
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productListJsonLd(enhancedProducts)) }}
+      />
+      <ProductsPageClient initialProducts={enhancedProducts} />
+    </>
+  )
 }

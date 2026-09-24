@@ -104,7 +104,7 @@ export default function FeaturedProductsSection() {
                   <p className="text-[11px] uppercase tracking-wider text-[#3D3A37] font-medium">
                     {product.name}
                   </p>
-                  <p className="text-[11px] tracking-wider text-muted">RM {product.price.toFixed(2)}</p>
+                  <p className="text-[11px] tracking-wider text-muted">{product.price !== undefined ? `RM ${product.price.toFixed(2)}` : 'Ask for price'}</p>
                 </button>
               ))}
             </div>

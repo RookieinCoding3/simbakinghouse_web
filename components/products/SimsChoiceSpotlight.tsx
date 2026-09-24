@@ -49,7 +49,7 @@ export default function SimsChoiceSpotlight({
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4">
                   <h3 className="font-heading text-white text-2xl leading-tight">{product.name}</h3>
-                  <p className="text-white/90 text-xs mt-1 tracking-wider">RM {product.price.toFixed(2)}</p>
+                  <p className="text-white/90 text-xs mt-1 tracking-wider">{product.price !== undefined ? `RM ${product.price.toFixed(2)}` : 'Ask for price'}</p>
                 </div>
               </div>
             </div>

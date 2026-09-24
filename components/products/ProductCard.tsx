@@ -14,9 +14,6 @@ interface ProductCardProps {
 }
 
 function ProductCard({ product, onClick, index = 0, responsiveTheme = false }: ProductCardProps) {
-  // Psychological trigger: Show scarcity for low stock items
-  const isLowStock = product.stockQuantity > 0 && product.stockQuantity <= 5 && product.inStock
-
   return (
     <div
       onClick={onClick}
@@ -41,9 +38,7 @@ function ProductCard({ product, onClick, index = 0, responsiveTheme = false }: P
           }}
         />
 
-        {/* PSYCHOLOGY: Authority & Scarcity Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-2">
-          {/* Sim's Pick - Authority Bias */}
           {product.featured && (
             <span className="bg-clay text-paper text-[10px] font-body font-medium uppercase px-3 py-1.5 tracking-widest">
               SIM&apos;S PICK
@@ -51,16 +46,8 @@ function ProductCard({ product, onClick, index = 0, responsiveTheme = false }: P
           )}
         </div>
 
-        {/* Scarcity Badge - FOMO Trigger (top right) */}
-        {isLowStock && (
-          <div className="absolute top-3 right-3">
-            <span className="bg-clay text-paper text-[9px] font-body font-medium uppercase px-2.5 py-1 tracking-widest">
-              {product.stockQuantity} LEFT
-            </span>
-          </div>
-        )}
-
-        {/* Out of Stock Overlay */}
+        {/* Out of Stock Overlay — boolean only, never a count (owner may not
+            track exact stock, and a count invites arguing over the number) */}
         {!product.inStock && (
           <div className={cn(
             "absolute inset-0 flex items-center justify-center",
@@ -70,7 +57,7 @@ function ProductCard({ product, onClick, index = 0, responsiveTheme = false }: P
               "text-[11px] uppercase tracking-[0.2em] font-body font-medium px-4 py-2",
               "text-ink/80 bg-paper/80"
             )}>
-              Sold Out
+              Out of stock
             </span>
           </div>
         )}
@@ -97,7 +84,7 @@ function ProductCard({ product, onClick, index = 0, responsiveTheme = false }: P
             "font-heading text-lg md:text-xl",
             "text-clay"
           )}>
-            RM{product.price.toFixed(2)}
+            {product.price !== undefined ? `RM ${product.price.toFixed(2)}` : 'Ask for price'}
           </p>
         </div>
       </div>

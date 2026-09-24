@@ -51,7 +51,7 @@ export default function ProductModal({
   const handleOrderNow = () => {
     // Track order intent for business intelligence
     if (product) {
-      logOrderIntent(product.id, product.name, product.price)
+      logOrderIntent(product.id, product.name, product.price ?? 0)
     }
     const formUrl = process.env.NEXT_PUBLIC_GOOGLE_FORM_URL || 'https://forms.gle/AufdJFLrqhPzSh61A'
     window.open(formUrl, '_blank', 'noopener,noreferrer')
@@ -151,18 +151,9 @@ export default function ProductModal({
                     Total Value
                   </p>
                   <span className="font-heading text-4xl text-ink">
-                    RM {product.price.toFixed(2)}
+                    {product.price !== undefined ? `RM ${product.price.toFixed(2)}` : 'Ask for price'}
                   </span>
                 </div>
-
-                {/* Stock Status */}
-                {product.inStock && product.stockQuantity <= 5 && product.stockQuantity > 0 && (
-                  <div className="text-right">
-                    <span className="text-clay text-[10px] font-body font-semibold uppercase tracking-wider animate-pulse">
-                      Only {product.stockQuantity} left
-                    </span>
-                  </div>
-                )}
               </div>
 
               <Button
