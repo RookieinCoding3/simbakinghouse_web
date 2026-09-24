@@ -1,5 +1,6 @@
 import { initializeApp, getApps, cert, type App } from 'firebase-admin/app'
 import { getFirestore, type Firestore } from 'firebase-admin/firestore'
+import { getStorage, type Storage } from 'firebase-admin/storage'
 
 // Server-only. Never import this from a Client Component or anything that
 // could end up in the browser bundle — FIREBASE_PRIVATE_KEY is a real
@@ -31,10 +32,15 @@ function getAdminApp(): App {
 
   app = initializeApp({
     credential: cert({ projectId, clientEmail, privateKey }),
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   })
   return app
 }
 
 export function getAdminDb(): Firestore {
   return getFirestore(getAdminApp())
+}
+
+export function getAdminStorage(): Storage {
+  return getStorage(getAdminApp())
 }

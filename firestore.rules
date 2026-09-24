@@ -39,6 +39,33 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Orders — never created or deleted from the client. Creation happens
+    // server-side via the Admin SDK (app/api/orders, which bypasses these
+    // rules entirely) so a customer's checkout never needs a client write
+    // path opened here at all. A customer reads their own order only
+    // through a server route that checks order ID + phone last 4
+    // (app/api/orders/[orderId]) — also via the Admin SDK, not this rule.
+    // This rule exists solely for the admin dashboard: read the queue,
+    // and update status/confirmedTotal/etc.
+    match /orders/{orderId} {
+      allow read, update: if isAdmin();
+      allow create, delete: if false;
+    }
+
+    // Shop settings (hours, WhatsApp number, DuitNow QR path) — public
+    // read so every page can show current hours, admin-only write via
+    // /admin/settings.
+    match /settings/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Order ID counter — transactions only, via the Admin SDK
+    // (app/api/orders), never touched by any client.
+    match /counters/{id} {
+      allow read, write: if false;
+    }
+
     // Admin allowlist. Doc ID = Firebase Auth UID. Intentionally has no
     // client-writable path at all — add/remove admins via the Firebase
     // Console (Firestore Data tab) or a trusted backend script, never

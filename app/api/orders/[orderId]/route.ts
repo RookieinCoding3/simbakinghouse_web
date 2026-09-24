@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAdminDb } from '@/lib/firebase/admin'
+import { getAdminDb, getAdminStorage } from '@/lib/firebase/admin'
+import { fetchShopSettings } from '@/lib/firebase/settings'
 import type { Order, PublicOrderView } from '@/types/order'
 
 export const runtime = 'nodejs'
@@ -47,7 +48,30 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
-    return NextResponse.json(toPublicView(order))
+    const view = toPublicView(order)
+
+    // Only 'confirmed' needs the DuitNow QR — by 'ready' the order should
+    // already be paid. ('ready' has its own "pickup QR" in the TASK.md
+    // spec; that's a separate, unbuilt feature — see review notes.)
+    if (order.status === 'confirmed') {
+      const settings = await fetchShopSettings()
+      if (settings.duitNowQrPath) {
+        try {
+          const [url] = await getAdminStorage()
+            .bucket()
+            .file(settings.duitNowQrPath)
+            .getSignedUrl({ action: 'read', expires: Date.now() + 15 * 60 * 1000 })
+          view.duitNowQrUrl = url
+        } catch (qrError) {
+          // Missing/misconfigured file shouldn't take down the whole
+          // status page — the customer still sees their order, just
+          // without the QR image, and can ask on WhatsApp instead.
+          console.error('[orders] failed to sign QR url:', qrError)
+        }
+      }
+    }
+
+    return NextResponse.json(view)
   } catch (error) {
     console.error('[orders] failed to read order:', error)
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })

@@ -67,6 +67,44 @@ export function buildOrderMessage({
   ].join('\n')
 }
 
-export function buildOrderWhatsAppLink(input: OrderMessageInput): string {
-  return `${CONTACT_WHATSAPP_URL}?text=${encodeURIComponent(buildOrderMessage(input))}`
+/** whatsappUrl defaults to the static CONTACT_WHATSAPP_URL but should
+ *  normally be built from the live settings/shop WhatsApp number (see
+ *  lib/firebase/settings.ts) so a changed number takes effect immediately. */
+export function buildOrderWhatsAppLink(
+  input: OrderMessageInput,
+  whatsappUrl: string = CONTACT_WHATSAPP_URL
+): string {
+  return `${whatsappUrl}?text=${encodeURIComponent(buildOrderMessage(input))}`
+}
+
+interface ConfirmationMessageInput {
+  orderId: string
+  name: string
+  confirmedTotal: number
+  collectDate: string | null
+  collectTime: string | null
+}
+
+/** The message admin sends after tapping Accept — see TASK.md Phase 4.1.
+ *  Nothing here auto-sends; this only builds a wa.me link admin taps. */
+export function buildConfirmationMessage({
+  orderId,
+  name,
+  confirmedTotal,
+  collectDate,
+  collectTime,
+}: ConfirmationMessageInput): string {
+  return [
+    `Hi ${name}, your order ${orderId} is confirmed.`,
+    `Total: RM ${confirmedTotal.toFixed(2)}`,
+    `Pay here: ${absoluteUrl(`/order/${orderId}`)}`,
+    `Collect: ${formatDate(collectDate)} ${formatTime(collectTime)}`,
+  ].join('\n')
+}
+
+/** customerPhone is the full 60XXXXXXXXX number — admin reads the raw
+ *  order doc (Firestore rule: isAdmin() only), unlike the customer-facing
+ *  status page which only ever sees phoneLast4. */
+export function buildAdminWhatsAppLink(customerPhone: string, message: string): string {
+  return `https://wa.me/${customerPhone}?text=${encodeURIComponent(message)}`
 }

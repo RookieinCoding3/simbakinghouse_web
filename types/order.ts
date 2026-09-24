@@ -50,4 +50,7 @@ export interface PublicOrderView {
   confirmedTotal: number | null
   cancelReason?: string
   createdAt: string
+  /** Short-lived signed URL, only present for 'confirmed'/'ready' orders
+   *  when a QR has been uploaded. Never a public/permanent URL. */
+  duitNowQrUrl?: string
 }

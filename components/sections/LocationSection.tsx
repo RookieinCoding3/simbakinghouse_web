@@ -1,6 +1,9 @@
-import { CONTACT_MAILTO_URL, CONTACT_WHATSAPP_URL, OPENING_HOURS } from '@/lib/site'
+import { CONTACT_MAILTO_URL } from '@/lib/site'
+import { fetchShopSettings } from '@/lib/firebase/settings'
 
-export default function LocationSection() {
+export default async function LocationSection() {
+  const { openingHours, whatsappNumber } = await fetchShopSettings()
+  const whatsappUrl = `https://wa.me/${whatsappNumber}`
   return (
     <section className="py-20 min-h-[80vh] flex items-center">
       <div className="container mx-auto px-6 max-w-6xl">
@@ -24,7 +27,7 @@ export default function LocationSection() {
                   Hours
                 </h3>
                 <p className="font-body text-ink/70 text-base">
-                  {OPENING_HOURS}
+                  {openingHours}
                 </p>
                 <p className="font-body text-clay/80 text-sm mt-1 italic">
                   Fresh supplies available daily
@@ -36,7 +39,7 @@ export default function LocationSection() {
                   Connect
                 </h3>
                 <a
-                  href={CONTACT_WHATSAPP_URL}
+                  href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-body text-clay hover:text-clay/80 text-base transition-colors inline-block hover:underline"

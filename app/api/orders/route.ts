@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminDb } from '@/lib/firebase/admin'
 import { validateOrderInput } from '@/lib/orderValidation'
+import { fetchShopSettings } from '@/lib/firebase/settings'
 import { lastFourDigits } from '@/lib/phone'
 import type { Order } from '@/types/order'
 
@@ -39,7 +40,8 @@ function isRateLimited(phone: string): boolean {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => null)
-    const validated = validateOrderInput(body)
+    const { shopOpensAt, shopClosesAt } = await fetchShopSettings()
+    const validated = validateOrderInput(body, { shopOpensAt, shopClosesAt })
     if (!validated.ok) {
       return NextResponse.json({ error: validated.error }, { status: 400 })
     }

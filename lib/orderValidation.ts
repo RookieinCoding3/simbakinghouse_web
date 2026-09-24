@@ -36,14 +36,18 @@ function displayTimeToMinutes(display: string): number {
   return hour * 60 + Number(minuteStr)
 }
 
-const SHOP_OPENS_MINUTES = displayTimeToMinutes(SHOP_OPENS_AT)
-const SHOP_CLOSES_MINUTES = displayTimeToMinutes(SHOP_CLOSES_AT)
-
-function isWithinShopHours(time: string): boolean {
+function isWithinShopHours(time: string, opensAt: number, closesAt: number): boolean {
   if (!/^\d{2}:\d{2}$/.test(time)) return false
   const minutes = timeToMinutes(time)
-  return minutes >= SHOP_OPENS_MINUTES && minutes <= SHOP_CLOSES_MINUTES
+  return minutes >= opensAt && minutes <= closesAt
 }
+
+export interface ShopHours {
+  shopOpensAt: string // display, e.g. "6:30 AM" — from lib/firebase/settings.ts, falls back to lib/site.ts
+  shopClosesAt: string
+}
+
+const DEFAULT_SHOP_HOURS: ShopHours = { shopOpensAt: SHOP_OPENS_AT, shopClosesAt: SHOP_CLOSES_AT }
 
 /**
  * Validates and normalises a raw checkout submission. Returns either
@@ -52,8 +56,18 @@ function isWithinShopHours(time: string): boolean {
  * Firestore rule this project's Phase 5 plans, since orders are currently
  * written server-side via the Admin SDK rather than a client Firestore
  * write — see app/api/orders/route.ts.
+ *
+ * shopHours defaults to the lib/site.ts constants but should normally be
+ * passed the live settings/shop values (app/api/orders/route.ts fetches
+ * them), so a collection time is validated against whatever hours the
+ * owner currently has set in /admin/settings, not what shipped at launch.
  */
-export function validateOrderInput(body: unknown): { ok: true; data: ValidatedOrderInput } | { ok: false; error: string } {
+export function validateOrderInput(
+  body: unknown,
+  shopHours: ShopHours = DEFAULT_SHOP_HOURS
+): { ok: true; data: ValidatedOrderInput } | { ok: false; error: string } {
+  const shopOpensMinutes = displayTimeToMinutes(shopHours.shopOpensAt)
+  const shopClosesMinutes = displayTimeToMinutes(shopHours.shopClosesAt)
   if (!body || typeof body !== 'object') return { ok: false, error: 'Invalid request' }
   const b = body as Record<string, unknown>
 
@@ -90,8 +104,8 @@ export function validateOrderInput(body: unknown): { ok: true; data: ValidatedOr
 
   let collectTime: string | null = null
   if (typeof b.collectTime === 'string' && b.collectTime) {
-    if (!isWithinShopHours(b.collectTime)) {
-      return { ok: false, error: `Choose a time between ${SHOP_OPENS_AT} and ${SHOP_CLOSES_AT}` }
+    if (!isWithinShopHours(b.collectTime, shopOpensMinutes, shopClosesMinutes)) {
+      return { ok: false, error: `Choose a time between ${shopHours.shopOpensAt} and ${shopHours.shopClosesAt}` }
     }
     collectTime = b.collectTime
   } else {

@@ -1,8 +1,11 @@
 import Link from 'next/link'
-import { CONTACT_MAILTO_URL, CONTACT_WHATSAPP_URL, OPENING_HOURS } from '@/lib/site'
+import { CONTACT_MAILTO_URL } from '@/lib/site'
+import { fetchShopSettings } from '@/lib/firebase/settings'
 
-export default function Footer() {
+export default async function Footer() {
   const currentYear = new Date().getFullYear()
+  const { openingHours, whatsappNumber } = await fetchShopSettings()
+  const whatsappUrl = `https://wa.me/${whatsappNumber}`
 
   return (
     <footer id="find-us" className="border-t border-line">
@@ -18,14 +21,14 @@ export default function Footer() {
 
           <div>
             <p className="text-ink uppercase tracking-widest font-semibold mb-3">Operating Hours</p>
-            <p>{OPENING_HOURS}</p>
+            <p>{openingHours}</p>
             <p className="mt-1">Early morning walk-in &amp; pre-order pickup</p>
           </div>
 
           <div>
             <p className="text-ink uppercase tracking-widest font-semibold mb-3">Direct Contact</p>
             <a
-              href={CONTACT_WHATSAPP_URL}
+              href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="block text-ink underline underline-offset-4 hover:text-clay"

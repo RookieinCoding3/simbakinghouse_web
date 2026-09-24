@@ -159,7 +159,12 @@ function StatusMessage({ order }: { order: PublicOrderView }) {
             Total: <span className="font-medium">RM {(order.confirmedTotal ?? order.estimatedTotal).toFixed(2)}</span>
           </p>
           <p className="text-sm text-ink">Pay and send the receipt on WhatsApp.</p>
-          <p className="text-xs text-muted">Sim will send the DuitNow QR directly on WhatsApp.</p>
+          {order.duitNowQrUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element -- a short-lived signed URL, not a static asset next/image can optimise
+            <img src={order.duitNowQrUrl} alt="DuitNow payment QR" className="w-48 h-48 border border-line" />
+          ) : (
+            <p className="text-xs text-muted">Sim will send the DuitNow QR directly on WhatsApp.</p>
+          )}
           <a
             href={askWhatsAppLink(order.orderId)}
             target="_blank"

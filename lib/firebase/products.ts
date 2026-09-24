@@ -36,7 +36,15 @@ function mapDocumentToProduct(docId: string, data: DocumentData): Product {
     category: data.category || data.Category || 'Uncategorized',
     featured: data.featured ?? false,
     inStock: data.inStock ?? true,
-    stockQuantity: data.stockQuantity ?? 0,
+    // stockQuantity is the older field name (still possibly written by the
+    // iOS admin app); stockCount is what Phase 4's web admin uses. Neither
+    // defaults to 0 — undefined means tracking is simply off.
+    stockCount:
+      typeof data.stockCount === 'number'
+        ? data.stockCount
+        : typeof data.stockQuantity === 'number'
+          ? data.stockQuantity
+          : undefined,
     createdAt: data.createdAt?.toDate?.(),
     updatedAt: data.updatedAt?.toDate?.(),
     // Mentor-focused fields (flexible naming support)

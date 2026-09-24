@@ -1,12 +1,12 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/lib/cart/CartContext'
 import { normalizeMyPhone } from '@/lib/phone'
 import { buildOrderWhatsAppLink } from '@/lib/whatsapp'
-import { SHOP_OPENS_AT, SHOP_CLOSES_AT } from '@/lib/site'
+import { fetchShopSettings, DEFAULT_SETTINGS } from '@/lib/firebase/settings'
 import type { Fulfilment } from '@/types/order'
 
 function toDateInputValue(date: Date): string {
@@ -16,16 +16,29 @@ function toDateInputValue(date: Date): string {
   return `${y}-${m}-${d}`
 }
 
-// Shop hours as HH:MM for the <input type="time"> min/max, alongside the
-// human-readable SHOP_OPENS_AT/SHOP_CLOSES_AT used in copy — both derive
-// from the same lib/site.ts constants' intent, kept in sync manually here
-// since <input> needs 24h HH:MM specifically.
-const TIME_MIN = '06:30'
-const TIME_MAX = '13:00'
+/** "6:30 AM" -> "06:30", for the <input type="time"> min/max attributes. */
+function displayTimeTo24h(display: string): string {
+  const match = display.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
+  if (!match) return display
+  const [, hourStr, minute, period] = match
+  let hour = Number(hourStr) % 12
+  if (period.toUpperCase() === 'PM') hour += 12
+  return `${String(hour).padStart(2, '0')}:${minute}`
+}
 
 export default function CheckoutPage() {
   const { items, subtotal, hasUnpricedItems, clear } = useCart()
   const router = useRouter()
+
+  // Starts from the static defaults (no loading flash / flicker), then
+  // refreshed from settings/shop on mount so a changed opening hours or
+  // WhatsApp number takes effect without a deploy.
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS)
+  useEffect(() => {
+    fetchShopSettings().then(setSettings)
+  }, [])
+  const timeMin = useMemo(() => displayTimeTo24h(settings.shopOpensAt), [settings.shopOpensAt])
+  const timeMax = useMemo(() => displayTimeTo24h(settings.shopClosesAt), [settings.shopClosesAt])
 
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
@@ -123,7 +136,7 @@ export default function CheckoutPage() {
           unitPriceSnapshot: item.unitPrice,
         })),
         estimatedTotal,
-      })
+      }, `https://wa.me/${settings.whatsappNumber}`)
 
       clear()
       window.open(waLink, '_blank', 'noopener,noreferrer')
@@ -241,13 +254,13 @@ export default function CheckoutPage() {
                 type="time"
                 value={collectTime}
                 onChange={(e) => setCollectTime(e.target.value)}
-                min={TIME_MIN}
-                max={TIME_MAX}
+                min={timeMin}
+                max={timeMax}
                 required
                 className="w-full bg-white border border-line py-3 px-4 text-ink text-sm focus:outline-none focus:border-ink/40"
               />
               <p className="text-[11px] text-muted mt-1">
-                Between {SHOP_OPENS_AT} and {SHOP_CLOSES_AT}
+                Between {settings.shopOpensAt} and {settings.shopClosesAt}
               </p>
             </div>
           </div>

@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { SHOP_OPENS_AT } from '@/lib/site'
+import { fetchShopSettings } from '@/lib/firebase/settings'
 
-export default function HeroSection() {
+export default async function HeroSection() {
+  const { shopOpensAt } = await fetchShopSettings()
   return (
     <section id="hero" className="w-full border-b border-line">
       <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2">
@@ -23,7 +24,7 @@ export default function HeroSection() {
 
           <div className="absolute bottom-10 left-6 right-6 sm:left-10 sm:right-10 text-white space-y-3">
             <h1 className="font-heading text-4xl lg:text-5xl font-normal leading-tight">
-              Baking supplies in Bayan Lepas. Open {SHOP_OPENS_AT} daily.
+              Baking supplies in Bayan Lepas. Open {shopOpensAt} daily.
             </h1>
             <Link
               href="/about"

@@ -40,6 +40,18 @@ service firebase.storage {
         && request.resource.contentType.matches('image/.*');
     }
 
+    // DuitNow payment QR — deliberately admin-only read, unlike everything
+    // else in this file. A customer never reads this path directly: the
+    // order status server route (app/api/orders/[orderId], Admin SDK,
+    // bypasses this rule) mints a short-lived signed URL for a verified
+    // customer instead. Admin uploads it directly from /admin/settings.
+    match /private/{fileName} {
+      allow read: if isAdmin();
+      allow write: if isAdmin()
+        && request.resource.size < 2 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
     // Deny-by-default for every other path, including any not yet used.
     match /{allPaths=**} {
       allow read, write: if false;

@@ -1,12 +1,14 @@
 import Link from 'next/link'
-import { CONTACT_WHATSAPP_URL, OPENING_HOURS } from '@/lib/site'
+import { fetchShopSettings } from '@/lib/firebase/settings'
 
 const CELL = 'group bg-paper p-8 md:p-10 space-y-3 hover:bg-sand transition-colors'
 const CELL_LABEL = 'text-[11px] uppercase tracking-wider text-[#3D3A37] font-semibold'
 const CELL_LINK =
   'text-xs uppercase tracking-widest text-ink font-medium inline-flex items-center gap-2 group-hover:gap-3 transition-all'
 
-export default function GetInTouchSection() {
+export default async function GetInTouchSection() {
+  const { openingHours, whatsappNumber } = await fetchShopSettings()
+  const whatsappUrl = `https://wa.me/${whatsappNumber}`
   return (
     <section className="max-w-[1400px] mx-auto px-6 lg:px-12 py-24">
       <div className="max-w-2xl mb-12 space-y-4">
@@ -20,11 +22,11 @@ export default function GetInTouchSection() {
         <Link href="/location" className={CELL}>
           <p className={CELL_LABEL}>Visit our store</p>
           <p className="text-xs text-muted leading-relaxed">Bayan Lepas, Penang</p>
-          <p className="text-xs text-muted leading-relaxed">{OPENING_HOURS}</p>
+          <p className="text-xs text-muted leading-relaxed">{openingHours}</p>
           <p className={CELL_LINK}>Get directions &rarr;</p>
         </Link>
 
-        <a href={CONTACT_WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className={CELL}>
+        <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className={CELL}>
           <p className={CELL_LABEL}>WhatsApp us</p>
           <p className="text-xs text-muted leading-relaxed">Quick questions &amp; orders</p>
           <p className="text-xs text-muted leading-relaxed">Chat with Sim directly</p>

@@ -8,7 +8,10 @@ export interface Product {
   category: string
   featured: boolean
   inStock: boolean
-  stockQuantity: number
+  /** Optional. undefined = stock tracking is off for this product — never
+   *  block a sale on it. Never shown to customers, only used by admin
+   *  (decremented on the 'collected' transition) — see app/admin/orders. */
+  stockCount?: number
   createdAt?: Date
   updatedAt?: Date
   // Mentor-focused fields (optional for backward compatibility)
