@@ -58,6 +58,9 @@ export default function Footer() {
           <div className="md:text-right">
             <p>&copy; {currentYear} Sim Baking House</p>
             <p className="mt-1">All rights reserved.</p>
+            <Link href="/privacy" className="block mt-2 hover:text-ink transition-colors">
+              Privacy
+            </Link>
           </div>
         </div>
       </div>

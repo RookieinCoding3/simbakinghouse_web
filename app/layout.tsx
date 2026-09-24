@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { Instrument_Serif, Plus_Jakarta_Sans } from 'next/font/google'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import { CartProvider } from '@/lib/cart/CartContext'
+import CartDrawer from '@/components/cart/CartDrawer'
 import { SITE_URL, CONTACT_EMAIL, CONTACT_PHONE_E164 } from '@/lib/site'
 import './globals.css'
 
@@ -222,9 +224,12 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
-        <Header />
-        {children}
-        <Footer />
+        <CartProvider>
+          <Header />
+          {children}
+          <Footer />
+          <CartDrawer />
+        </CartProvider>
       </body>
     </html>
   )

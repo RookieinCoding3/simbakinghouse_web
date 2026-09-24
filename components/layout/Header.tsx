@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
+import CartButton from '@/components/cart/CartButton'
 
 // Navigation menu items
 const NAV_ITEMS = [
@@ -73,16 +74,9 @@ export default function Header() {
           Sim · Baking · House
         </Link>
 
-        {/* Right CTA */}
+        {/* Right: cart */}
         <div className="flex justify-end">
-          <a
-            href={process.env.NEXT_PUBLIC_GOOGLE_FORM_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[11px] sm:text-xs uppercase tracking-widest text-ink hover:text-clay inline-flex items-center gap-1.5 font-medium transition-colors"
-          >
-            Order <span className="hidden sm:inline">online</span> <span className="text-sm">&rarr;</span>
-          </a>
+          <CartButton />
         </div>
       </nav>
 

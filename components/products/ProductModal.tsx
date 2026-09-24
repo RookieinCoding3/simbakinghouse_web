@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import type { Product } from '@/types/product'
 import Button from '@/components/ui/Button'
 import ProductBadge from './ProductBadge'
 import { logProductView, logOrderIntent } from '@/lib/firebase/analytics'
+import { useCart } from '@/lib/cart/CartContext'
 
 interface ProductModalProps {
   product: Product | null
@@ -20,6 +21,8 @@ export default function ProductModal({
 }: ProductModalProps) {
   // Track which product was last logged to prevent duplicates
   const lastLoggedProductId = useRef<string | null>(null)
+  const { addItem } = useCart()
+  const [qty, setQty] = useState(1)
 
   // Handle ESC key to close modal
   useEffect(() => {
@@ -46,15 +49,17 @@ export default function ProductModal({
     }
   }, [isOpen, product])
 
+  // Reset the quantity picker each time a different product is opened
+  useEffect(() => {
+    setQty(1)
+  }, [product?.id])
+
   if (!isOpen || !product) return null
 
-  const handleOrderNow = () => {
-    // Track order intent for business intelligence
-    if (product) {
-      logOrderIntent(product.id, product.name, product.price ?? 0)
-    }
-    const formUrl = process.env.NEXT_PUBLIC_GOOGLE_FORM_URL || 'https://forms.gle/AufdJFLrqhPzSh61A'
-    window.open(formUrl, '_blank', 'noopener,noreferrer')
+  const handleAddToCart = () => {
+    logOrderIntent(product.id, product.name, product.price ?? 0)
+    addItem(product, qty)
+    onClose()
   }
 
   return (
@@ -156,19 +161,38 @@ export default function ProductModal({
                 </div>
               </div>
 
+              {product.inStock && (
+                <div className="flex items-center gap-4 mb-4">
+                  <span className="text-[10px] uppercase tracking-widest text-ink/50 font-body">Qty</span>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setQty((q) => Math.max(1, q - 1))}
+                      className="w-8 h-8 flex items-center justify-center border border-line text-ink hover:border-ink transition-colors"
+                      aria-label="Decrease quantity"
+                    >
+                      −
+                    </button>
+                    <span className="text-sm w-6 text-center">{qty}</span>
+                    <button
+                      onClick={() => setQty((q) => Math.min(99, q + 1))}
+                      className="w-8 h-8 flex items-center justify-center border border-line text-ink hover:border-ink transition-colors"
+                      aria-label="Increase quantity"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <Button
                 variant="primary"
                 size="lg"
-                onClick={handleOrderNow}
+                onClick={handleAddToCart}
                 className="w-full py-5"
                 disabled={!product.inStock}
               >
-                {product.inStock ? 'Order for pickup' : 'Out of stock'}
+                {product.inStock ? 'Add to cart' : 'Out of stock'}
               </Button>
-
-              <p className="font-body text-ink/50 text-[10px] text-center mt-4 uppercase tracking-wider">
-                You&apos;ll be redirected to our order form
-              </p>
             </div>
           </div>
         </div>
