@@ -122,12 +122,16 @@ export default function ProductModal({
                 {product.name}
               </h2>
 
-              {/* Mentor Note - Personalized and supportive */}
-              <div className="bg-sand border-l border-clay p-4 animate-fade-in-delayed">
-                <p className="italic text-ink/80 font-body text-sm">
-                  &quot;Sim&apos;s Tip: {product.mentorNote || "A premium essential for your home kitchen."}&quot;
-                </p>
-              </div>
+              {/* Sim's Tip — only ever a real note someone actually entered for
+                  this product (e.g. via Firestore); never a generic fallback
+                  quote invented and attributed to Sim. */}
+              {product.mentorNote && (
+                <div className="bg-sand border-l border-clay p-4 animate-fade-in-delayed">
+                  <p className="italic text-ink/80 font-body text-sm">
+                    &quot;Sim&apos;s Tip: {product.mentorNote}&quot;
+                  </p>
+                </div>
+              )}
 
               {/* Description */}
               <p className="font-body text-ink/70 leading-relaxed text-base animate-fade-in-delayed">

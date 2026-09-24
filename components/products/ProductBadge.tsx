@@ -7,8 +7,10 @@ interface ProductBadgeProps {
   size?: 'sm' | 'md'
 }
 
+// 'sims-secret' ("✨ SECRET") deliberately removed: it never had a real
+// theme behind it, and per the owner's own rule, an unexplained badge gets
+// deleted rather than have a meaning invented for it to justify keeping it.
 const BADGE_MAP: Record<string, { label: string; color: string; icon: string }> = {
-  'sims-secret': { label: "SECRET", color: "text-clay", icon: "✨" },
   'beginner-friendly': { label: "BEGINNER", color: "text-clay", icon: "🌱" },
   'sourdough-essential': { label: "ARTISAN", color: "text-clay", icon: "🍞" },
   'sims-choice': { label: "SIM'S CHOICE", color: "text-clay", icon: "⭐" }

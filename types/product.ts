@@ -21,7 +21,6 @@ export interface Product {
 }
 
 export type BadgeType =
-  | 'sims-secret'
   | 'beginner-friendly'
   | 'sourdough-essential'
   | 'sims-choice'

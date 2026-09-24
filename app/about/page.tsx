@@ -62,15 +62,15 @@ export default function AboutPage() {
           <div className="lg:col-span-5 space-y-6">
             <h2 className={LABEL}>The starter that changed everything</h2>
             <p className="font-heading text-3xl sm:text-4xl leading-tight text-ink">
-              A living bread, fed every morning at 6:30.
+              A living starter, ready for your kitchen.
             </p>
           </div>
           <div className="lg:col-span-7 grid md:grid-cols-2 gap-8">
             <p className={`${BODY} border-l border-clay/40 pl-6`}>
-              A trip to Europe revealed the magic of sourdough. Sim brought back more than just recipes; she brought back a passion for the &quot;living bread.&quot; She cultivated her own starter, filling her home with an aroma that makes waking up a joy.
+              A trip to Europe revealed the magic of sourdough. Sim brought back more than just recipes; she brought back a passion for the &quot;living bread.&quot; She cultivated her own starter at home, and couldn&apos;t stop thinking about it.
             </p>
             <p className={`${BODY} border-l border-clay/40 pl-6`}>
-              Every morning at 6:30 AM, we feed that same starter. It&apos;s tangy, complex, and healthy. We brought this premium grade to Penang so your home can smell like ours.
+              That&apos;s why we stock the same starter culture and high-protein bread flour she uses herself — so you can bring that tangy, living bread home, without the trip to Europe.
             </p>
           </div>
         </div>

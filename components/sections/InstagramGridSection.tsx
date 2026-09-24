@@ -3,14 +3,16 @@
 import Image from 'next/image'
 
 export default function InstagramGridSection() {
-  // Placeholder Instagram-style posts
+  // Placeholder Instagram-style posts. Captions describe supplies/tools,
+  // not finished baked goods — this is a supply shop, not a bakery, and
+  // captions implying otherwise set the wrong expectation for a walk-in.
   const posts = [
-    { id: 1, image: '/images/placeholder-product.jpg', alt: 'Fresh sourdough bread' },
-    { id: 2, image: '/images/placeholder-product.jpg', alt: 'Croissants being baked' },
-    { id: 3, image: '/images/placeholder-product.jpg', alt: 'Custom birthday cake' },
-    { id: 4, image: '/images/placeholder-product.jpg', alt: 'Morning pastries display' },
-    { id: 5, image: '/images/placeholder-product.jpg', alt: 'Baker kneading dough' },
-    { id: 6, image: '/images/placeholder-product.jpg', alt: 'Fresh baked goods' },
+    { id: 1, image: '/images/placeholder-product.jpg', alt: 'Baking ingredients on the shelf' },
+    { id: 2, image: '/images/placeholder-product.jpg', alt: 'Premix packaging' },
+    { id: 3, image: '/images/placeholder-product.jpg', alt: 'Cake decorating tools' },
+    { id: 4, image: '/images/placeholder-product.jpg', alt: 'Flour and baking essentials' },
+    { id: 5, image: '/images/placeholder-product.jpg', alt: 'Inside the shop' },
+    { id: 6, image: '/images/placeholder-product.jpg', alt: 'New stock arriving' },
   ]
 
   return (
@@ -19,13 +21,13 @@ export default function InstagramGridSection() {
         {/* Section Header */}
         <div className="text-center mb-12 animate-fade-in-up">
           <p className="font-body text-clay text-sm sm:text-base tracking-widest uppercase mb-3">
-            Daily Bakes
+            In the shop
           </p>
           <h2 className="font-heading text-ink text-4xl sm:text-5xl md:text-6xl mb-4">
             FOLLOW OUR JOURNEY
           </h2>
           <p className="font-body text-ink/70 text-lg max-w-2xl mx-auto mb-6">
-            See what we&apos;re baking today on Instagram
+            See what&apos;s new in the shop on Instagram
           </p>
 
           {/* Instagram Handle */}

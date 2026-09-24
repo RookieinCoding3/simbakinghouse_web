@@ -9,13 +9,16 @@ import { pageMetadata } from '@/lib/seo'
 export const metadata = pageMetadata({ path: '/' })
 
 // Lazy load below-fold sections
-const TestimonialsSection = dynamic(() => import('@/components/sections/TestimonialsSection'), {
-  ssr: true,
-})
 const GetInTouchSection = dynamic(() => import('@/components/sections/GetInTouchSection'), {
   ssr: true,
 })
 
+// TestimonialsSection is intentionally not rendered: all six quotes in it
+// read as generated placeholder content (same pattern as the fabricated
+// mentor quotes removed from lib/demo/mentorData.ts), not confirmed real
+// customers. The component file is left in place in case any are
+// confirmed real and the owner wants to restore a subset — see
+// components/sections/TestimonialsSection.tsx.
 export default function Home() {
   return (
     <main>
@@ -24,7 +27,6 @@ export default function Home() {
       <BakersJourneySection />
       <FeaturedProductsSection />
       <WhyChooseUsSection />
-      <TestimonialsSection />
       <GetInTouchSection />
     </main>
   )

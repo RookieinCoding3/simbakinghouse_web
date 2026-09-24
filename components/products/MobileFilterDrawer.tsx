@@ -99,9 +99,6 @@ export default function MobileFilterDrawer({
                 <ProductBadge type="beginner-friendly" size="md" />
               </div>
               <div className="cursor-pointer opacity-70 hover:opacity-100 transition-opacity">
-                <ProductBadge type="sims-secret" size="md" />
-              </div>
-              <div className="cursor-pointer opacity-70 hover:opacity-100 transition-opacity">
                 <ProductBadge type="sourdough-essential" size="md" />
               </div>
             </div>

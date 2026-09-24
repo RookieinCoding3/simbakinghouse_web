@@ -1,5 +1,4 @@
 import { fetchProducts } from '@/lib/firebase/products'
-import { enhanceWithDemoData } from '@/lib/demo/mentorData'
 import ProductsPageClient from '@/components/products/ProductsPageClient'
 import { pageMetadata } from '@/lib/seo'
 import { productListJsonLd } from '@/lib/structuredData'
@@ -22,15 +21,14 @@ export default async function ProductsPage() {
   // way a genuinely empty (but successful) fetch must NOT be conflated with
   // a failure, or a real "no products" state would look like a fetch error.
   const products = await fetchProducts()
-  const enhancedProducts = enhanceWithDemoData(products)
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productListJsonLd(enhancedProducts)) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productListJsonLd(products)) }}
       />
-      <ProductsPageClient initialProducts={enhancedProducts} />
+      <ProductsPageClient initialProducts={products} />
     </>
   )
 }
