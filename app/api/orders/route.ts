@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAdminDb } from '@/lib/firebase/admin'
+import { getAdminDb, verifyAppCheckToken } from '@/lib/firebase/admin'
 import { validateOrderInput } from '@/lib/orderValidation'
 import { fetchShopSettings } from '@/lib/firebase/settings'
 import { lastFourDigits } from '@/lib/phone'
@@ -39,6 +39,17 @@ function isRateLimited(phone: string): boolean {
 
 export async function POST(request: NextRequest) {
   try {
+    // App Check is opt-in: once NEXT_PUBLIC_RECAPTCHA_SITE_KEY is set (see
+    // TASK.md Phase 5.3 for the Firebase Console setup), a request without
+    // a valid token is rejected here. Until then this is a no-op, so
+    // checkout keeps working unmodified before App Check is configured.
+    if (process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY) {
+      const valid = await verifyAppCheckToken(request.headers.get('X-Firebase-AppCheck'))
+      if (!valid) {
+        return NextResponse.json({ error: 'Request could not be verified, please try again' }, { status: 401 })
+      }
+    }
+
     const body = await request.json().catch(() => null)
     const { shopOpensAt, shopClosesAt } = await fetchShopSettings()
     const validated = validateOrderInput(body, { shopOpensAt, shopClosesAt })

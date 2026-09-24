@@ -7,6 +7,7 @@ import { useCart } from '@/lib/cart/CartContext'
 import { normalizeMyPhone } from '@/lib/phone'
 import { buildOrderWhatsAppLink } from '@/lib/whatsapp'
 import { fetchShopSettings, DEFAULT_SETTINGS } from '@/lib/firebase/settings'
+import { getAppCheckToken } from '@/lib/firebase/appCheck'
 import type { Fulfilment } from '@/types/order'
 
 function toDateInputValue(date: Date): string {
@@ -86,9 +87,13 @@ export default function CheckoutPage() {
 
     setSubmitting(true)
     try {
+      const appCheckToken = await getAppCheckToken()
       const res = await fetch('/api/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(appCheckToken && { 'X-Firebase-AppCheck': appCheckToken }),
+        },
         body: JSON.stringify({
           customerName: name.trim(),
           customerPhone: normalizedPhone,

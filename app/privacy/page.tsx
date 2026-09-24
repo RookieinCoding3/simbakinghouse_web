@@ -2,10 +2,10 @@ import type { Metadata } from 'next'
 import { pageMetadata } from '@/lib/seo'
 import { CONTACT_EMAIL } from '@/lib/site'
 
-// Minimal version to give the Phase 3 checkout consent checkbox a real
-// page to link to. Phase 5.5 covers this properly (PDPA-specific review,
-// the 12-month deletion policy/automation) — treat this as a placeholder
-// until then, not a finished legal page.
+// Started in Phase 3 as a placeholder just so the checkout consent
+// checkbox had a real page to link to; the content and the retention
+// automation it describes (app/api/cron/cleanup-orders) were finished in
+// Phase 5.5. Still not a substitute for an actual legal/PDPA review.
 export const metadata: Metadata = pageMetadata({
   path: '/privacy',
   title: 'Privacy | Sim Baking House',
@@ -38,7 +38,7 @@ export default function PrivacyPage() {
         <div className="space-y-3">
           <h2 className="text-xs uppercase tracking-widest text-ink/70">How long</h2>
           <p className="text-sm text-muted leading-relaxed">
-            We aim to delete order records after 12 months.
+            We delete order records 12 months after the order was placed.
           </p>
         </div>
 

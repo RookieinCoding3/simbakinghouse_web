@@ -4,6 +4,7 @@ import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import { CartProvider } from '@/lib/cart/CartContext'
 import CartDrawer from '@/components/cart/CartDrawer'
+import AppCheckInit from '@/components/AppCheckInit'
 import { SITE_URL, CONTACT_EMAIL, CONTACT_PHONE_E164 } from '@/lib/site'
 import './globals.css'
 
@@ -224,6 +225,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
+        <AppCheckInit />
         <CartProvider>
           <Header />
           {children}
