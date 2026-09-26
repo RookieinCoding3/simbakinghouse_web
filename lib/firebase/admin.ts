@@ -9,8 +9,34 @@ import { getAppCheck } from 'firebase-admin/app-check'
 //
 // Lazy by design: nothing in this module executes at import time, only
 // when getAdminDb() is actually called from inside a route handler. That
-// keeps a missing env var from ever being able to break the build.
+// keeps a missing env var from ever being able to break the build — and,
+// just as importantly, keeps a *malformed* one (see parsePrivateKey below)
+// from throwing anywhere except inside a function every caller in this
+// codebase only ever invokes from within its own try/catch. A throw that
+// somehow escaped that would surface as Vercel's generic static error
+// page instead of this route's own JSON error response — which is
+// exactly what happened here before this was hardened: getAdminDb() was
+// already lazy, but initializeApp()/cert() failing on a malformed key
+// wasn't defended against beyond that, and both known real-world causes
+// below (a still-escaped key, wrapping quotes) throw synchronously from
+// deep inside the SDK's PEM parsing.
 let app: App | undefined
+
+/**
+ * Dashboards that only support single-line env values force the private
+ * key to be pasted with literal backslash-n sequences instead of real
+ * newlines, and some additionally store a copy-pasted leading/trailing
+ * quote character as part of the value. Both fail PEM parsing silently
+ * from firebase-admin's perspective (a cryptic crypto error, not a
+ * helpful one) — normalise both before it ever reaches cert().
+ */
+function parsePrivateKey(raw: string): string {
+  let key = raw.trim()
+  if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
+    key = key.slice(1, -1)
+  }
+  return key.replace(/\\n/g, '\n')
+}
 
 function getAdminApp(): App {
   if (app) return app
@@ -23,18 +49,29 @@ function getAdminApp(): App {
 
   const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+  const rawPrivateKey = process.env.FIREBASE_PRIVATE_KEY
 
-  if (!projectId || !clientEmail || !privateKey) {
+  if (!projectId || !clientEmail || !rawPrivateKey) {
     throw new Error(
       'Firebase Admin credentials are not configured (need FIREBASE_CLIENT_EMAIL and FIREBASE_PRIVATE_KEY)'
     )
   }
 
-  app = initializeApp({
-    credential: cert({ projectId, clientEmail, privateKey }),
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  })
+  try {
+    app = initializeApp({
+      credential: cert({ projectId, clientEmail, privateKey: parsePrivateKey(rawPrivateKey) }),
+      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    })
+  } catch (error) {
+    // Re-thrown as a clearer, actionable message — still inside this
+    // function, so it's still only ever reachable via a caller's own
+    // try/catch, never at module load.
+    throw new Error(
+      `Firebase Admin failed to initialize (check FIREBASE_PRIVATE_KEY is a valid PEM key — real or \\n-escaped newlines, no wrapping quotes): ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    )
+  }
   return app
 }
 
