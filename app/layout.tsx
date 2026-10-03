@@ -3,6 +3,7 @@ import { Instrument_Serif, Plus_Jakarta_Sans } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import { AuthProvider } from '@/lib/auth/AuthContext'
 import { CartProvider } from '@/lib/cart/CartContext'
 import CartDrawer from '@/components/cart/CartDrawer'
 import AppCheckInit from '@/components/AppCheckInit'
@@ -238,12 +239,14 @@ export default function RootLayout({
       <body className="antialiased">
         <AppCheckInit />
         <PWAInit />
-        <CartProvider>
-          <Header />
-          {children}
-          <Footer />
-          <CartDrawer />
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <Header />
+            {children}
+            <Footer />
+            <CartDrawer />
+          </CartProvider>
+        </AuthProvider>
         <Analytics />
       </body>
     </html>

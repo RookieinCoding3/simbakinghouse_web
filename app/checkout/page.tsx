@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/lib/cart/CartContext'
+import { useAuth } from '@/lib/auth/AuthContext'
 import { normalizeMyPhone } from '@/lib/phone'
 import { buildOrderWhatsAppLink } from '@/lib/whatsapp'
 import { fetchShopSettings, DEFAULT_SETTINGS } from '@/lib/firebase/settings'
@@ -39,6 +40,7 @@ function isTimeWithinRange(time: string, min: string, max: string): boolean {
 
 export default function CheckoutPage() {
   const { items, subtotal, hasUnpricedItems, clear } = useCart()
+  const { user } = useAuth()
   const router = useRouter()
 
   // Starts from the static defaults (no loading flash / flicker), then
@@ -103,11 +105,15 @@ export default function CheckoutPage() {
     setSubmitting(true)
     try {
       const appCheckToken = await getAppCheckToken()
+      // Optional — attaches the order to the signed-in account's order
+      // history (app/account). Guest checkout (no user) is unaffected.
+      const idToken = user ? await user.getIdToken() : null
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(appCheckToken && { 'X-Firebase-AppCheck': appCheckToken }),
+          ...(idToken && { Authorization: `Bearer ${idToken}` }),
         },
         body: JSON.stringify({
           customerName: name.trim(),
