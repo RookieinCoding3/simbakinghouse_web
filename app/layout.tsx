@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Instrument_Serif, Plus_Jakarta_Sans } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import Header from '@/components/layout/Header'
@@ -6,6 +6,7 @@ import Footer from '@/components/layout/Footer'
 import { CartProvider } from '@/lib/cart/CartContext'
 import CartDrawer from '@/components/cart/CartDrawer'
 import AppCheckInit from '@/components/AppCheckInit'
+import PWAInit from '@/components/PWAInit'
 import { SITE_URL, CONTACT_EMAIL, CONTACT_PHONE_E164 } from '@/lib/site'
 import './globals.css'
 
@@ -50,6 +51,11 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.png',
   },
   manifest: '/site.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'SBH',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_MY',
@@ -86,6 +92,10 @@ export const metadata: Metadata = {
   },
   category: 'Shopping',
   classification: 'Baking Supplies Store',
+}
+
+export const viewport: Viewport = {
+  themeColor: '#D4A574',
 }
 
 // JSON-LD Structured Data for Local Business SEO
@@ -227,6 +237,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <AppCheckInit />
+        <PWAInit />
         <CartProvider>
           <Header />
           {children}
