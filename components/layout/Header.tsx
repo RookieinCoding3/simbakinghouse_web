@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
 import CartButton from '@/components/cart/CartButton'
+import AccountButton from '@/components/auth/AccountButton'
 
 // Navigation menu items
 const NAV_ITEMS = [
@@ -108,8 +109,9 @@ export default function Header() {
           Sim · Baking · House
         </Link>
 
-        {/* Right: cart */}
-        <div className="flex justify-end">
+        {/* Right: account + cart */}
+        <div className="flex justify-end items-center">
+          <AccountButton />
           <CartButton />
         </div>
       </nav>

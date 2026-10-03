@@ -14,12 +14,19 @@
 // actually gives up is low. Revisit if that ever changes.
 const cspDirectives = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  // apis.google.com: Google Identity's gapi.js, loaded by firebase/auth's
+  // GoogleAuthProvider popup flow. va.vercel-scripts.com: @vercel/analytics.
+  "script-src 'self' 'unsafe-inline' https://apis.google.com https://va.vercel-scripts.com",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self'",
-  "connect-src 'self' https://firestore.googleapis.com https://firebaseinstallations.googleapis.com",
-  "frame-src https://www.google.com",
+  // identitytoolkit/securetoken: Firebase Auth's own REST calls (email,
+  // Google, token refresh). www.googleapis.com: Google Identity's gapi
+  // config/loader requests that accompany the popup flow.
+  "connect-src 'self' https://firestore.googleapis.com https://firebaseinstallations.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com",
+  // sim-baking-house.firebaseapp.com: Firebase Auth's own hidden iframe,
+  // used to persist sign-in state across the popup flow.
+  "frame-src https://www.google.com https://sim-baking-house.firebaseapp.com",
   "media-src 'self'",
   "object-src 'none'",
   "base-uri 'self'",

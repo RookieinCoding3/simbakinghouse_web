@@ -17,6 +17,9 @@ export interface StatusHistoryEntry {
 export interface Order {
   orderId: string
   status: OrderStatus
+  /** Firebase Auth uid, when the order was placed while signed in. Null for
+   *  guest checkout — guest checkout keeps working unchanged either way. */
+  userId?: string | null
   customerName: string
   customerPhone: string // 60XXXXXXXXX
   phoneLast4: string

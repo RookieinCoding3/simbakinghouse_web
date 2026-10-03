@@ -1,29 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminDb, getAdminStorage } from '@/lib/firebase/admin'
 import { fetchShopSettings } from '@/lib/firebase/settings'
-import type { Order, PublicOrderView } from '@/types/order'
+import { toPublicOrderView } from '@/lib/orderPublicView'
+import type { Order } from '@/types/order'
 
 export const runtime = 'nodejs'
 
 const ORDER_ID_PATTERN = /^SBH-\d{4,}$/
-
-function toPublicView(order: Order): PublicOrderView {
-  // Deliberately narrow: never the full phone number, internal notes
-  // aside from the customer's own, or anything else beyond what the
-  // status page needs to render.
-  return {
-    orderId: order.orderId,
-    status: order.status,
-    fulfilment: order.fulfilment,
-    collectDate: order.collectDate,
-    collectTime: order.collectTime,
-    items: order.items,
-    estimatedTotal: order.estimatedTotal,
-    confirmedTotal: order.confirmedTotal,
-    cancelReason: order.cancelReason,
-    createdAt: order.createdAt,
-  }
-}
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ orderId: string }> }) {
   const { orderId } = await params
@@ -48,7 +31,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
-    const view = toPublicView(order)
+    const view = toPublicOrderView(order)
 
     // Only 'confirmed' needs the DuitNow QR — by 'ready' the order should
     // already be paid. ('ready' has its own "pickup QR" in the TASK.md

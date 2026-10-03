@@ -3,6 +3,7 @@ import { getAdminDb } from '@/lib/firebase/admin'
 import { validateOrderInput } from '@/lib/orderValidation'
 import { fetchShopSettings } from '@/lib/firebase/settings'
 import { lastFourDigits } from '@/lib/phone'
+import { verifyFirebaseIdToken } from '@/lib/firebase/verifyIdToken'
 import type { Order } from '@/types/order'
 
 // Orders are written here via the Admin SDK, not from the client through
@@ -47,6 +48,13 @@ export async function POST(request: NextRequest) {
     }
     const { data } = validated
 
+    // Optional: stamp the order with the signed-in user's uid so it shows
+    // up in their order history (app/api/orders/mine). Guest checkout
+    // (no/invalid token) is untouched — this never blocks order creation.
+    const authHeader = request.headers.get('Authorization')
+    const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
+    const userId = await verifyFirebaseIdToken(bearerToken)
+
     if (isRateLimited(data.customerPhone)) {
       return NextResponse.json({ error: 'Too many orders, please try again shortly' }, { status: 429 })
     }
@@ -64,6 +72,7 @@ export async function POST(request: NextRequest) {
       const order: Order = {
         orderId: id,
         status: 'new',
+        userId,
         customerName: data.customerName,
         customerPhone: data.customerPhone,
         phoneLast4: lastFourDigits(data.customerPhone),

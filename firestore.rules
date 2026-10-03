@@ -22,6 +22,55 @@ service cloud.firestore {
         exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
+    // Per-item shape check for a cart item (see carts/{uid} below). Rules
+    // has no forEach/every for a variable-length list, so itemOk() is
+    // checked at a fixed, bounded set of indices instead of iterating —
+    // see MAX_CART_ITEMS by that match block for why 30 is enough and
+    // where the index list that uses this is generated.
+    function isValidCartItem(item) {
+      return item is map
+        && item.productId is string
+        && item.name is string
+        && item.qty is int
+        && item.qty >= 1
+        && item.qty <= 99;
+    }
+    function itemOk(items, i) {
+      return i >= items.size() || isValidCartItem(items[i]);
+    }
+    function itemsValid(items) {
+      return itemOk(items, 0) &&
+        itemOk(items, 1) &&
+        itemOk(items, 2) &&
+        itemOk(items, 3) &&
+        itemOk(items, 4) &&
+        itemOk(items, 5) &&
+        itemOk(items, 6) &&
+        itemOk(items, 7) &&
+        itemOk(items, 8) &&
+        itemOk(items, 9) &&
+        itemOk(items, 10) &&
+        itemOk(items, 11) &&
+        itemOk(items, 12) &&
+        itemOk(items, 13) &&
+        itemOk(items, 14) &&
+        itemOk(items, 15) &&
+        itemOk(items, 16) &&
+        itemOk(items, 17) &&
+        itemOk(items, 18) &&
+        itemOk(items, 19) &&
+        itemOk(items, 20) &&
+        itemOk(items, 21) &&
+        itemOk(items, 22) &&
+        itemOk(items, 23) &&
+        itemOk(items, 24) &&
+        itemOk(items, 25) &&
+        itemOk(items, 26) &&
+        itemOk(items, 27) &&
+        itemOk(items, 28) &&
+        itemOk(items, 29);
+    }
+
     // Product catalog — public storefront read, admin-only write.
     match /products/{productId} {
       allow read: if true;
@@ -64,6 +113,24 @@ service cloud.firestore {
     // (app/api/orders), never touched by any client.
     match /counters/{id} {
       allow read, write: if false;
+    }
+
+    // Customer carts — saved so a signed-in customer's cart follows them
+    // across devices. Doc ID = Firebase Auth UID. Unlike everything else
+    // in this file, this collection IS directly client-writable: it's
+    // owned entirely by the signed-in user themselves, same as any
+    // per-user data (not shared, not trusted as input to anything else —
+    // orders are still created and priced server-side regardless of what
+    // a cart doc says).
+    match /carts/{uid} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.items is list
+        // 30, not CartContext's own 50 cap: itemsValid() above only checks
+        // indices 0-29 (Rules has no loop/forEach for a variable-length
+        // list), so the cap here has to match what's actually validated.
+        && request.resource.data.items.size() <= 30
+        && itemsValid(request.resource.data.items);
     }
 
     // Admin allowlist. Doc ID = Firebase Auth UID. Intentionally has no

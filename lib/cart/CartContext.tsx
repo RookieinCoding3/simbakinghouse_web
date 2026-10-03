@@ -9,11 +9,28 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { db } from '@/lib/firebase/config'
+import { useAuth } from '@/lib/auth/AuthContext'
 import type { CartItem } from '@/types/cart'
 import type { Product } from '@/types/product'
 
 const STORAGE_KEY = 'sbh_cart_v1'
 const MAX_QTY_PER_ITEM = 99
+const CART_SYNC_DEBOUNCE_MS = 800
+
+function mergeCartItems(local: CartItem[], remote: CartItem[]): CartItem[] {
+  const merged = [...local]
+  for (const remoteItem of remote) {
+    const existing = merged.find((item) => item.productId === remoteItem.productId)
+    if (existing) {
+      existing.qty = Math.min(MAX_QTY_PER_ITEM, existing.qty + remoteItem.qty)
+    } else {
+      merged.push(remoteItem)
+    }
+  }
+  return merged
+}
 
 interface CartContextValue {
   items: CartItem[]
@@ -82,6 +99,55 @@ export function CartProvider({ children }: { children: ReactNode }) {
       // it just won't survive a refresh.
     }
   }, [items])
+
+  // Signed-in cart sync. Two parts:
+  // 1. On sign-in, merge whatever's saved in carts/{uid} with whatever's
+  //    currently in local state (guest browsing before login isn't lost).
+  // 2. While signed in, debounce-write local changes back to Firestore.
+  // Signing out does NOT clear the local cart — it just stops syncing, so
+  // browsing continues to work as a guest cart, same as before login.
+  const { user } = useAuth()
+  const mergedForUid = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (!user) {
+      mergedForUid.current = null
+      return
+    }
+    if (mergedForUid.current === user.uid) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const snap = await getDoc(doc(db, 'carts', user.uid))
+        const remoteItems = snap.exists() && isCartItemArray(snap.data().items) ? snap.data().items : []
+        if (cancelled) return
+        mergedForUid.current = user.uid
+        if (remoteItems.length > 0) {
+          setItems((prev) => mergeCartItems(prev, remoteItems))
+        }
+      } catch {
+        // Offline or a transient read failure — keep whatever's local;
+        // the write effect below will still try to sync it once online.
+        mergedForUid.current = user.uid
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [user])
+
+  useEffect(() => {
+    if (!user || mergedForUid.current !== user.uid) return
+    const timer = setTimeout(() => {
+      setDoc(doc(db, 'carts', user.uid), { items, updatedAt: Date.now() }).catch(() => {
+        // Offline or a transient write failure — local state (and
+        // localStorage) is still correct, this just means the next
+        // successful sign-in on another device won't see this change
+        // until a later write succeeds.
+      })
+    }, CART_SYNC_DEBOUNCE_MS)
+    return () => clearTimeout(timer)
+  }, [items, user])
 
   const addItem = (product: Product, qty = 1) => {
     if (!product.inStock) return
