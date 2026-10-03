@@ -39,6 +39,15 @@ const securityHeaders = [
 ]
 
 const nextConfig = {
+  // firebase-admin (and its deps: @grpc/grpc-js, google-auth-library,
+  // protobufjs, etc.) uses dynamic requires and optional native bindings
+  // that break when Next tries to bundle them into each route's
+  // serverless function. This tells Next to leave it as a normal
+  // node_modules require instead — required for every route that imports
+  // lib/firebase/admin.ts to work when actually deployed (not reproduced
+  // by `next dev` or even a local `next build`, only by the deployed
+  // serverless packaging itself).
+  serverExternalPackages: ['firebase-admin'],
   images: {
     domains: ['firebasestorage.googleapis.com'],
     formats: ['image/avif', 'image/webp'],
