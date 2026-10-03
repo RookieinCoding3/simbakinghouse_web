@@ -349,6 +349,14 @@ future change does not accidentally treat the client value as authoritative.
 Enable App Check with reCAPTCHA v3 for web. Enforce on Firestore and Storage. This is
 the main defence against scripted spam orders.
 
+**Blocked, not skipped:** the server-side import (`firebase-admin/app-check`) was
+removed from `lib/firebase/admin.ts` because it crashes every function that imports
+that module at load time with `ERR_REQUIRE_ESM` — firebase-admin 14.2.0 pulls in
+jwks-rsa@4.1.0, which depends on jose@6.x (ESM-only) but still `require()`s it. This
+is an upstream bug in jwks-rsa, not something fixable from this codebase. Re-adding
+App Check requires checking whether firebase-admin has bumped past this broken
+jwks-rsa/jose combination first.
+
 ### 5.4 Storage rules
 - Product images: public read, admin write.
 - DuitNow QR: read only through the order status server route. Not publicly listed.
