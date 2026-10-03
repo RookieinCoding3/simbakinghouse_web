@@ -27,6 +27,16 @@ function displayTimeTo24h(display: string): string {
   return `${String(hour).padStart(2, '0')}:${minute}`
 }
 
+/** The native time picker's own min/max constrain the value on submit in
+ *  most browsers, but Safari's picker UI (the one actually shown to most
+ *  of our customers) lets you scroll to any hour/minute regardless — it
+ *  only flags the value as invalid afterward, with no visible feedback as
+ *  you pick. This checks the same range ourselves so we can show that
+ *  feedback immediately instead of waiting for a server round-trip. */
+function isTimeWithinRange(time: string, min: string, max: string): boolean {
+  return time >= min && time <= max
+}
+
 export default function CheckoutPage() {
   const { items, subtotal, hasUnpricedItems, clear } = useCart()
   const router = useRouter()
@@ -46,6 +56,7 @@ export default function CheckoutPage() {
   const [fulfilment, setFulfilment] = useState<Fulfilment>('pickup')
   const [collectDate, setCollectDate] = useState('')
   const [collectTime, setCollectTime] = useState('')
+  const [timeError, setTimeError] = useState<string | null>(null)
   const [notes, setNotes] = useState('')
   const [consent, setConsent] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -77,12 +88,16 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    setTimeError(null)
 
     const normalizedPhone = normalizeMyPhone(phone)
     if (!name.trim()) return setError('Enter your name')
     if (!normalizedPhone) return setError('Enter a valid Malaysian phone number')
     if (fulfilment === 'pickup' && !collectDate) return setError('Choose a collection date')
     if (!collectTime) return setError('Choose a collection time')
+    if (!isTimeWithinRange(collectTime, timeMin, timeMax)) {
+      return setTimeError(`Choose a time between ${settings.shopOpensAt} and ${settings.shopClosesAt}`)
+    }
     if (!consent) return setError('Please agree to the storage of your details to continue')
 
     setSubmitting(true)
@@ -258,14 +273,34 @@ export default function CheckoutPage() {
                 id="collectTime"
                 type="time"
                 value={collectTime}
-                onChange={(e) => setCollectTime(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value
+                  setCollectTime(value)
+                  // Safari's native time picker doesn't restrict which
+                  // hour/minute you can scroll to based on min/max (Chrome
+                  // does) — it only marks the value invalid afterward, so
+                  // check the range ourselves and say something right away
+                  // instead of only finding out from the server.
+                  setTimeError(
+                    value && !isTimeWithinRange(value, timeMin, timeMax)
+                      ? `Choose a time between ${settings.shopOpensAt} and ${settings.shopClosesAt}`
+                      : null
+                  )
+                }}
                 min={timeMin}
                 max={timeMax}
                 required
-                className="w-full bg-white border border-line py-3 px-4 text-ink text-sm focus:outline-none focus:border-ink/40"
+                aria-invalid={timeError ? true : undefined}
+                aria-describedby="collectTime-hint"
+                className={`w-full bg-white border py-3 px-4 text-ink text-sm focus:outline-none ${
+                  timeError ? 'border-red-400 focus:border-red-500' : 'border-line focus:border-ink/40'
+                }`}
               />
-              <p className="text-[11px] text-muted mt-1">
-                Between {settings.shopOpensAt} and {settings.shopClosesAt}
+              <p
+                id="collectTime-hint"
+                className={`text-[11px] mt-1 ${timeError ? 'text-red-600' : 'text-muted'}`}
+              >
+                {timeError ?? `Between ${settings.shopOpensAt} and ${settings.shopClosesAt}`}
               </p>
             </div>
           </div>
