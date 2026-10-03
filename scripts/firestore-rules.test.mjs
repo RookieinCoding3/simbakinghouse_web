@@ -109,8 +109,14 @@ await check(
 )
 
 await check(
-  'read or write another customer\'s cart',
+  "read another customer's cart",
   () => getDoc(doc(customerA, 'carts', 'customer-b')),
+  false
+)
+
+await check(
+  "write another customer's cart",
+  () => setDoc(doc(customerA, 'carts', 'customer-b'), { items: [] }),
   false
 )
 
@@ -136,8 +142,19 @@ await check(
 )
 
 await check(
-  'customer CAN read/write their OWN cart',
+  'customer CAN write their OWN cart',
   () => setDoc(doc(customerA, 'carts', 'customer-a'), { items: [], updatedAt: Date.now() }),
+  true
+)
+
+await check(
+  // Separate from the write check above on purpose: allow read and allow
+  // write are separate rules (request.resource only exists on a write),
+  // and a combined "allow read, write" that references request.resource
+  // silently fails every read — exactly the bug this test would have
+  // caught before it shipped.
+  'customer CAN read their OWN cart (separate from write - see comment)',
+  () => getDoc(doc(customerA, 'carts', 'customer-a')),
   true
 )
 

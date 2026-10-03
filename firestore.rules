@@ -123,7 +123,14 @@ service cloud.firestore {
     // orders are still created and priced server-side regardless of what
     // a cart doc says).
     match /carts/{uid} {
-      allow read, write: if request.auth != null
+      // Split, not a combined "allow read, write" — request.resource (the
+      // write payload) only exists on write operations. Referencing it in
+      // a rule that also covers read makes Firestore fail-closed on every
+      // read, including the document's own owner, since the condition
+      // errors out instead of evaluating true. (Found live: GET on a
+      // user's own cart returned PERMISSION_DENIED despite uid matching.)
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if request.auth != null
         && request.auth.uid == uid
         && request.resource.data.items is list
         // 30, not CartContext's own 50 cap: itemsValid() above only checks
