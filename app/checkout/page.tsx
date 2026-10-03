@@ -325,7 +325,7 @@ export default function CheckoutPage() {
             />
           </div>
 
-          <label className="flex items-start gap-3 text-xs text-muted">
+          <label className="flex items-start gap-3 text-base text-muted">
             <input
               type="checkbox"
               checked={consent}
@@ -334,9 +334,13 @@ export default function CheckoutPage() {
               required
             />
             <span>
-              I agree to Sim Baking House storing my name and phone number to process this order.{' '}
+              I agree to the{' '}
               <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-ink">
-                Privacy policy
+                Privacy Notice
+              </Link>{' '}
+              and{' '}
+              <Link href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-ink">
+                Terms of Sale
               </Link>
               .
             </span>

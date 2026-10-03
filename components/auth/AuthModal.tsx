@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
+import Link from 'next/link'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { detectInAppBrowser, isBlockedUserAgentError } from '@/lib/utils/inAppBrowser'
 import Button from '@/components/ui/Button'
@@ -40,6 +41,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [resetSent, setResetSent] = useState(false)
+  const [consent, setConsent] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [inAppBrowser, setInAppBrowser] = useState<string | null>(null)
 
@@ -78,6 +80,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       setPassword('')
       setError(null)
       setResetSent(false)
+      setConsent(false)
       setMode('signin')
     }
   }, [isOpen])
@@ -87,6 +90,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    if (mode === 'signup' && !consent) {
+      setError('Agree to the Privacy Notice and Terms of Sale to create an account')
+      return
+    }
     setSubmitting(true)
     try {
       if (mode === 'forgot') {
@@ -123,6 +130,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   const handleGoogle = async () => {
     setError(null)
+    if (mode === 'signup' && !consent) {
+      setError('Agree to the Privacy Notice and Terms of Sale to create an account')
+      return
+    }
     setSubmitting(true)
     try {
       await signInWithGoogle()
@@ -256,6 +267,29 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 >
                   Forgot password?
                 </button>
+              )}
+
+              {mode === 'signup' && (
+                <label className="flex items-start gap-3 text-sm text-ink/70">
+                  <input
+                    type="checkbox"
+                    checked={consent}
+                    onChange={(e) => setConsent(e.target.checked)}
+                    className="mt-0.5"
+                    required
+                  />
+                  <span>
+                    I agree to the{' '}
+                    <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-ink">
+                      Privacy Notice
+                    </Link>{' '}
+                    and{' '}
+                    <Link href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-ink">
+                      Terms of Sale
+                    </Link>
+                    .
+                  </span>
+                </label>
               )}
 
               {error && <p className="text-sm text-red-600">{error}</p>}

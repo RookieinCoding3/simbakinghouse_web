@@ -62,7 +62,10 @@ export default async function Footer() {
             <p>&copy; {currentYear} Sim Baking House</p>
             <p className="mt-1">All rights reserved.</p>
             <Link href="/privacy" className="block mt-2 hover:text-ink transition-colors">
-              Privacy
+              Privacy Notice
+            </Link>
+            <Link href="/terms" className="block mt-1 hover:text-ink transition-colors">
+              Terms of Sale
             </Link>
           </div>
         </div>
