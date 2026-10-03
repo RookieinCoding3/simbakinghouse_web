@@ -35,6 +35,10 @@ yarn-error.log*
 # playwright-cli session artifacts
 .playwright-cli
 
+# firebase emulator
+firestore-debug.log
+ui-debug.log
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

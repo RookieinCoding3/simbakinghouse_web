@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useAuth } from '@/lib/auth/AuthContext'
-import { detectInAppBrowser } from '@/lib/utils/inAppBrowser'
+import { detectInAppBrowser, isBlockedUserAgentError } from '@/lib/utils/inAppBrowser'
 import Button from '@/components/ui/Button'
 
 interface AuthModalProps {
@@ -128,6 +128,13 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       await signInWithGoogle()
       onClose()
     } catch (err) {
+      if (isBlockedUserAgentError(err)) {
+        // The proactive UA check (inAppBrowser) didn't catch this one —
+        // likely iOS, where these apps' WebViews often don't self-identify
+        // — but Google's own error confirms it. Same message either way.
+        setInAppBrowser((current) => current ?? 'this app')
+        return
+      }
       const message = authErrorMessage(err)
       if (message) setError(message)
     } finally {
