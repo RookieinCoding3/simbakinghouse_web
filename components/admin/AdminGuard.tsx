@@ -1,45 +1,33 @@
 'use client'
 
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
-import { collection, getDocs, limit, query } from 'firebase/firestore'
-import { db } from '@/lib/firebase/config'
-import { onAdminAuthStateChanged, adminSignOut } from '@/lib/firebase/auth'
-import type { User } from 'firebase/auth'
-
-type GuardState = 'checking' | 'signed-out' | 'not-admin' | 'ok'
+import { useAuth } from '@/lib/auth/AuthContext'
+import { useIsAdmin } from '@/lib/admin/useIsAdmin'
+import { adminSignOut } from '@/lib/firebase/auth'
 
 /**
- * Being signed in to Firebase Auth is necessary but not sufficient to act
- * as admin — Firestore rules additionally require a matching doc in
- * /admins, which nothing client-side can read directly (that collection
- * is `allow read, write: if false` even for its own admins — see
- * firestore.rules). So authorization can only be confirmed by attempting
- * a real admin-gated read and checking whether it's rejected.
+ * Checks admins/{uid} directly (see lib/admin/useIsAdmin.ts and the
+ * matching firestore.rules entry — a user may get their own admins/{uid}
+ * doc, nothing else). This used to infer admin status indirectly, from
+ * whether an unrelated `orders` read happened to succeed — which also
+ * fails for any other reason (network blip, offline, a transient
+ * Firestore error), silently misreporting a real admin as "not
+ * authorized" with no way to tell the two cases apart. A direct read of
+ * the actual thing being asked about doesn't have that failure mode.
  */
 export default function AdminGuard({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<GuardState>('checking')
+  const { user, loading: authLoading } = useAuth()
+  const { isAdmin, loading: adminLoading } = useIsAdmin()
   const router = useRouter()
 
   useEffect(() => {
-    const unsubscribe = onAdminAuthStateChanged(async (user: User | null) => {
-      if (!user) {
-        setState('signed-out')
-        router.replace('/admin/login')
-        return
-      }
-      try {
-        // Cheapest possible admin-gated read, just to probe authorization.
-        await getDocs(query(collection(db, 'orders'), limit(1)))
-        setState('ok')
-      } catch {
-        setState('not-admin')
-      }
-    })
-    return unsubscribe
-  }, [router])
+    if (!authLoading && !user) {
+      router.replace('/admin/login')
+    }
+  }, [authLoading, user, router])
 
-  if (state === 'checking' || state === 'signed-out') {
+  if (authLoading || adminLoading || !user) {
     return (
       <main className="min-h-screen bg-paper flex items-center justify-center">
         <p className="text-sm text-muted">Loading…</p>
@@ -47,14 +35,17 @@ export default function AdminGuard({ children }: { children: ReactNode }) {
     )
   }
 
-  if (state === 'not-admin') {
+  if (!isAdmin) {
     return (
       <main className="min-h-screen bg-paper flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
           <h1 className="font-heading text-ink text-2xl mb-3">Not authorized</h1>
-          <p className="text-sm text-muted mb-6">
-            This account is signed in but isn&apos;t on the admin list. Ask whoever manages the
-            Firebase project to add your account.
+          <p className="text-sm text-muted mb-4">
+            This account is signed in but isn&apos;t on the admin list.
+          </p>
+          <p className="text-sm text-muted mb-1">Ask the owner to add this ID:</p>
+          <p className="font-mono text-xs bg-sand border border-line px-3 py-2 mb-6 break-all select-all">
+            {user.uid}
           </p>
           <button
             onClick={() => adminSignOut()}

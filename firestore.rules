@@ -140,12 +140,20 @@ service cloud.firestore {
         && itemsValid(request.resource.data.items);
     }
 
-    // Admin allowlist. Doc ID = Firebase Auth UID. Intentionally has no
-    // client-writable path at all — add/remove admins via the Firebase
-    // Console (Firestore Data tab) or a trusted backend script, never
-    // from the app.
+    // Admin allowlist. Doc ID = Firebase Auth UID. No client-writable path
+    // at all — add/remove admins via the Firebase Console (Firestore Data
+    // tab) or a trusted backend script, never from the app.
+    //
+    // allow get (not allow read): a signed-in user may fetch their OWN
+    // admins/{uid} doc directly — lets AdminGuard ask "am I admin?" with
+    // one unambiguous read instead of inferring it from whether an
+    // unrelated orders probe happened to succeed (which also fails for
+    // offline/network/quota reasons, misreporting a real admin as
+    // "not authorized"). `list` stays unreachable (get != list in Firestore
+    // Rules), so nobody can enumerate the allowlist even as a valid admin.
     match /admins/{uid} {
-      allow read, write: if false;
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow list, write: if false;
     }
 
     // Analytics collections. The browser never writes to these directly —

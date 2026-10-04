@@ -10,7 +10,7 @@ import {
   assertFails,
   assertSucceeds,
 } from '@firebase/rules-unit-testing'
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc } from 'firebase/firestore'
 
 const testEnv = await initializeTestEnvironment({
   projectId: 'demo-sbh-rules-test',
@@ -103,7 +103,7 @@ await check(
 )
 
 await check(
-  'read the admin allowlist doc',
+  "read another user's admin allowlist doc",
   () => getDoc(doc(customerA, 'admins', 'admin-uid')),
   false
 )
@@ -126,10 +126,25 @@ await check(
   false
 )
 
-console.log('\n--- Extra: not even an admin-claimed user can read /admins directly ---')
+console.log('\n--- admins/{uid}: a user can get their OWN doc, nothing else ---')
 await check(
-  '(allow read, write: if false is unconditional — the allowlist itself has zero client-readable path, by design)',
+  'admin CAN get their own admins/{uid} doc (what AdminGuard actually reads)',
   () => getDoc(doc(adminCtx, 'admins', 'admin-uid')),
+  true
+)
+await check(
+  "admin CANNOT get another uid's admins doc, even knowing the id",
+  () => getDoc(doc(adminCtx, 'admins', 'some-other-uid')),
+  false
+)
+await check(
+  'admin CANNOT list the admins collection (get != list — enumerating the allowlist is still blocked)',
+  () => getDocs(collection(adminCtx, 'admins')),
+  false
+)
+await check(
+  'admin CANNOT write their own admins/{uid} doc (self-granting stays impossible)',
+  () => setDoc(doc(adminCtx, 'admins', 'admin-uid'), { role: 'owner' }),
   false
 )
 

@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useAuth } from '@/lib/auth/AuthContext'
+import { useIsAdmin } from '@/lib/admin/useIsAdmin'
 import { formatDate } from '@/lib/whatsapp'
 import type { PublicOrderView, OrderStatus } from '@/types/order'
 
@@ -17,6 +19,7 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
 
 export default function AccountPage() {
   const { user, loading, signOutUser } = useAuth()
+  const { isAdmin } = useIsAdmin()
   const router = useRouter()
   const [orders, setOrders] = useState<PublicOrderView[] | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -63,12 +66,22 @@ export default function AccountPage() {
           <h1 className="font-heading text-ink text-4xl mb-1">Your account</h1>
           <p className="text-ink/60 text-sm">{user.email}</p>
         </div>
-        <button
-          onClick={() => signOutUser()}
-          className="text-xs uppercase tracking-widest text-ink/60 hover:text-ink underline underline-offset-2 whitespace-nowrap"
-        >
-          Sign out
-        </button>
+        <div className="flex flex-col items-end gap-2 shrink-0">
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="text-xs uppercase tracking-widest text-clay hover:text-ink underline underline-offset-2 whitespace-nowrap"
+            >
+              Admin
+            </Link>
+          )}
+          <button
+            onClick={() => signOutUser()}
+            className="text-xs uppercase tracking-widest text-ink/60 hover:text-ink underline underline-offset-2 whitespace-nowrap"
+          >
+            Sign out
+          </button>
+        </div>
       </div>
 
       <h2 className="text-xs uppercase tracking-widest text-ink/50 mb-4">Order history</h2>
