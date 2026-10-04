@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminDb } from '@/lib/firebase/admin'
+import { resolveOrderItemPrices } from '@/lib/firebase/adminProducts'
 import { validateOrderInput } from '@/lib/orderValidation'
 import { fetchShopSettings } from '@/lib/firebase/settings'
 import { lastFourDigits } from '@/lib/phone'
 import { verifyFirebaseIdToken } from '@/lib/firebase/verifyIdToken'
-import type { Order } from '@/types/order'
+import { isHoneypotTripped, isSubmittedTooFast } from '@/lib/botDefense'
+import { verifyCheckoutToken } from '@/lib/checkoutToken'
+import { getClientIp, hashIp } from '@/lib/clientIp'
+import { checkAndRecordOrderAttempt, RateLimitExceeded, formatRetryAfter } from '@/lib/orderRateLimit'
+import type { Order, OrderItem } from '@/types/order'
 
 // Orders are written here via the Admin SDK, not from the client through
 // Firestore rules — same pattern as app/api/analytics/route.ts. That keeps
@@ -12,35 +17,30 @@ import type { Order } from '@/types/order'
 // needs opening there for checkout to work.
 export const runtime = 'nodejs'
 
-// Best-effort, in-memory, resets on cold start — stops a runaway retry
-// loop or a mashed button, not a determined attacker. See the analytics
-// route for the same trade-off with a fuller explanation.
-const RATE_LIMIT_WINDOW_MS = 60_000
-const MAX_ORDERS_PER_PHONE = 5
-const MAX_ORDERS_GLOBAL = 60
-const phoneHits = new Map<string, { count: number; windowStart: number }>()
-let globalHits = { count: 0, windowStart: Date.now() }
-
-function isRateLimited(phone: string): boolean {
-  const now = Date.now()
-  if (now - globalHits.windowStart > RATE_LIMIT_WINDOW_MS) {
-    globalHits = { count: 0, windowStart: now }
-  }
-  globalHits.count++
-  if (globalHits.count > MAX_ORDERS_GLOBAL) return true
-
-  const entry = phoneHits.get(phone)
-  if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
-    phoneHits.set(phone, { count: 1, windowStart: now })
-    return false
-  }
-  entry.count++
-  return entry.count > MAX_ORDERS_PER_PHONE
-}
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => null)
+    const b = (body && typeof body === 'object' ? body : {}) as Record<string, unknown>
+
+    // Checked before anything else touches Firestore: cheapest possible
+    // rejection for the most obvious bot traffic.
+    if (isHoneypotTripped(b.company)) {
+      return NextResponse.json({ error: 'Something went wrong, please try again' }, { status: 400 })
+    }
+
+    if (!verifyCheckoutToken(b.formToken, b.formIssuedAt)) {
+      return NextResponse.json(
+        { error: 'Your checkout session expired — please reload the page and try again' },
+        { status: 400 }
+      )
+    }
+    if (isSubmittedTooFast(b.formIssuedAt as number, Date.now())) {
+      return NextResponse.json(
+        { error: 'Please take a moment to review your order before sending' },
+        { status: 400 }
+      )
+    }
+
     const { shopOpensAt, shopClosesAt } = await fetchShopSettings()
     const validated = validateOrderInput(body, { shopOpensAt, shopClosesAt })
     if (!validated.ok) {
@@ -55,9 +55,34 @@ export async function POST(request: NextRequest) {
     const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
     const userId = await verifyFirebaseIdToken(bearerToken)
 
-    if (isRateLimited(data.customerPhone)) {
-      return NextResponse.json({ error: 'Too many orders, please try again shortly' }, { status: 429 })
+    const ipHash = hashIp(getClientIp(request))
+    try {
+      await checkAndRecordOrderAttempt({ phone: data.customerPhone, ipHash })
+    } catch (error) {
+      if (error instanceof RateLimitExceeded) {
+        return NextResponse.json(
+          { error: `Too many orders — please try again in ${formatRetryAfter(error.retryAfterMs)}` },
+          { status: 429 }
+        )
+      }
+      throw error
     }
+
+    // The only prices an order is ever written with: looked up fresh from
+    // Firestore here, never read from the client's own request body.
+    const resolvedPrices = await resolveOrderItemPrices(data.items.map((item) => item.productId))
+    const items: OrderItem[] = []
+    for (const item of data.items) {
+      const product = resolvedPrices.get(item.productId)
+      if (!product) {
+        return NextResponse.json(
+          { error: 'One of the items in your cart is no longer available — please refresh and try again' },
+          { status: 400 }
+        )
+      }
+      items.push({ productId: item.productId, name: product.name, qty: item.qty, unitPriceSnapshot: product.price })
+    }
+    const estimatedTotal = items.reduce((sum, item) => sum + (item.unitPriceSnapshot ?? 0) * item.qty, 0)
 
     const db = getAdminDb()
     const counterRef = db.collection('counters').doc('orders')
@@ -80,8 +105,8 @@ export async function POST(request: NextRequest) {
         collectDate: data.collectDate,
         collectTime: data.collectTime,
         notes: data.notes,
-        items: data.items,
-        estimatedTotal: data.estimatedTotal,
+        items,
+        estimatedTotal,
         confirmedTotal: null,
         createdAt: nowIso,
         updatedAt: nowIso,
@@ -93,7 +118,7 @@ export async function POST(request: NextRequest) {
       return id
     })
 
-    return NextResponse.json({ orderId, estimatedTotal: data.estimatedTotal }, { status: 201 })
+    return NextResponse.json({ orderId, estimatedTotal }, { status: 201 })
   } catch (error) {
     console.error('[orders] failed to create order:', error)
     return NextResponse.json({ error: 'Something went wrong, please try again' }, { status: 500 })

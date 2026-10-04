@@ -1,12 +1,18 @@
 import { normalizeMyPhone } from '@/lib/phone'
 import { SHOP_OPENS_AT, SHOP_CLOSES_AT } from '@/lib/site'
-import type { OrderItem, Fulfilment } from '@/types/order'
+import type { Fulfilment } from '@/types/order'
 
 export const MAX_ITEMS = 50
 export const MAX_NAME_LENGTH = 100
 export const MAX_ITEM_NAME_LENGTH = 200
 export const MAX_NOTES_LENGTH = 500
 export const MAX_QTY = 99
+
+export interface ValidatedOrderItem {
+  productId: string
+  name: string
+  qty: number
+}
 
 export interface ValidatedOrderInput {
   customerName: string
@@ -15,8 +21,7 @@ export interface ValidatedOrderInput {
   collectDate: string | null
   collectTime: string | null
   notes: string
-  items: OrderItem[]
-  estimatedTotal: number
+  items: ValidatedOrderItem[]
 }
 
 function timeToMinutes(time: string): number {
@@ -118,30 +123,23 @@ export function validateOrderInput(
     return { ok: false, error: 'Your cart is empty' }
   }
 
-  const items: OrderItem[] = []
+  // Note: no price is read or validated here. unitPriceSnapshot, if the
+  // client sends one, is simply ignored — app/api/orders re-prices every
+  // item from Firestore after this returns (see resolveOrderItemPrices),
+  // so there is nothing for a spoofed client-side price to affect.
+  const items: ValidatedOrderItem[] = []
   for (const raw of b.items) {
     if (!raw || typeof raw !== 'object') return { ok: false, error: 'Invalid item in cart' }
     const item = raw as Record<string, unknown>
     const productId = typeof item.productId === 'string' ? item.productId : null
     const name = typeof item.name === 'string' ? item.name.slice(0, MAX_ITEM_NAME_LENGTH) : null
     const qty = typeof item.qty === 'number' && Number.isInteger(item.qty) ? item.qty : null
-    const unitPriceSnapshot =
-      item.unitPriceSnapshot === null
-        ? null
-        : typeof item.unitPriceSnapshot === 'number' && Number.isFinite(item.unitPriceSnapshot)
-          ? item.unitPriceSnapshot
-          : undefined
 
-    if (!productId || !name || !qty || qty < 1 || qty > MAX_QTY || unitPriceSnapshot === undefined) {
+    if (!productId || !name || !qty || qty < 1 || qty > MAX_QTY) {
       return { ok: false, error: 'Invalid item in cart' }
     }
-    items.push({ productId, name, qty, unitPriceSnapshot })
+    items.push({ productId, name, qty })
   }
-
-  const estimatedTotal = items.reduce(
-    (sum, item) => sum + (item.unitPriceSnapshot ?? 0) * item.qty,
-    0
-  )
 
   return {
     ok: true,
@@ -153,7 +151,6 @@ export function validateOrderInput(
       collectTime,
       notes,
       items,
-      estimatedTotal,
     },
   }
 }

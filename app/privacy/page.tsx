@@ -31,11 +31,11 @@ const en: LegalDoc = {
     },
     {
       heading: 'How long we keep it',
-      body: 'Order records are deleted 12 months after the order. Accounts are kept until you delete them. Some records may be kept longer if the law requires it.',
+      body: 'Order records are deleted 12 months after the order. Accounts are kept until you ask us to delete them. Some records may be kept longer if the law requires it.',
     },
     {
       heading: 'Your rights',
-      body: 'You may ask to see, correct or delete your personal data, or withdraw consent, by emailing us. You can delete your account on the site. If you do not give us the data we need to process an order, we may not be able to fulfil it.',
+      body: 'You may ask to see, correct or delete your personal data or account, or withdraw consent, by emailing simbakinghouse25@gmail.com. There is currently no self-service delete option on the site itself. If you do not give us the data we need to process an order, we may not be able to fulfil it.',
     },
     {
       heading: 'Security',
@@ -73,11 +73,11 @@ const bm: LegalDoc = {
     },
     {
       heading: 'Berapa lama kami menyimpannya',
-      body: 'Rekod pesanan dipadam 12 bulan selepas pesanan dibuat. Akaun disimpan sehingga anda memadamkannya. Sesetengah rekod mungkin disimpan lebih lama jika dikehendaki oleh undang-undang.',
+      body: 'Rekod pesanan dipadam 12 bulan selepas pesanan dibuat. Akaun disimpan sehingga anda meminta kami memadamkannya. Sesetengah rekod mungkin disimpan lebih lama jika dikehendaki oleh undang-undang.',
     },
     {
       heading: 'Hak anda',
-      body: 'Anda boleh meminta untuk melihat, membetulkan atau memadam data peribadi anda, atau menarik balik persetujuan, dengan menghantar e-mel kepada kami. Anda boleh memadam akaun anda di laman web. Jika anda tidak memberikan data yang kami perlukan untuk memproses pesanan, kami mungkin tidak dapat memenuhi pesanan tersebut.',
+      body: 'Anda boleh meminta untuk melihat, membetulkan atau memadam data peribadi atau akaun anda, atau menarik balik persetujuan, dengan menghantar e-mel kepada simbakinghouse25@gmail.com. Tiada pilihan padam-sendiri di laman web pada masa ini. Jika anda tidak memberikan data yang kami perlukan untuk memproses pesanan, kami mungkin tidak dapat memenuhi pesanan tersebut.',
     },
     {
       heading: 'Keselamatan',

@@ -1,5 +1,11 @@
 import { initializeApp, getApps, getApp } from 'firebase/app'
-import { initializeFirestore, getFirestore, memoryLocalCache, Firestore } from 'firebase/firestore'
+import {
+  initializeFirestore,
+  getFirestore,
+  connectFirestoreEmulator,
+  memoryLocalCache,
+  Firestore,
+} from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -42,6 +48,15 @@ try {
   } else {
     throw error
   }
+}
+
+// Test-only: scripts/order-abuse.test.mjs runs a local build against the
+// Firestore emulator, never real production data. Unset in every real
+// deploy, so this is always a no-op in production.
+const emulatorHost = process.env.NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST
+if (emulatorHost) {
+  const [host, port] = emulatorHost.split(':')
+  connectFirestoreEmulator(db, host, Number(port))
 }
 
 export { db }

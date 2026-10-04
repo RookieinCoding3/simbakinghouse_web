@@ -8,7 +8,11 @@ export default function CartButton() {
   return (
     <button
       onClick={openDrawer}
-      className="relative text-[11px] sm:text-xs uppercase tracking-widest text-ink hover:text-clay inline-flex items-center gap-1.5 font-medium transition-colors"
+      // py-3 + pr-6 grow the real clickable box to 44x44 using space that
+      // was already blank (the nav's own right-edge padding, the header's
+      // vertical whitespace) — the icon's own position doesn't move, so
+      // this doesn't change how the header looks at any breakpoint.
+      className="relative text-[11px] sm:text-xs uppercase tracking-widest text-ink hover:text-clay inline-flex items-center gap-1.5 font-medium transition-colors py-3 pr-6 -my-3 -mr-6"
       aria-label={`Cart, ${itemCount} item${itemCount === 1 ? '' : 's'}`}
     >
       <span className="relative">

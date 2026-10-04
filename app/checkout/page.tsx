@@ -64,6 +64,21 @@ export default function CheckoutPage() {
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
+  // Hidden from real users and screen readers — a bot that fills every
+  // field it finds trips this. See lib/botDefense.ts.
+  const [honeypot, setHoneypot] = useState('')
+  // Issued by the server when this page mounts, signed, and echoed back
+  // unchanged on submit — proves at least 3 real seconds passed using the
+  // server's own clock, not anything this page could claim on its own.
+  // See lib/checkoutToken.ts.
+  const [formToken, setFormToken] = useState<{ issuedAt: number; token: string } | null>(null)
+  useEffect(() => {
+    fetch('/api/checkout/token')
+      .then((r) => r.json())
+      .then(setFormToken)
+      .catch(() => {})
+  }, [])
+
   const minDate = useMemo(() => {
     const tomorrow = new Date()
     tomorrow.setDate(tomorrow.getDate() + 1)
@@ -126,8 +141,10 @@ export default function CheckoutPage() {
             productId: item.productId,
             name: item.name,
             qty: item.qty,
-            unitPriceSnapshot: item.unitPrice,
           })),
+          company: honeypot,
+          formIssuedAt: formToken?.issuedAt ?? null,
+          formToken: formToken?.token ?? null,
         }),
       })
 
@@ -202,6 +219,19 @@ export default function CheckoutPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div aria-hidden="true" className="absolute left-[-9999px] w-px h-px overflow-hidden">
+            <label htmlFor="company">Company</label>
+            <input
+              id="company"
+              name="company"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              value={honeypot}
+              onChange={(e) => setHoneypot(e.target.value)}
+            />
+          </div>
+
           <div>
             <label htmlFor="name" className="block text-xs uppercase tracking-widest text-ink/70 mb-2">
               Name

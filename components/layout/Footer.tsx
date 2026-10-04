@@ -10,7 +10,11 @@ export default async function Footer() {
   return (
     <footer id="find-us" className="border-t border-line">
       <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 text-xs text-[#7A736C] leading-relaxed">
+        {/* text-muted (#665F58) is 5.93:1 on this background — the previous
+            #7A736C was 4.41:1, just under the 4.5:1 WCAG AA minimum, for
+            every line of text in this footer, not only the one link an
+            earlier audit happened to sample. */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 text-xs text-muted leading-relaxed">
           <div>
             <p className="text-ink uppercase tracking-widest font-semibold mb-3">Sim Baking House</p>
             <Link href="/location" className="hover:text-ink transition-colors">

@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test:rules": "firebase emulators:exec --only firestore \"node scripts/firestore-rules.test.mjs\"",
-    "test:guest-checkout": "tsx scripts/guest-checkout.test.mjs"
+    "test:guest-checkout": "tsx scripts/guest-checkout.test.mjs",
+    "test:order-abuse": "bash scripts/run-order-abuse-tests.sh"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",

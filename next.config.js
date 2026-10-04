@@ -18,7 +18,9 @@ const cspDirectives = [
   // GoogleAuthProvider popup flow. va.vercel-scripts.com: @vercel/analytics.
   "script-src 'self' 'unsafe-inline' https://apis.google.com https://va.vercel-scripts.com",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data:",
+  // firebasestorage.googleapis.com: the DuitNow QR on the order-status page
+  // is a signed Storage URL loaded via a plain <img>, not next/image.
+  "img-src 'self' data: https://firebasestorage.googleapis.com",
   "font-src 'self'",
   // identitytoolkit/securetoken: Firebase Auth's own REST calls (email,
   // Google, token refresh). www.googleapis.com: Google Identity's gapi

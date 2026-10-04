@@ -18,7 +18,9 @@ export default function CategoryNavigationSection() {
               <div className="relative aspect-[3/4] bg-[#EFECE6] overflow-hidden">
                 <Image
                   src={category.image}
-                  alt={category.title}
+                  // Decorative — the visible <p> right below already names
+                  // the category; a duplicate alt is just screen-reader noise.
+                  alt=""
                   fill
                   sizes="(max-width: 1024px) 33vw, 260px"
                   className="object-cover grayscale group-hover:grayscale-0 transition duration-500"

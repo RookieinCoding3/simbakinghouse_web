@@ -81,3 +81,58 @@ link sticker, and a Facebook post (draft, don't need to publish) and look
 at what actually renders — title, description, image crop. If a stale
 preview shows up, each platform has its own cache-debugger/scraper tool
 (e.g. Facebook's Sharing Debugger) to force a re-fetch.
+
+## CAPTCHA on checkout (not added yet, 2026-10-04 order-abuse pass)
+
+**Why not yet:** The honeypot, signed-timing check, and Firestore-backed
+per-phone/per-IP/global rate limiting added in this pass (see
+`lib/botDefense.ts`, `lib/checkoutToken.ts`, `lib/orderRateLimit.ts`)
+already block the kind of simple scripted abuse a small bakery site
+actually attracts. A CAPTCHA adds friction to every real customer's
+checkout for a threat level that doesn't exist yet — add it when there's
+evidence of abuse these measures don't catch (e.g. rate-limit logs showing
+many distinct phones/IPs placing implausible orders in a coordinated way),
+not pre-emptively.
+
+**Option A — Cloudflare Turnstile**
+
+- What it is: a free, privacy-friendlier CAPTCHA alternative — usually
+  invisible, only shows a visible challenge for suspicious traffic.
+- Manual steps the owner (not Claude) would need to do: create a free
+  Cloudflare account, add a Turnstile "site", choose the domain
+  (simbakinghouse.com.my), copy the site key and secret key.
+- Code side (for whoever implements it later): add the Turnstile script +
+  widget to `app/checkout/page.tsx`, send its response token with the order
+  POST, verify it server-side in `app/api/orders/route.ts` via Cloudflare's
+  `siteverify` endpoint before accepting the order. Needs one new env var
+  (`TURNSTILE_SECRET_KEY`) set in Vercel.
+- Trade-off: one more third-party script loaded on checkout (CSP's
+  `script-src`/`connect-src`/`frame-src` would need Cloudflare's domains
+  added), but no Google account/project dependency and generally the least
+  visible-to-the-customer option.
+
+**Option B — Firebase App Check (reCAPTCHA v3 provider)**
+
+- What it is: the mechanism already wired into the codebase but currently
+  inert — see `lib/firebase/appCheck.ts`: `initAppCheck()` is a no-op
+  until `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` is set, by design.
+- Manual steps the owner would need to do: in the Firebase Console, App
+  Check → register the web app → reCAPTCHA v3 provider → create/attach a
+  reCAPTCHA v3 site key (via Google Cloud's reCAPTCHA Enterprise or
+  classic reCAPTCHA admin console) → copy the site key into Vercel as
+  `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` → in Firebase Console, App Check →
+  enforce for Firestore (and Storage, if the DuitNow QR upload should be
+  covered too).
+- Code side: already done — once the site key env var exists in
+  production, `initAppCheck()` and `getAppCheckToken()` activate with zero
+  further code changes, and `app/api/orders` already accepts the
+  `X-Firebase-AppCheck` header the checkout page sends today.
+- Trade-off: ties the anti-abuse mechanism to a Google product already in
+  use elsewhere (Firebase Auth/Firestore), so one fewer vendor relationship
+  to manage, but reCAPTCHA v3 runs an invisible background script on every
+  page (slight privacy/perf cost) and enforcing App Check on Firestore is
+  an all-or-nothing switch — worth testing on a quiet day, not a busy one.
+
+**Recommendation when the time comes:** B, since it's already half-built
+and needs no new vendor — it's a Firebase Console configuration step away,
+not a code project.
