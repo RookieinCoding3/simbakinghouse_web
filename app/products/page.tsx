@@ -5,7 +5,7 @@ import { productListJsonLd } from '@/lib/structuredData'
 
 export const metadata = pageMetadata({
   path: '/products',
-  title: 'Products',
+  title: 'Products | Sim Baking House Penang',
   description:
     'Baking ingredients, premixes, tools and decorations from Sim Baking House in Bayan Lepas, Penang.',
 })

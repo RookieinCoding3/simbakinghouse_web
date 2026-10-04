@@ -15,6 +15,7 @@ export default async function HeroSection() {
             loop
             playsInline
             preload="metadata"
+            poster="/images/hero-poster.jpg"
             aria-hidden="true"
             className="absolute inset-0 w-full h-full object-cover"
           >

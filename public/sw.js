@@ -2,13 +2,13 @@
 // fallback and speeds up repeat visits by caching static assets. Deliberately
 // does NOT cache anything under /api/ — orders, order status, settings and
 // analytics must always hit the network, never serve stale or cached data.
-const CACHE_NAME = 'sbh-static-v1'
+const CACHE_NAME = 'sbh-static-v2'
 const OFFLINE_URL = '/offline.html'
 
 const PRECACHE_URLS = [
   OFFLINE_URL,
-  '/android-chrome-192x192.png',
-  '/android-chrome-512x512.png',
+  '/icon-192.png',
+  '/icon-512.png',
 ]
 
 self.addEventListener('install', (event) => {

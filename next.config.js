@@ -71,6 +71,19 @@ const nextConfig = {
       },
     ]
   },
+  // One canonical host: www. Matches SITE_URL in lib/site.ts and every
+  // canonical/og:url tag — without this, the apex domain serves duplicate
+  // content under a second host, splitting SEO signal between the two.
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'simbakinghouse.com.my' }],
+        destination: 'https://www.simbakinghouse.com.my/:path*',
+        permanent: true,
+      },
+    ]
+  },
 }
 
 module.exports = nextConfig

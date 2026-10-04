@@ -4,7 +4,7 @@ import { pageMetadata } from '@/lib/seo'
 
 export const metadata: Metadata = pageMetadata({
   path: '/location',
-  title: 'Location & Contact | Sim Baking House',
+  title: 'Location & Contact | Sim Baking House, Penang',
   description:
     'Visit Sim Baking House in Penang. Find our location, opening hours, and contact information.',
 })

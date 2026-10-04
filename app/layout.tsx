@@ -28,12 +28,15 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: {
-    default: 'Sim Baking House | Baking Supplies & Premix Penang | Bayan Lepas',
-    template: '%s | Sim Baking House Penang',
-  },
+  // Plain string, not a {default, template} object: a template would get
+  // re-applied on top of each page's own already-complete title (set via
+  // lib/seo.ts's pageMetadata()), producing "Page | Sim Baking House | Sim
+  // Baking House Penang" — found live on /privacy and /terms. Every page
+  // now owns its full, final title string instead.
+  title: 'Sim Baking House | Baking Supplies & Premix, Penang',
   description:
-    'Your trusted baking supplies shop in Penang. Premium cake premix, bread ingredients, baking tools & accessories. Located in Bayan Lepas. Order fresh butter cake premix, German cookies, sourdough essentials. Best prices in Penang, Malaysia.',
+    'Baking supplies shop in Bayan Lepas, Penang. Cake premix, ingredients, tools & accessories, fresh stock, best prices. Order easily on WhatsApp.',
+  applicationName: 'Sim Baking House',
   authors: [{ name: 'Sim Baking House', url: SITE_URL }],
   creator: 'Sim Baking House',
   publisher: 'Sim Baking House',
@@ -42,20 +45,24 @@ export const metadata: Metadata = {
     address: true,
     telephone: true,
   },
-  icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-    ],
-    shortcut: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
+  alternates: {
+    canonical: SITE_URL,
   },
-  manifest: '/site.webmanifest',
+  // Favicon/app icons come entirely from the App Router file conventions
+  // (app/favicon.ico, app/icon.png, app/apple-icon.png) — Next detects
+  // these automatically, emits the right <link> tags, and appends its own
+  // content-hash query string to each (e.g. /icon.png?<hash>), which is
+  // what actually busts a browser's old cached icon on every rebuild: a
+  // stronger, self-maintaining version of a manual ?v=2 that updates
+  // itself whenever the file changes instead of needing to be bumped by
+  // hand. The web manifest is handled the same way via app/manifest.ts.
+  //
+  // TODO: add token when Search Console access is available
+  // verification: { google: '' },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'SBH',
+    title: 'Sim Baking House',
   },
   openGraph: {
     type: 'website',
@@ -96,7 +103,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#D4A574',
+  themeColor: '#7A4031', // tailwind.config.ts `clay` — the brand's primary accent
 }
 
 // JSON-LD Structured Data for Local Business SEO
@@ -114,15 +121,15 @@ const jsonLd = {
       telephone: CONTACT_PHONE_E164,
       email: CONTACT_EMAIL,
       image: `${SITE_URL}/og-image.jpg`,
-      logo: `${SITE_URL}/SBH_tab.png`,
+      logo: `${SITE_URL}/icon-512.png`,
       priceRange: 'RM',
       currenciesAccepted: 'MYR',
       paymentAccepted: 'Cash, Bank Transfer, Online Payment',
       address: {
         '@type': 'PostalAddress',
-        streetAddress: 'Bayan Lepas',
-        addressLocality: 'Penang',
-        addressRegion: 'Penang',
+        streetAddress: 'Tingkat Sungai Ara 1, Sungai Ara',
+        addressLocality: 'Bayan Lepas',
+        addressRegion: 'Pulau Pinang',
         postalCode: '11900',
         addressCountry: 'MY',
       },
@@ -130,6 +137,20 @@ const jsonLd = {
         '@type': 'GeoCoordinates',
         latitude: 5.3097,
         longitude: 100.2798,
+      },
+      openingHoursSpecification: {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: [
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+          'Sunday',
+        ],
+        opens: '06:30',
+        closes: '13:00',
       },
       areaServed: [
         {
@@ -176,9 +197,14 @@ const jsonLd = {
           },
         ],
       },
+      // Must match components/layout/Footer.tsx's links exactly — these
+      // were previously generic/guessed handles that didn't match the
+      // real profiles linked in the footer (sim_baking_house, not
+      // simbakinghouse) - wrong sameAs data actively misleads Google
+      // about which accounts belong to this business.
       sameAs: [
-        'https://www.instagram.com/simbakinghouse',
-        'https://www.facebook.com/simbakinghouse',
+        'https://www.instagram.com/sim_baking_house/',
+        'https://www.facebook.com/p/Sim-Baking-House-100057442848182/',
       ],
     },
     {
