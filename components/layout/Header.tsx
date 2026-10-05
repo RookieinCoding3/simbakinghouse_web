@@ -71,6 +71,7 @@ export default function Header() {
             <Link
               key={item.path}
               href={item.path}
+              prefetch={false}
               className={cn(
                 'transition-colors duration-200',
                 isActive(item.path) ? 'text-ink' : 'text-muted hover:text-ink'
@@ -103,6 +104,7 @@ export default function Header() {
         {/* Center wordmark */}
         <Link
           href="/"
+          prefetch={false}
           onClick={() => setMobileMenuOpen(false)}
           className="text-center font-medium tracking-[0.25em] text-[11px] sm:text-sm uppercase text-ink whitespace-nowrap"
         >
@@ -140,6 +142,7 @@ export default function Header() {
                 <Link
                   key={item.path}
                   href={item.path}
+                  prefetch={false}
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
                     'min-h-[56px] flex items-center font-heading text-5xl transition-all duration-500',

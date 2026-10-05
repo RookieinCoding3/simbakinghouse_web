@@ -17,7 +17,7 @@ export default async function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 text-xs text-muted leading-relaxed">
           <div>
             <p className="text-ink uppercase tracking-widest font-semibold mb-3">Sim Baking House</p>
-            <Link href="/location" className="hover:text-ink transition-colors">
+            <Link href="/location" prefetch={false} className="hover:text-ink transition-colors">
               Bayan Lepas, Penang, Malaysia
             </Link>
             <p className="mt-1">Est. 2017</p>
@@ -65,10 +65,10 @@ export default async function Footer() {
           <div className="md:text-right">
             <p>&copy; {currentYear} Sim Baking House</p>
             <p className="mt-1">All rights reserved.</p>
-            <Link href="/privacy" className="block mt-2 hover:text-ink transition-colors">
+            <Link href="/privacy" prefetch={false} className="block mt-2 hover:text-ink transition-colors">
               Privacy Notice
             </Link>
-            <Link href="/terms" className="block mt-1 hover:text-ink transition-colors">
+            <Link href="/terms" prefetch={false} className="block mt-1 hover:text-ink transition-colors">
               Terms of Sale
             </Link>
           </div>

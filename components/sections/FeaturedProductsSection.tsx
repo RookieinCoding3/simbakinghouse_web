@@ -61,6 +61,7 @@ export default function FeaturedProductsSection() {
           <div className="pt-2">
             <Link
               href="/products"
+              prefetch={false}
               className="text-xs uppercase tracking-widest text-ink font-medium inline-flex items-center gap-2 hover:gap-3 transition-all"
             >
               View all products &rarr;

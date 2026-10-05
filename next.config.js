@@ -60,6 +60,17 @@ const nextConfig = {
   images: {
     domains: ['firebasestorage.googleapis.com'],
     formats: ['image/avif', 'image/webp'],
+    // Default is 60s, so Vercel's image optimizer re-serves (and the
+    // browser re-validates) the exact same resized variant every minute —
+    // 31 days matches Next's own documented example for production. A
+    // photo replaced in Storage mid-window stays stale for up to that
+    // long; worth knowing, not worth losing this cache over.
+    minimumCacheTTL: 2678400,
+    // Trimmed from Next's default 8 device widths (640–3840): nothing on
+    // this site ever renders past the 1400px max-width container, so
+    // 1920/2048/3840 were variants nothing would ever request — fewer
+    // possible widths means a better cache-hit rate on the ones that are.
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
   },
   // Generate unique build ID to bust browser cache
   generateBuildId: async () => {
@@ -70,6 +81,19 @@ const nextConfig = {
       {
         source: '/:path*',
         headers: securityHeaders,
+      },
+      // public/ files (images, the hero video, icons, fonts) have no
+      // content hash in their URL, unlike _next/static/* which Next
+      // already serves as max-age=31536000, immutable by itself — without
+      // this, Vercel's default for a plain public/ file is max-age=0,
+      // meaning every single load revalidates. These filenames only
+      // change via a new deploy (and in practice almost never do), so a
+      // year-long immutable cache is safe; if one of these assets'
+      // *content* ever needs to change, rename the file rather than
+      // overwrite it in place, so the new URL isn't still-cached.
+      {
+        source: '/:all*(svg|jpg|jpeg|png|gif|webp|avif|ico|mp4|webm|woff|woff2|ttf|otf)',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
       },
     ]
   },

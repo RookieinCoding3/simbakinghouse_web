@@ -19,7 +19,7 @@ export default async function GetInTouchSection() {
       </div>
 
       <div className="grid md:grid-cols-3 gap-px bg-line border border-line">
-        <Link href="/location" className={CELL}>
+        <Link href="/location" prefetch={false} className={CELL}>
           <p className={CELL_LABEL}>Visit our store</p>
           <p className="text-xs text-muted leading-relaxed">Bayan Lepas, Penang</p>
           <p className="text-xs text-muted leading-relaxed">{openingHours}</p>

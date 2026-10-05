@@ -14,7 +14,7 @@ export default function CategoryNavigationSection() {
         {/* Left: 3-image triptych */}
         <div className="lg:col-span-7 grid grid-cols-3 gap-3 sm:gap-4">
           {CATEGORIES.map((category) => (
-            <Link key={category.title} href={category.href} className="group block">
+            <Link key={category.title} href={category.href} prefetch={false} className="group block">
               <div className="relative aspect-[3/4] bg-[#EFECE6] overflow-hidden">
                 <Image
                   src={category.image}
@@ -45,6 +45,7 @@ export default function CategoryNavigationSection() {
           <div className="pt-2">
             <Link
               href="/products"
+              prefetch={false}
               className="text-xs uppercase tracking-widest text-ink font-medium inline-flex items-center gap-2 hover:gap-3 transition-all"
             >
               Our supplies &rarr;

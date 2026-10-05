@@ -365,11 +365,11 @@ export default function CheckoutPage() {
             />
             <span>
               I agree to the{' '}
-              <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-ink">
+              <Link href="/privacy" prefetch={false} target="_blank" rel="noopener noreferrer" className="underline hover:text-ink">
                 Privacy Notice
               </Link>{' '}
               and{' '}
-              <Link href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-ink">
+              <Link href="/terms" prefetch={false} target="_blank" rel="noopener noreferrer" className="underline hover:text-ink">
                 Terms of Sale
               </Link>
               .

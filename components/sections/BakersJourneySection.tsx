@@ -22,6 +22,7 @@ export default function BakersJourneySection() {
             <div className="pt-2">
               <Link
                 href="/about"
+                prefetch={false}
                 className="text-xs uppercase tracking-widest text-ink font-medium inline-flex items-center gap-2 hover:gap-3 transition-all"
               >
                 Our story &rarr;
