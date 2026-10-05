@@ -8,7 +8,6 @@ import {
   type ReactNode,
 } from 'react'
 import {
-  getAuth,
   GoogleAuthProvider,
   signInWithPopup,
   signInWithEmailAndPassword,
@@ -18,12 +17,11 @@ import {
   onAuthStateChanged,
   type User,
 } from 'firebase/auth'
-import app from '@/lib/firebase/config'
+import { auth } from '@/lib/firebase/auth'
 
-// Same Firebase Auth instance the admin login uses (lib/firebase/auth.ts) —
-// there's only ever one; "admin" vs "customer" is purely the `admin`
-// custom claim on the signed-in user, not a separate auth system.
-export const auth = getAuth(app)
+// Same Firebase Auth instance the admin uses — there's only ever one;
+// "admin" vs "customer" is purely whether the UID has an admins/{uid} doc.
+export { auth }
 
 interface AuthContextValue {
   user: User | null

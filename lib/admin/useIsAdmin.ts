@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase/config'
 import { useAuth } from '@/lib/auth/AuthContext'
+import { recordReads } from '@/lib/admin/readMetrics'
 
 /**
- * The one real admin check, shared by AdminGuard and the account menu's
+ * The customer site's admin check, used by the account menu's
  * "Admin" link — both ask the same question the same way, a direct get on
  * admins/{uid} (see firestore.rules: a user may get their own admins/{uid}
  * doc, nothing else). Never by email, client-side role field, or anything
@@ -29,6 +30,7 @@ export function useIsAdmin(): { isAdmin: boolean; loading: boolean } {
     setChecking(true)
     getDoc(doc(db, 'admins', user.uid))
       .then((snap) => {
+        recordReads(1)
         if (!cancelled) setIsAdmin(snap.exists())
       })
       .catch(() => {

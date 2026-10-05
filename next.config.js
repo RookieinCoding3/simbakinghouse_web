@@ -48,6 +48,10 @@ const securityHeaders = [
 ]
 
 const nextConfig = {
+  // Test builds (scripts/test-env.sh) bake in emulator-pointing NEXT_PUBLIC_*
+  // values at build time, so they go to their own directory — a test build
+  // must never be what a plain `next start` serves.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   // firebase-admin (and its deps: @grpc/grpc-js, google-auth-library,
   // protobufjs, etc.) uses dynamic requires and optional native bindings
   // that break when Next tries to bundle them into each route's
@@ -91,6 +95,16 @@ const nextConfig = {
       // year-long immutable cache is safe; if one of these assets'
       // *content* ever needs to change, rename the file rather than
       // overwrite it in place, so the new URL isn't still-cached.
+      // Belt and braces with the admin layout's <meta robots>: this also
+      // covers non-HTML responses under /admin (manifest, icons).
+      {
+        source: '/admin/:path*',
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      },
+      {
+        source: '/admin',
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      },
       {
         source: '/:all*(svg|jpg|jpeg|png|gif|webp|avif|ico|mp4|webm|woff|woff2|ttf|otf)',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],

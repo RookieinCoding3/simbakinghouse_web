@@ -9,7 +9,11 @@
     "lint": "next lint",
     "test:rules": "firebase emulators:exec --only firestore \"node scripts/firestore-rules.test.mjs\"",
     "test:guest-checkout": "tsx scripts/guest-checkout.test.mjs",
-    "test:order-abuse": "bash scripts/run-order-abuse-tests.sh"
+    "test:order-abuse": "bash scripts/test-env.sh bash scripts/e2e-suites.sh order-abuse",
+    "test:admin": "bash scripts/test-env.sh bash scripts/e2e-suites.sh admin",
+    "test:e2e": "bash scripts/test-env.sh bash scripts/e2e-suites.sh",
+    "test:unit": "bash scripts/unit-tests.sh",
+    "test": "npm run test:rules && npm run test:guest-checkout && npm run test:unit && npm run test:e2e"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
@@ -30,6 +34,7 @@
     "autoprefixer": "^10.4.14",
     "eslint": "^9",
     "eslint-config-next": "^15.1.5",
+    "playwright": "^1.63.0",
     "postcss": "^8",
     "sharp": "^0.35.5",
     "tailwindcss": "^3.4.1",
