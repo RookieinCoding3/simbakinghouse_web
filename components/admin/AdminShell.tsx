@@ -60,6 +60,15 @@ export default function AdminShell({ children }: { children: ReactNode }) {
             </div>
           </div>
           <div className="flex items-center gap-4 whitespace-nowrap">
+            {session.role === 'admin' && (
+              <Link
+                href="/admin/users"
+                prefetch={false}
+                className={cn(pathname.startsWith('/admin/users') ? 'text-ink' : 'text-muted hover:text-ink')}
+              >
+                Users
+              </Link>
+            )}
             {/* The shop is a different root layout, so Next does a full page load here anyway. */}
             <Link href="/" prefetch={false} className="text-muted hover:text-ink">
               View shop

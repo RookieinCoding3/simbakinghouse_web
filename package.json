@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:rules": "firebase emulators:exec --only firestore \"node scripts/firestore-rules.test.mjs\"",
+    "test:rules": "firebase emulators:exec --only firestore \"node scripts/firestore-rules.test.mjs && node scripts/firestore-rules-roles.test.mjs\"",
     "test:guest-checkout": "tsx scripts/guest-checkout.test.mjs",
     "test:order-abuse": "bash scripts/test-env.sh bash scripts/e2e-suites.sh order-abuse",
     "test:admin": "bash scripts/test-env.sh bash scripts/e2e-suites.sh admin",

@@ -156,6 +156,15 @@ service cloud.firestore {
       allow list, write: if false;
     }
 
+    // Append-only record of admin changes (who, what, before/after). Written
+    // only by server routes via the Admin SDK, in the same transaction as
+    // the change itself (lib/server/audit.ts). Admins and owners may read it;
+    // no client can ever write, edit or delete an entry.
+    match /auditLog/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
     // Analytics collections. The browser never writes to these directly —
     // app/api/analytics/route.ts validates and rate-limits events, then
     // writes via the Admin SDK, which authenticates as a trusted service
