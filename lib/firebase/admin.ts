@@ -91,3 +91,13 @@ export function getAdminDb(): Firestore {
 export function getAdminStorage(): Storage {
   return getStorage(getAdminApp())
 }
+
+/** OAuth access token for the service account — used to call Google REST
+ *  APIs (Identity Toolkit) directly, instead of firebase-admin/auth, which
+ *  hits the same import-time ESM crash as app-check (see top of file). */
+export async function getAdminAccessToken(): Promise<string> {
+  const credential = getAdminApp().options.credential
+  if (!credential) throw new Error('Firebase Admin credential missing')
+  const token = await credential.getAccessToken()
+  return token.access_token
+}

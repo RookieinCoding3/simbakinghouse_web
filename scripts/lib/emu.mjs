@@ -80,3 +80,43 @@ export function summary() {
   console.log(`\n${passed} passed, ${failed} failed`)
   return failed
 }
+
+/** Password-reset / verify codes the Auth emulator would have emailed. */
+export async function emailedCodes(email) {
+  const res = await fetch(`http://${AUTH}/emulator/v1/projects/${PROJECT}/oobCodes`)
+  const { oobCodes = [] } = await res.json()
+  return oobCodes.filter((c) => c.email === email)
+}
+
+/** Completes a password reset exactly as clicking the emailed link would. */
+export async function completePasswordReset(oobCode, newPassword) {
+  const res = await fetch(`http://${AUTH}/identitytoolkit.googleapis.com/v1/accounts:resetPassword?key=fake-api-key`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ oobCode, newPassword }),
+  })
+  if (!res.ok) throw new Error(`resetPassword failed: ${await res.text()}`)
+}
+
+/** An account as "Sign in with Google" creates it (no password). */
+export async function createGoogleUser(email) {
+  const idToken = JSON.stringify({ sub: `google-${email}`, email, email_verified: true })
+  const res = await fetch(`http://${AUTH}/identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key=fake-api-key`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ postBody: `id_token=${encodeURIComponent(idToken)}&providerId=google.com`, requestUri: 'http://localhost', returnSecureToken: true }),
+  })
+  const json = await res.json()
+  if (!res.ok) throw new Error(`createGoogleUser failed: ${JSON.stringify(json)}`)
+  return { uid: json.localId, email, idToken: json.idToken }
+}
+
+export async function providersOf(uid) {
+  const res = await fetch(`http://${AUTH}/identitytoolkit.googleapis.com/v1/projects/${PROJECT}/accounts:lookup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer owner' },
+    body: JSON.stringify({ localId: [uid] }),
+  })
+  const { users = [] } = await res.json()
+  return (users[0]?.providerUserInfo ?? []).map((p) => p.providerId).sort()
+}

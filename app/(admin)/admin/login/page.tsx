@@ -23,6 +23,9 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [mode, setMode] = useState<'signin' | 'setPassword'>('signin')
+  const [setupEmail, setSetupEmail] = useState('')
+  const [setupMessage, setSetupMessage] = useState<string | null>(null)
 
   useEffect(() => {
     if (session.phase === 'admin') router.replace(safeNext())
@@ -60,6 +63,27 @@ export default function AdminLoginPage() {
     }
   }
 
+  const handleSetPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setSetupMessage(null)
+    setBusy(true)
+    try {
+      const res = await fetch('/api/admin/password-setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: setupEmail }),
+      })
+      const json = (await res.json().catch(() => ({}))) as { message?: string; error?: string }
+      if (!res.ok) setError(json.error || 'Something went wrong. Try again.')
+      else setSetupMessage(json.message || 'Check your email.')
+    } catch {
+      setError('Could not reach the server. Check your connection.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const checking = session.phase === 'checking' || (session.phase === 'admin' && !error)
 
   return (
@@ -82,7 +106,56 @@ export default function AdminLoginPage() {
           </div>
         )}
 
-        {checking ? (
+        {mode === 'setPassword' && !checking ? (
+          <form onSubmit={handleSetPassword} className="space-y-4" aria-labelledby="set-password-title">
+            <div className="space-y-1">
+              <h2 id="set-password-title" className="text-sm font-semibold text-ink">
+                Set a password
+              </h2>
+              <p className="text-xs text-muted">
+                For an admin who has only ever signed in with Google. We&apos;ll email a link to add a password to that same
+                account, so you can also sign in with email and password.
+              </p>
+            </div>
+            <div>
+              <label htmlFor="setup-email" className="block text-xs uppercase tracking-widest text-ink/70 mb-2">
+                Your admin email
+              </label>
+              <input
+                id="setup-email"
+                type="email"
+                value={setupEmail}
+                onChange={(e) => setSetupEmail(e.target.value)}
+                required
+                autoComplete="username"
+                className="w-full bg-white border border-line py-3 px-4 text-base focus:outline-none focus:border-ink/40"
+              />
+            </div>
+            {error && <p className="text-xs text-clay">{error}</p>}
+            {setupMessage && (
+              <p role="status" className="text-sm text-ink bg-sand rounded px-3 py-2" data-testid="setup-message">
+                {setupMessage}
+              </p>
+            )}
+            <button
+              type="submit"
+              disabled={busy}
+              className="w-full bg-ink hover:bg-clay disabled:opacity-50 text-paper py-4 font-medium text-xs uppercase tracking-[0.2em] transition-colors"
+            >
+              {busy ? 'Sending…' : 'Email me a link'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMode('signin')
+                setError(null)
+              }}
+              className="w-full text-xs text-muted hover:text-ink py-2"
+            >
+              &larr; Back to sign in
+            </button>
+          </form>
+        ) : checking ? (
           <p className="text-sm text-muted text-center py-8" aria-live="polite">
             Checking access…
           </p>
@@ -142,6 +215,17 @@ export default function AdminLoginPage() {
                 {busy ? 'Signing in…' : 'Sign in'}
               </button>
             </form>
+            <button
+              type="button"
+              onClick={() => {
+                setMode('setPassword')
+                setSetupEmail(email)
+                setError(null)
+              }}
+              className="w-full text-xs text-muted hover:text-ink py-2"
+            >
+              Only used Google before? Set a password
+            </button>
           </>
         )}
 
