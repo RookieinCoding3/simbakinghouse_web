@@ -84,9 +84,10 @@ service cloud.firestore {
     function productShapeOk() {
       // Basic shape guard so a compromised/careless admin session can't
       // write a type that breaks the site (e.g. price as a string).
+      // No price at all = "Ask for price" (a valid product).
       return request.resource.data.name is string
-        && request.resource.data.price is number
-        && request.resource.data.price >= 0
+        && (!('price' in request.resource.data)
+          || (request.resource.data.price is number && request.resource.data.price >= 0))
         && request.resource.data.category is string;
     }
     match /products/{productId} {

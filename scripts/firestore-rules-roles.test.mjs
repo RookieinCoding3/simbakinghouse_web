@@ -20,6 +20,7 @@ await testEnv.withSecurityRulesDisabled(async (ctx) => {
   await setDoc(doc(db, 'admins', 'legacy'), { addedAt: 1 })
   await setDoc(doc(db, 'orders', 'SBH-1'), { status: 'new', items: [] })
   await setDoc(doc(db, 'products', 'p1'), { name: 'Flour', price: 5, category: 'Flour' })
+  await setDoc(doc(db, 'products', 'ask'), { name: 'Cake topper', category: 'Decorations', inStock: true })
   await setDoc(doc(db, 'categories', 'c1'), { name: 'Flour' })
   await setDoc(doc(db, 'settings', 'shop'), { shopOpensAt: '6:30 AM' })
   await setDoc(doc(db, 'auditLog', 'a1'), { action: 'user.add' })
@@ -92,6 +93,9 @@ const CASES = [
   ['create a product that claims managedStock', () => false, (db) => setDoc(doc(db, 'products', 'sneaky'), { name: 'x', price: 1, category: 'x', managedStock: true })],
   ['edit a managed product name (other fields stay client-editable)', (p) => STAFF.has(p), (db) => updateDoc(doc(db, 'products', 'managed'), { name: 'Rice flour 1kg' })],
   ['change status of an order that holds stock', () => false, (db) => updateDoc(doc(db, 'orders', 'HELD'), { status: 'cancelled' })],
+  ['toggle In stock on an "Ask for price" product (no price field)', (p) => STAFF.has(p), (db) => updateDoc(doc(db, 'products', 'ask'), { inStock: false })],
+  ['write a product price as text', () => false, (db) => updateDoc(doc(db, 'products', 'p1'), { price: '5' })],
+  ['write a negative product price', () => false, (db) => updateDoc(doc(db, 'products', 'p1'), { price: -1 })],
   ["edit an order's stock record", () => false, (db) => updateDoc(doc(db, 'orders', 'SBH-1'), { stock: { state: 'released', lines: [] } })],
 ]
 

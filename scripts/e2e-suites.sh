@@ -4,7 +4,7 @@
 set -u
 cd "$(dirname "$0")/.."
 
-ALL=(order-abuse admin admin-auth admin-users stock admin-orders)
+ALL=(order-abuse admin admin-auth admin-users stock admin-orders admin-products)
 if [ $# -eq 0 ]; then SUITES=("${ALL[@]}"); else SUITES=("$@"); fi
 
 FAILED=()
@@ -19,6 +19,7 @@ for suite in "${SUITES[@]}"; do
     admin-users) node scripts/admin-users.test.mjs ;;
     stock) node scripts/stock.test.mjs ;;
     admin-orders) node scripts/admin-orders.test.mjs ;;
+    admin-products) node scripts/admin-products.test.mjs ;;
     *) echo "unknown suite: $suite"; false ;;
   esac
   [ $? -eq 0 ] || FAILED+=("$suite")

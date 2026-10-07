@@ -27,6 +27,12 @@ export async function saveProduct(tx: Transaction, caller: AdminCaller, id: stri
   const before = snap.data() ?? {}
   const config = readStockConfig(before)
 
+  if (config.managed && input.baseUnit !== config.baseUnit) {
+    // Stock numbers are milli-units of the base unit: changing it would
+    // silently turn 12 kg into 12 g.
+    throw new Refused(`Stock is managed in ${config.baseUnit}; switch stock tracking off before changing the unit.`)
+  }
+
   for (const code of input.barcodes) {
     const clash = await tx.get(db.collection('products').where('barcodes', 'array-contains', code).limit(2))
     const other = clash.docs.find((d) => d.id !== id)

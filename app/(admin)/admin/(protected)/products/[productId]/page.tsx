@@ -8,14 +8,13 @@ import { db } from '@/lib/firebase/config'
 import { useAdminSession } from '@/lib/admin/AdminSession'
 import { recordReads } from '@/lib/admin/readMetrics'
 import { PageSkeleton } from '@/components/admin/AdminShell'
-import type { Product } from '@/types/product'
 
 const ProductForm = dynamic(() => import('@/components/admin/ProductForm'), { loading: () => <PageSkeleton /> })
 
 export default function EditProductPage() {
   const params = useParams<{ productId: string }>()
   const { user } = useAdminSession()
-  const [product, setProduct] = useState<Product | null>(null)
+  const [product, setProduct] = useState<{ id: string; data: Record<string, unknown> } | null>(null)
   const [state, setState] = useState<'loading' | 'ready' | 'missing' | 'error'>('loading')
   const [attempt, setAttempt] = useState(0)
 
@@ -29,7 +28,8 @@ export default function EditProductPage() {
           setState('missing')
           return
         }
-        setProduct({ id: snap.id, ...snap.data() } as Product)
+        // Read once: a live update mid-edit would not reset the form anyway.
+        setProduct((cur) => cur ?? { id: snap.id, data: snap.data() })
         setState('ready')
       },
       () => setState('error')
@@ -52,7 +52,7 @@ export default function EditProductPage() {
   return (
     <div className="max-w-2xl">
       <h1 className="font-heading text-ink text-2xl md:text-3xl mb-6">Edit product</h1>
-      <ProductForm productId={product.id} initial={product} />
+      <ProductForm productId={product.id} initial={product.data} />
     </div>
   )
 }

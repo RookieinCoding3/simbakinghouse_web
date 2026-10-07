@@ -6,7 +6,18 @@ import { doc, updateDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase/config'
 import { cn } from '@/lib/utils/cn'
 import { useAdminSession } from '@/lib/admin/AdminSession'
-import { useAdminProducts, retryProducts } from '@/lib/admin/productsStore'
+import { useAdminProducts, retryProducts, type AdminProduct } from '@/lib/admin/productsStore'
+import { formatSen } from '@/lib/money'
+
+const STATUS_LABEL = { in_stock: 'In stock', low: 'Low', out: 'Out' } as const
+
+/** "RM 6.50", "From RM 3.50" for several sizes, or "Ask for price". */
+function priceLine(p: AdminProduct): string {
+  const priced = p.sellUnits.map((u) => u.priceSen).filter((s): s is number => s !== null)
+  if (priced.length === 0) return 'Ask for price'
+  const min = Math.min(...priced)
+  return p.sellUnits.length > 1 ? `From ${formatSen(min)}` : formatSen(min)
+}
 
 export default function AdminProductsPage() {
   const { user } = useAdminSession()
@@ -87,20 +98,35 @@ export default function AdminProductsPage() {
                 <Link href={`/admin/products/${product.id}`} prefetch={false} className="flex-1 min-w-0">
                   <p className="text-sm text-ink truncate">{product.name}</p>
                   <p className="text-xs text-muted truncate">
-                    {product.price !== null ? `RM ${product.price.toFixed(2)}` : 'Ask for price'}
+                    {priceLine(product)}
                     {product.category && ` · ${product.category}`}
                   </p>
                 </Link>
-                <button
-                  onClick={() => toggleStock(product.id, product.inStock)}
-                  disabled={togglingId === product.id || stale}
-                  className={cn(
-                    'text-[10px] uppercase tracking-widest font-medium px-3 py-2.5 flex-shrink-0 transition-colors disabled:opacity-50',
-                    product.inStock ? 'bg-sand text-ink' : 'bg-clay/10 text-clay'
-                  )}
-                >
-                  {product.inStock ? 'In stock' : 'Out of stock'}
-                </button>
+                {product.config.managed ? (
+                  // Managed: status comes from the stock numbers, not a toggle.
+                  <Link
+                    href={`/admin/stock/${product.id}`}
+                    prefetch={false}
+                    data-testid="managed-status"
+                    className={cn(
+                      'text-[10px] uppercase tracking-widest font-medium px-3 py-2.5 flex-shrink-0',
+                      product.stockStatus === 'out' ? 'bg-clay/10 text-clay' : product.stockStatus === 'low' ? 'bg-amber-100 text-amber-900' : 'bg-sand text-ink'
+                    )}
+                  >
+                    {product.stockStatus ? STATUS_LABEL[product.stockStatus] : 'Managed'}
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => toggleStock(product.id, product.inStock)}
+                    disabled={togglingId === product.id || stale}
+                    className={cn(
+                      'text-[10px] uppercase tracking-widest font-medium px-3 py-2.5 flex-shrink-0 transition-colors disabled:opacity-50',
+                      product.inStock ? 'bg-sand text-ink' : 'bg-clay/10 text-clay'
+                    )}
+                  >
+                    {product.inStock ? 'In stock' : 'Out of stock'}
+                  </button>
+                )}
               </li>
             ))}
           </ul>
