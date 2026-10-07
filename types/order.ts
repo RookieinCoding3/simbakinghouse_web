@@ -5,7 +5,21 @@ export interface OrderItem {
   productId: string
   name: string
   qty: number
+  /** RM float, kept for older readers. New orders also carry unitPriceSen. */
   unitPriceSnapshot: number | null
+  // Added with sell units (Phase 2); absent on older orders.
+  sellUnitId?: string
+  sellUnitLabel?: string
+  factorMilli?: number
+  baseQtyMilli?: number
+  unitPriceSen?: number | null
+}
+
+/** What this order holds or took from stock. Absent = never touched stock
+ *  (every order placed before Phase 2, and orders of unmanaged products). */
+export interface OrderStock {
+  state: 'reserved' | 'deducted' | 'released'
+  lines: { productId: string; qtyMilli: number }[]
 }
 
 export interface StatusHistoryEntry {
@@ -33,7 +47,9 @@ export interface Order {
   // owner in admin (Phase 4). Do not use estimatedTotal anywhere a charge is
   // decided or displayed as final.
   estimatedTotal: number
+  estimatedTotalSen?: number
   confirmedTotal: number | null
+  stock?: OrderStock
   cancelReason?: string
   createdAt: string
   updatedAt: string

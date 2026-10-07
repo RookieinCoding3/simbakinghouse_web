@@ -1,6 +1,7 @@
 import { collection, getDocs, query, orderBy, limit, DocumentData } from 'firebase/firestore'
 import { db } from './config'
 import type { Product } from '@/types/product'
+import { readPublicSellUnits, isOnline } from '@/lib/inventory/catalog'
 
 /**
  * Mirrors the soft-delete convention the iOS app writes: a missing
@@ -45,6 +46,10 @@ function mapDocumentToProduct(docId: string, data: DocumentData): Product {
         : typeof data.stockQuantity === 'number'
           ? data.stockQuantity
           : undefined,
+    managedStock: data.managedStock === true,
+    stockStatus: data.stockStatus === 'in_stock' || data.stockStatus === 'low' || data.stockStatus === 'out' ? data.stockStatus : undefined,
+    sellUnits: readPublicSellUnits(data).filter(isOnline),
+    hasWholesale: data.hasWholesale === true,
     createdAt: data.createdAt?.toDate?.(),
     updatedAt: data.updatedAt?.toDate?.(),
     // Mentor-focused fields (flexible naming support)

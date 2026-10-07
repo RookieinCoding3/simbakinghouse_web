@@ -4,6 +4,8 @@ import { memo } from 'react'
 import Image from 'next/image'
 import type { Product } from '@/types/product'
 import { cn } from '@/lib/utils/cn'
+import { productAvailability, onlineUnits, STOCK_LABEL } from '@/lib/productView'
+import { formatSen } from '@/lib/money'
 
 interface ProductCardProps {
   product: Product
@@ -13,7 +15,17 @@ interface ProductCardProps {
   responsiveTheme?: boolean
 }
 
+function cardPrice(product: Product): string {
+  const units = onlineUnits(product)
+  if (units.length === 0) return 'Wholesale'
+  const priced = units.filter((u) => u.priceSen !== null).map((u) => u.priceSen as number)
+  if (priced.length === 0) return 'Ask for price'
+  const min = Math.min(...priced)
+  return units.length > 1 && new Set(priced).size > 1 ? `from ${formatSen(min)}` : formatSen(min)
+}
+
 function ProductCard({ product, onClick, index = 0, responsiveTheme = false }: ProductCardProps) {
+  const { sellable, status } = productAvailability(product)
   return (
     <div
       onClick={onClick}
@@ -31,7 +43,7 @@ function ProductCard({ product, onClick, index = 0, responsiveTheme = false }: P
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
           className={cn(
             "object-cover transition-transform duration-1000 ease-out group-hover:scale-110",
-            !product.inStock && "grayscale opacity-30"
+            !sellable && "grayscale opacity-30"
           )}
           onError={(e) => {
             e.currentTarget.src = '/images/placeholder-product.jpg'
@@ -48,7 +60,7 @@ function ProductCard({ product, onClick, index = 0, responsiveTheme = false }: P
 
         {/* Out of Stock Overlay — boolean only, never a count (owner may not
             track exact stock, and a count invites arguing over the number) */}
-        {!product.inStock && (
+        {!sellable && (
           <div className={cn(
             "absolute inset-0 flex items-center justify-center",
             "bg-paper/60 backdrop-blur-sm"
@@ -78,13 +90,18 @@ function ProductCard({ product, onClick, index = 0, responsiveTheme = false }: P
           )}>
             {product.category}
           </p>
+          {status && status !== 'out' && (
+            <p className={cn('text-[10px] uppercase tracking-widest mt-1 font-medium', status === 'low' ? 'text-clay' : 'text-ink/50')}>
+              {STOCK_LABEL[status]}
+            </p>
+          )}
         </div>
         <div className="text-right">
           <p className={cn(
             "font-heading text-lg md:text-xl",
             "text-clay"
           )}>
-            {product.price !== undefined ? `RM ${product.price.toFixed(2)}` : 'Ask for price'}
+            {cardPrice(product)}
           </p>
         </div>
       </div>

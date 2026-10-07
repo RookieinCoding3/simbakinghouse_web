@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/lib/cart/CartContext'
+import { cartLineKey } from '@/types/cart'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { normalizeMyPhone } from '@/lib/phone'
 import { buildOrderWhatsAppLink } from '@/lib/whatsapp'
@@ -139,6 +140,7 @@ export default function CheckoutPage() {
           notes,
           items: items.map((item) => ({
             productId: item.productId,
+            ...(item.sellUnitId && { sellUnitId: item.sellUnitId }),
             name: item.name,
             qty: item.qty,
           })),
@@ -174,7 +176,7 @@ export default function CheckoutPage() {
         collectTime,
         items: items.map((item) => ({
           productId: item.productId,
-          name: item.name,
+          name: item.sellUnitLabel ? `${item.name} (${item.sellUnitLabel})` : item.name,
           qty: item.qty,
           unitPriceSnapshot: item.unitPrice,
         })),
@@ -198,9 +200,10 @@ export default function CheckoutPage() {
         {/* Order summary */}
         <div className="mb-10 border-t border-b border-line divide-y divide-line">
           {items.map((item) => (
-            <div key={item.productId} className="flex justify-between py-4 text-sm">
+            <div key={cartLineKey(item)} className="flex justify-between py-4 text-sm">
               <span className="text-ink">
                 {item.qty} x {item.name}
+                {item.sellUnitLabel && <span className="text-muted"> · {item.sellUnitLabel}</span>}
               </span>
               <span className="text-muted">
                 {item.unitPrice !== null ? `RM ${(item.unitPrice * item.qty).toFixed(2)}` : 'Ask for price'}

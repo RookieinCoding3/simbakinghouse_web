@@ -72,15 +72,62 @@ service cloud.firestore {
     }
 
     // Product catalog — public storefront read, admin-only write.
-    match /products/{productId} {
-      allow read: if true;
-      allow write: if isAdmin()
-        // Basic shape guard so a compromised/careless admin session can't
-        // write a type that breaks the site (e.g. price as a string).
-        && request.resource.data.name is string
+    //
+    // The stock engine's fields are server-only: whether a product is
+    // managed here and its public stock status change only through the
+    // admin API routes (count-gated switch-over, stock transactions), never
+    // a client write. Other admin edits stay client-writable so older tools
+    // that edit products directly keep working.
+    function stockFields() {
+      return ['managedStock', 'stockStatus', 'managedSince'];
+    }
+    function productShapeOk() {
+      // Basic shape guard so a compromised/careless admin session can't
+      // write a type that breaks the site (e.g. price as a string).
+      return request.resource.data.name is string
         && request.resource.data.price is number
         && request.resource.data.price >= 0
         && request.resource.data.category is string;
+    }
+    match /products/{productId} {
+      allow read: if true;
+      allow create: if isAdmin() && productShapeOk()
+        && !request.resource.data.keys().hasAny(stockFields());
+      allow update: if isAdmin() && productShapeOk()
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(stockFields());
+      allow delete: if isAdmin();
+    }
+
+    // Stock engine data and walk-in sales: readable by admins and owners,
+    // written only by the admin API routes (Admin SDK, inside transactions).
+    // Customers never see quantities — only products/{id}.stockStatus.
+    match /inventory/{productId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    match /stockMovements/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    match /batches/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    match /sales/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    match /stockCountDrafts/{productId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    // Wholesale-only sell units (and later, costs): never public.
+    match /productPrivate/{productId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    match /stockOps/{id} {
+      allow read, write: if false;
     }
 
     match /categories/{categoryId} {
@@ -97,7 +144,13 @@ service cloud.firestore {
     // This rule exists solely for the admin dashboard: read the queue,
     // and update status/confirmedTotal/etc.
     match /orders/{orderId} {
-      allow read, update: if isAdmin();
+      allow read: if isAdmin();
+      // An order that holds or took stock changes status only through the
+      // admin API (so stock moves with it); nobody can edit its stock record.
+      allow update: if isAdmin()
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['stock'])
+        && (resource.data.get('stock', null) == null
+          || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status']));
       allow create, delete: if false;
     }
 

@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { cartLineKey } from '@/types/cart'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
 import { useCart } from '@/lib/cart/CartContext'
@@ -54,18 +55,19 @@ export default function CartDrawer() {
         ) : (
           <div className="flex-1 space-y-6 overflow-y-auto">
             {items.map((item) => (
-              <div key={item.productId} className="flex gap-4">
+              <div key={cartLineKey(item)} className="flex gap-4">
                 <div className="relative w-16 h-16 flex-shrink-0 bg-white border border-line overflow-hidden">
                   <Image src={item.imageUrl || '/images/placeholder-product.jpg'} alt={item.name} fill sizes="64px" className="object-cover" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs uppercase tracking-wider text-ink font-medium truncate">{item.name}</p>
+                  {item.sellUnitLabel && <p className="text-[11px] text-ink/60">{item.sellUnitLabel}</p>}
                   <p className="text-xs text-muted mt-0.5">
                     {item.unitPrice !== null ? `RM ${item.unitPrice.toFixed(2)}` : 'Ask for price'}
                   </p>
                   <div className="flex items-center gap-3 mt-2">
                     <button
-                      onClick={() => setQty(item.productId, item.qty - 1)}
+                      onClick={() => setQty(cartLineKey(item), item.qty - 1)}
                       className="w-6 h-6 flex items-center justify-center border border-line text-ink hover:border-ink transition-colors"
                       aria-label={`Decrease quantity of ${item.name}`}
                     >
@@ -73,14 +75,14 @@ export default function CartDrawer() {
                     </button>
                     <span className="text-xs w-4 text-center">{item.qty}</span>
                     <button
-                      onClick={() => setQty(item.productId, item.qty + 1)}
+                      onClick={() => setQty(cartLineKey(item), item.qty + 1)}
                       className="w-6 h-6 flex items-center justify-center border border-line text-ink hover:border-ink transition-colors"
                       aria-label={`Increase quantity of ${item.name}`}
                     >
                       +
                     </button>
                     <button
-                      onClick={() => removeItem(item.productId)}
+                      onClick={() => removeItem(cartLineKey(item))}
                       className="text-[10px] uppercase tracking-widest text-muted hover:text-clay transition-colors ml-2"
                     >
                       Remove

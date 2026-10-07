@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminDb } from '@/lib/firebase/admin'
-import { resolveOrderItemPrices } from '@/lib/firebase/adminProducts'
+import { resolveLines, neededPerProduct, LineError } from '@/lib/server/lines'
 import { validateOrderInput } from '@/lib/orderValidation'
 import { fetchShopSettings } from '@/lib/firebase/settings'
 import { lastFourDigits } from '@/lib/phone'
@@ -68,32 +68,54 @@ export async function POST(request: NextRequest) {
       throw error
     }
 
-    // The only prices an order is ever written with: looked up fresh from
-    // Firestore here, never read from the client's own request body.
-    const resolvedPrices = await resolveOrderItemPrices(data.items.map((item) => item.productId))
-    const items: OrderItem[] = []
-    for (const item of data.items) {
-      const product = resolvedPrices.get(item.productId)
-      if (!product) {
-        return NextResponse.json(
-          { error: 'One of the items in your cart is no longer available — please refresh and try again' },
-          { status: 400 }
-        )
-      }
-      items.push({ productId: item.productId, name: product.name, qty: item.qty, unitPriceSnapshot: product.price })
-    }
-    const estimatedTotal = items.reduce((sum, item) => sum + (item.unitPriceSnapshot ?? 0) * item.qty, 0)
-
     const db = getAdminDb()
     const counterRef = db.collection('counters').doc('orders')
     const nowIso = new Date().toISOString()
+    const productIds = [...new Set(data.items.map((i) => i.productId))]
 
-    const orderId = await db.runTransaction(async (transaction) => {
+    const { orderId, estimatedTotal } = await db.runTransaction(async (transaction) => {
       // Firestore transactions require all reads before any writes.
-      const counterSnap = await transaction.get(counterRef)
+      const [counterSnap, ...productSnaps] = await transaction.getAll(
+        counterRef,
+        ...productIds.map((id) => db.collection('products').doc(id))
+      )
+      // The only prices an order is ever written with: read here from the
+      // product docs, by sell unit — never from the client's request.
+      const lines = resolveLines(data.items, new Map(productIds.map((id, i) => [id, productSnaps[i]])), null, 'online')
+
+      // Stock is checked only for products Sim has switched to managed; it is
+      // not held until she confirms the order. Every other product is
+      // ordered exactly as before.
+      const need = neededPerProduct(lines.filter((l) => l.managed))
+      if (need.size > 0) {
+        const invSnaps = await transaction.getAll(...[...need.keys()].map((id) => db.collection('inventory').doc(id)))
+        for (const [i, id] of [...need.keys()].entries()) {
+          const inv = invSnaps[i].data() ?? {}
+          const available = (Number(inv.onHandMilli) || 0) - (Number(inv.reservedMilli) || 0)
+          const name = lines.find((l) => l.productId === id)!.name
+          if (available <= 0) throw new LineError(`Sorry, ${name} is out of stock. Remove it from your cart to continue.`, 409, id)
+          if (need.get(id)! > available) {
+            throw new LineError(`We don't have enough ${name} for that quantity. Try fewer, or ask us on WhatsApp.`, 409, id)
+          }
+        }
+      }
+
+      const items: OrderItem[] = lines.map((l) => ({
+        productId: l.productId,
+        name: l.name,
+        qty: l.qty,
+        unitPriceSnapshot: l.unitPriceSen === null ? null : l.unitPriceSen / 100,
+        sellUnitId: l.unit.id,
+        sellUnitLabel: l.unit.label,
+        factorMilli: l.unit.factorMilli,
+        baseQtyMilli: l.baseQtyMilli,
+        unitPriceSen: l.unitPriceSen,
+      }))
+      // Lines priced "on request" are kept in the order but left out of the total.
+      const totalSen = lines.reduce((sum, l) => sum + (l.lineTotalSen ?? 0), 0)
+
       const next = (counterSnap.exists ? (counterSnap.data()?.seq ?? 0) : 0) + 1
       const id = `SBH-${String(next).padStart(4, '0')}`
-
       const order: Order = {
         orderId: id,
         status: 'new',
@@ -106,7 +128,8 @@ export async function POST(request: NextRequest) {
         collectTime: data.collectTime,
         notes: data.notes,
         items,
-        estimatedTotal,
+        estimatedTotal: totalSen / 100,
+        estimatedTotalSen: totalSen,
         confirmedTotal: null,
         createdAt: nowIso,
         updatedAt: nowIso,
@@ -115,11 +138,14 @@ export async function POST(request: NextRequest) {
 
       transaction.set(counterRef, { seq: next }, { merge: true })
       transaction.set(db.collection('orders').doc(id), order)
-      return id
+      return { orderId: id, estimatedTotal: totalSen / 100 }
     })
 
     return NextResponse.json({ orderId, estimatedTotal }, { status: 201 })
   } catch (error) {
+    if (error instanceof LineError) {
+      return NextResponse.json({ error: error.message, productId: error.productId }, { status: error.status })
+    }
     console.error('[orders] failed to create order:', error)
     return NextResponse.json({ error: 'Something went wrong, please try again' }, { status: 500 })
   }

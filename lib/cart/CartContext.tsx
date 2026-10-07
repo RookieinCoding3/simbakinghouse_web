@@ -12,8 +12,9 @@ import {
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase/config'
 import { useAuth } from '@/lib/auth/AuthContext'
-import type { CartItem } from '@/types/cart'
-import type { Product } from '@/types/product'
+import { cartLineKey, type CartItem } from '@/types/cart'
+import type { Product, PublicSellUnit } from '@/types/product'
+import { onlineUnits, productAvailability } from '@/lib/productView'
 
 const STORAGE_KEY = 'sbh_cart_v1'
 const MAX_QTY_PER_ITEM = 99
@@ -22,7 +23,7 @@ const CART_SYNC_DEBOUNCE_MS = 800
 function mergeCartItems(local: CartItem[], remote: CartItem[]): CartItem[] {
   const merged = [...local]
   for (const remoteItem of remote) {
-    const existing = merged.find((item) => item.productId === remoteItem.productId)
+    const existing = merged.find((item) => cartLineKey(item) === cartLineKey(remoteItem))
     if (existing) {
       existing.qty = Math.min(MAX_QTY_PER_ITEM, existing.qty + remoteItem.qty)
     } else {
@@ -38,9 +39,10 @@ interface CartContextValue {
   subtotal: number
   hasUnpricedItems: boolean
   isDrawerOpen: boolean
-  addItem: (product: Product, qty?: number) => void
-  removeItem: (productId: string) => void
-  setQty: (productId: string, qty: number) => void
+  addItem: (product: Product, qty?: number, unit?: PublicSellUnit) => void
+  /** lineKey = cartLineKey(item): one line per product and size */
+  removeItem: (lineKey: string) => void
+  setQty: (lineKey: string, qty: number) => void
   clear: () => void
   openDrawer: () => void
   closeDrawer: () => void
@@ -149,15 +151,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(timer)
   }, [items, user])
 
-  const addItem = (product: Product, qty = 1) => {
-    if (!product.inStock) return
+  const addItem = (product: Product, qty = 1, chosen?: PublicSellUnit) => {
+    if (!productAvailability(product).sellable) return
+    const units = onlineUnits(product)
+    const unit = chosen ?? units[0]
+    if (!unit) return
+    // Products with a single size keep the exact cart shape they always had.
+    const sized = units.length > 1 ? { sellUnitId: unit.id, sellUnitLabel: unit.label } : {}
+    const key = cartLineKey({ productId: product.id, ...sized })
     setItems((prev) => {
-      const existing = prev.find((item) => item.productId === product.id)
+      const existing = prev.find((item) => cartLineKey(item) === key)
       if (existing) {
         return prev.map((item) =>
-          item.productId === product.id
-            ? { ...item, qty: Math.min(MAX_QTY_PER_ITEM, item.qty + qty) }
-            : item
+          cartLineKey(item) === key ? { ...item, qty: Math.min(MAX_QTY_PER_ITEM, item.qty + qty) } : item
         )
       }
       return [
@@ -166,27 +172,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
           productId: product.id,
           name: product.name,
           imageUrl: product.imageUrl,
-          unitPrice: product.price ?? null,
+          unitPrice: unit.priceSen === null ? null : unit.priceSen / 100,
           qty: Math.min(MAX_QTY_PER_ITEM, qty),
+          ...sized,
         },
       ]
     })
     setIsDrawerOpen(true)
   }
 
-  const removeItem = (productId: string) => {
-    setItems((prev) => prev.filter((item) => item.productId !== productId))
+  const removeItem = (lineKey: string) => {
+    setItems((prev) => prev.filter((item) => cartLineKey(item) !== lineKey))
   }
 
-  const setQty = (productId: string, qty: number) => {
+  const setQty = (lineKey: string, qty: number) => {
     if (qty <= 0) {
-      removeItem(productId)
+      removeItem(lineKey)
       return
     }
     setItems((prev) =>
-      prev.map((item) =>
-        item.productId === productId ? { ...item, qty: Math.min(MAX_QTY_PER_ITEM, qty) } : item
-      )
+      prev.map((item) => (cartLineKey(item) === lineKey ? { ...item, qty: Math.min(MAX_QTY_PER_ITEM, qty) } : item))
     )
   }
 

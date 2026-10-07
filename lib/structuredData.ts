@@ -1,5 +1,6 @@
 import type { Product } from '@/types/product'
 import { absoluteUrl } from '@/lib/site'
+import { productAvailability } from '@/lib/productView'
 
 /**
  * Builds one schema.org Product node per item for the Products page, so
@@ -23,8 +24,10 @@ export function productListJsonLd(products: Product[]) {
           '@type': 'Offer',
           price: product.price,
           priceCurrency: 'MYR',
-          availability: product.inStock
-            ? 'https://schema.org/InStock'
+          availability: productAvailability(product).sellable
+            ? product.stockStatus === 'low'
+              ? 'https://schema.org/LimitedAvailability'
+              : 'https://schema.org/InStock'
             : 'https://schema.org/OutOfStock',
         },
       }),

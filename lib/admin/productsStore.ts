@@ -4,6 +4,7 @@ import { useEffect, useSyncExternalStore } from 'react'
 import { collection, onSnapshot, type Unsubscribe } from 'firebase/firestore'
 import { db } from '@/lib/firebase/config'
 import { recordReads } from './readMetrics'
+import { readStockConfig, readPublicSellUnits, type StockConfig, type SellUnit, type StockStatus } from '@/lib/inventory/catalog'
 
 // One product listener for the whole admin session, shared by every tab.
 // The admin root layout never unmounts while Sim moves between tabs, so
@@ -19,6 +20,11 @@ export interface AdminProduct {
   category: string
   inStock: boolean
   imageUrl: string
+  config: StockConfig
+  stockStatus: StockStatus | null
+  /** Public (online/both) sizes; wholesale-only ones live in productPrivate. */
+  sellUnits: SellUnit[]
+  barcodes: string[]
   raw: Record<string, unknown>
 }
 
@@ -28,7 +34,7 @@ interface StoreState {
   stale: boolean
 }
 
-const CACHE_KEY = 'sbh-admin-products-v1'
+const CACHE_KEY = 'sbh-admin-products-v2'
 
 let state: StoreState = { products: null, status: 'idle', stale: false }
 const listeners = new Set<() => void>()
@@ -49,6 +55,10 @@ function normalize(id: string, data: Record<string, unknown>): AdminProduct {
     category: typeof data.category === 'string' ? data.category : '',
     inStock: data.inStock !== false,
     imageUrl: typeof data.imageUrl === 'string' && data.imageUrl ? data.imageUrl : '/images/placeholder-product.jpg',
+    config: readStockConfig(data),
+    stockStatus: data.stockStatus === 'in_stock' || data.stockStatus === 'low' || data.stockStatus === 'out' ? data.stockStatus : null,
+    sellUnits: readPublicSellUnits(data),
+    barcodes: Array.isArray(data.barcodes) ? data.barcodes.filter((b): b is string => typeof b === 'string') : [],
     raw: data,
   }
 }
