@@ -342,7 +342,7 @@ export default function ProductForm({ productId, initial }: ProductFormProps) {
                   Remove this size
                 </button>
               )}
-              {i === 0 && units.length > 1 && <p className="text-[11px] text-muted">The first size is the one old carts and the product card use.</p>}
+              {i === 0 && units.length > 1 && <p className="text-xs text-muted">The first size is the one old carts and the product card use.</p>}
             </li>
           ))}
         </ul>

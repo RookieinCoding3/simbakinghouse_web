@@ -14,7 +14,7 @@ deployed**: no code, no Firestore rules, no Firestore indexes.
 | c. Quick sale screen `/admin/sale` | **DONE** | see `git log` ("2c") |
 | d. Stock-tab badge | **DONE** | see `git log` ("2d") |
 | e. Browser pass (WebKit 390/1440) + browser tests | **DONE** | see `git log` ("2e") |
-| f. Lighthouse + bundle sizes | not started | |
+| f. Lighthouse + bundle sizes | **DONE** | see `git log` ("2f") |
 | g. Final handoff update + deploy plan | not started | |
 
 **Next action if picking this up cold:** start the first row that is not DONE.
@@ -64,7 +64,7 @@ deployed**: no code, no Firestore rules, no Firestore indexes.
 | Tests: unit + API end-to-end | **DONE** | `scripts/unit/inventory.test.ts` (23), `scripts/stock.test.mjs` (27) |
 | Tests: browser E2E for new screens, screenshots 390/1440 | **DONE** (2e) | `scripts/admin-screens.test.mjs` (35: Stock tab + filters, history, adjust with confirm line, expiry, count mode, switch-on, switch-over per category, switch-off, then all 11 admin screens at 390 and 1440 for sideways overflow + errors + screenshots), `scripts/shop-stock.test.mjs` (16: card status labels, out-of-stock overlay, prices incl. Ask for price, no numbers in the page, modal sizes/status/wholesale note, out disabled, cart + checkout with sizes → order saved with size and priceToConfirm). Screenshots go to `.screenshots/phase2/` (gitignored). |
 | Customer-site pixel diff vs production | **NOT DONE** | Would need production screenshots (live-domain requests); skipped to stay inside the request budget. The shop suite covers the Phase 2 changes functionally. |
-| Lighthouse / bundle sizes | see 2f | |
+| Lighthouse / bundle sizes | **DONE** (2f) | see "Performance" below; `scripts/admin-lighthouse.mjs` |
 
 ---
 
@@ -91,6 +91,35 @@ local build in `.next-test/`; nothing touches production. Ports 8080, 9099,
 Last full run (2026-10-07, on this WIP): all green, 375 checks.
 
 ---
+
+## Performance (2f, local production build, emulator)
+
+First-load JS per admin route (gzip, from `next build`); flag is 250 kB:
+
+| Route | Phase 2 | main |
+|---|---|---|
+| /admin (orders) | 238 kB | 238 kB |
+| /admin/orders/[id] | 231 kB | 230 kB |
+| /admin/products | 236 kB | 236 kB |
+| /admin/products/new, /[id] | 238 kB | 237 / 238 kB |
+| /admin/stock | 237 kB | (stub) |
+| /admin/stock/[id] | 239 kB | new |
+| /admin/stock/count, /switch | 237 kB | new |
+| /admin/sale | 239 kB | new |
+
+Nothing over 250 kB; no regression on existing routes. The product editor is
+lazy-loaded (its chunk is 5.5 kB gzip). Most of the 238 kB is Firebase
+(auth + firestore), shared by every admin page.
+
+Lighthouse 12 (mobile, simulated slow 4G, signed in), warm cache after the
+first page: performance 100, accessibility 100 on /admin, /admin/stock,
+/admin/stock/[id], /admin/products, /admin/products/new, /admin/sale. Cold
+first load of /admin: performance 75, LCP 4.8 s, 340 kB JS (Firebase SDK on a
+throttled phone; same code path as today). Best practices 89–93: report-only
+CSP warnings about the Auth emulator (test only) and the existing
+`upgrade-insecure-requests` warning, plus small text on the stock page (11 px
+raised to 12 px in 2f). Run: `LIGHTHOUSE_BIN=… bash scripts/test-env.sh node
+scripts/admin-lighthouse.mjs` (Lighthouse is not a project dependency).
 
 ## "Ask for price" (no price) rules — apply everywhere
 

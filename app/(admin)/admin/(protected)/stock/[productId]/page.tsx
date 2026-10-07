@@ -106,7 +106,7 @@ export default function ProductStockPage() {
             ].map(([label, v]) => (
               <div key={label as string} className="bg-white border border-line rounded py-3">
                 <p className="text-lg font-semibold text-ink tabular-nums">{formatQty(v as number, unit)}</p>
-                <p className="text-[11px] text-muted">{label}</p>
+                <p className="text-xs text-muted">{label}</p>
               </div>
             ))}
           </div>
@@ -127,7 +127,7 @@ export default function ProductStockPage() {
                         {MOVEMENT_LABEL[m.reason] ?? m.reason}
                         {m.orderId && <span className="text-muted"> · {m.orderId}</span>}
                       </p>
-                      <p className="text-[11px] text-muted truncate">
+                      <p className="text-xs text-muted truncate">
                         {m.at ? formatKlDateTime(m.at) : 'just now'} · {m.byEmail ?? 'unknown'}
                         {m.note && ` · ${m.note}`}
                       </p>
@@ -144,7 +144,7 @@ export default function ProductStockPage() {
                           {formatQty(Math.abs(m.reservedDeltaMilli), unit)}
                         </p>
                       )}
-                      <p className="text-[11px] text-muted">→ {formatQty(m.onHandAfterMilli, unit)}</p>
+                      <p className="text-xs text-muted">→ {formatQty(m.onHandAfterMilli, unit)}</p>
                     </div>
                   </li>
                 ))}
@@ -250,7 +250,7 @@ function AdjustForm({ productId, unit, onHandMilli, trackExpiry, name, onDone }:
             className={cn('px-3 py-2.5 text-left text-sm border rounded', reason === r.key ? 'border-ink bg-ink text-paper' : 'border-line')}
           >
             {r.label}
-            <span className={cn('block text-[11px]', reason === r.key ? 'text-paper/70' : 'text-muted')}>{r.hint}</span>
+            <span className={cn('block text-xs', reason === r.key ? 'text-paper/70' : 'text-muted')}>{r.hint}</span>
           </button>
         ))}
       </div>
@@ -266,7 +266,7 @@ function AdjustForm({ productId, unit, onHandMilli, trackExpiry, name, onDone }:
             Expiry date
           </label>
           <input id="adjust-expiry" type="date" value={expiry} onChange={(e) => setExpiry(e.target.value)} className="w-full bg-white border border-line py-3 px-4 text-base" />
-          <p className="text-[11px] text-muted mt-1">Leave empty if unknown — it will be listed under &ldquo;missing expiry&rdquo;.</p>
+          <p className="text-xs text-muted mt-1">Leave empty if unknown — it will be listed under &ldquo;missing expiry&rdquo;.</p>
         </div>
       )}
       <div>

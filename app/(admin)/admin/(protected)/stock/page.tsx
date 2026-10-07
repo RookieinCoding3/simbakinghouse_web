@@ -167,7 +167,7 @@ function StockListRow({ row }: { row: StockRow }) {
             </p>
           )}
           {row.managed && (
-            <p className={cn('text-[11px]', row.needsRecount ? 'text-amber-800' : 'text-muted')}>
+            <p className={cn('text-xs', row.needsRecount ? 'text-amber-800' : 'text-muted')}>
               Last counted {daysAgo(row.lastCountedAt)}
               {row.needsRecount && ' · needs recount'}
             </p>

@@ -146,7 +146,7 @@ function CategorySwitch({ category, rows }: { category: string; rows: StockRow[]
             <li key={r.product.id} className="py-2.5 flex items-center gap-2">
               <div className="flex-1 min-w-0">
                 <p className="text-sm truncate">{r.product.name}</p>
-                <p className="text-[11px] text-muted">{r.draft ? `counted ${formatQty(r.draft.countedMilli, unit)}` : 'not counted yet'}</p>
+                <p className="text-xs text-muted">{r.draft ? `counted ${formatQty(r.draft.countedMilli, unit)}` : 'not counted yet'}</p>
               </div>
               <input
                 aria-label={`Count for ${r.product.name}`}
@@ -157,7 +157,7 @@ function CategorySwitch({ category, rows }: { category: string; rows: StockRow[]
                 className={cn('w-20 text-right bg-white border py-2.5 px-2 text-base tabular-nums', bad ? 'border-clay' : 'border-line')}
               />
               <span className="text-xs text-muted w-8">{unit}</span>
-              <button type="button" onClick={() => setValues((x) => ({ ...x, [r.product.id]: '0' }))} className="text-[11px] text-muted underline whitespace-nowrap">
+              <button type="button" onClick={() => setValues((x) => ({ ...x, [r.product.id]: '0' }))} className="text-xs text-muted underline whitespace-nowrap">
                 Set 0
               </button>
             </li>
