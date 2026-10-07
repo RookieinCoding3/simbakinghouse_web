@@ -76,6 +76,12 @@ test('confirmedTotal undefined → null (the detail page used to call .toFixed o
   eq(normalizeOrder('X', { items: [] }).confirmedTotal, null)
 })
 
+test('priceToConfirm: stored flag, or any unpriced line; false for a fully priced order', () => {
+  eq(normalizeOrder('X', { priceToConfirm: true, items: [] }).priceToConfirm, true)
+  eq(normalizeOrder('X', { items: [{ productId: 'a', qty: 1, unitPriceSnapshot: null }] }).priceToConfirm, true)
+  eq(normalizeOrder('X', { items: [{ productId: 'a', qty: 1, unitPriceSnapshot: 5 }] }).priceToConfirm, false)
+})
+
 test('formatters: null-safe, and pass unparseable values through unchanged', () => {
   eq(formatRM(null), 'RM —')
   eq(formatRM(11), 'RM 11.00')

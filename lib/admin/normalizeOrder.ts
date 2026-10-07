@@ -32,6 +32,8 @@ export interface AdminOrder {
   items: AdminOrderItem[]
   itemCount: number
   estimatedTotal: number | null
+  /** Some lines are "Ask for price": estimatedTotal leaves them out. */
+  priceToConfirm: boolean
   confirmedTotal: number | null
   cancelReason: string
   createdAt: Date | null
@@ -124,6 +126,7 @@ export function normalizeOrder(docId: string, raw: unknown): AdminOrder {
     items,
     itemCount: items.reduce((n, i) => n + i.qty, 0),
     estimatedTotal,
+    priceToConfirm: d.priceToConfirm === true || items.some((i) => i.unitPrice === null),
     confirmedTotal: toNumber(d.confirmedTotal),
     cancelReason: str(d.cancelReason),
     createdAt,

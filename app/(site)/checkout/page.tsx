@@ -155,7 +155,11 @@ export default function CheckoutPage() {
         return
       }
 
-      const { orderId, estimatedTotal } = json as { orderId: string; estimatedTotal: number }
+      const { orderId, estimatedTotal, priceToConfirm } = json as {
+        orderId: string
+        estimatedTotal: number
+        priceToConfirm?: boolean
+      }
 
       try {
         sessionStorage.setItem(
@@ -179,6 +183,7 @@ export default function CheckoutPage() {
           unitPriceSnapshot: item.unitPrice,
         })),
         estimatedTotal,
+        priceToConfirm: priceToConfirm === true,
       }, `https://wa.me/${settings.whatsappNumber}`)
 
       clear()

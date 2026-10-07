@@ -5,6 +5,8 @@
 // not just of the helper functions in isolation.
 //
 // Run via: npm run test:order-abuse (wraps this with the emulator + server)
+import { db } from './lib/emu.mjs'
+
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3100'
 
 let passed = 0
@@ -23,7 +25,7 @@ async function getToken() {
   return res.json()
 }
 
-function validOrderBody({ phone, token, productId = 'test-flour-1kg', qty = 1, honeypot = '', priceOverride }) {
+function validOrderBody({ phone, token, productId = 'test-flour-1kg', qty = 1, honeypot = '', priceOverride, items }) {
   const item = { productId, name: 'Whatever the client claims', qty }
   if (priceOverride !== undefined) item.unitPriceSnapshot = priceOverride
   return {
@@ -33,7 +35,7 @@ function validOrderBody({ phone, token, productId = 'test-flour-1kg', qty = 1, h
     collectDate: new Date(Date.now() + 86400_000).toISOString().slice(0, 10),
     collectTime: '08:00',
     notes: '',
-    items: [item],
+    items: items ?? [item],
     company: honeypot,
     formIssuedAt: token.issuedAt,
     formToken: token.token,
@@ -110,6 +112,94 @@ await check('qty 100 (over MAX_QTY 99) is rejected', async () => {
   const { status } = await postOrder(validOrderBody({ phone: phoneFor(5), token, qty: 100 }))
   assert(status === 400, `expected 400, got ${status}`)
 })
+
+// --- "Ask for price" products (no price set): orderable, left out of the
+// total, order flagged priceToConfirm. Each check uses its own IP so these
+// don't eat into the shared localhost IP budget. ---
+
+await check('an "Ask for price"-only order is accepted: total RM0, flagged price to confirm', async () => {
+  const token = await getToken()
+  await sleep(3100)
+  const { status, json } = await postOrder(
+    validOrderBody({ phone: phoneFor(20), token, productId: 'test-ask-price', qty: 2 }),
+    { 'x-forwarded-for': '203.0.113.20' }
+  )
+  assert(status === 201, `expected 201, got ${status}: ${JSON.stringify(json)}`)
+  assert(json.estimatedTotal === 0, `expected RM0 estimate, got ${json.estimatedTotal}`)
+  assert(json.priceToConfirm === true, `expected priceToConfirm true, got ${json.priceToConfirm}`)
+  const order = (await db().collection('orders').doc(json.orderId).get()).data()
+  assert(order.priceToConfirm === true, 'stored order should be flagged priceToConfirm')
+  assert(order.items[0].unitPriceSnapshot === null, `expected null line price, got ${order.items[0].unitPriceSnapshot}`)
+  assert(order.items[0].name === 'Test Wedding Cake Topper', 'line name should come from Firestore, not the client')
+})
+
+await check('a mixed cart: priced line counted (2 x RM12.50), "Ask for price" line left out of the total', async () => {
+  const token = await getToken()
+  await sleep(3100)
+  const { status, json } = await postOrder(
+    validOrderBody({
+      phone: phoneFor(21),
+      token,
+      items: [
+        { productId: 'test-flour-1kg', name: 'x', qty: 2 },
+        { productId: 'test-ask-price', name: 'x', qty: 1 },
+      ],
+    }),
+    { 'x-forwarded-for': '203.0.113.21' }
+  )
+  assert(status === 201, `expected 201, got ${status}: ${JSON.stringify(json)}`)
+  assert(json.estimatedTotal === 25, `expected RM25.00, got ${json.estimatedTotal}`)
+  assert(json.priceToConfirm === true, 'mixed cart should be flagged priceToConfirm')
+})
+
+await check('a fully priced order is NOT flagged price to confirm', async () => {
+  const token = await getToken()
+  await sleep(3100)
+  const { status, json } = await postOrder(validOrderBody({ phone: phoneFor(22), token }), {
+    'x-forwarded-for': '203.0.113.22',
+  })
+  assert(status === 201, `expected 201, got ${status}: ${JSON.stringify(json)}`)
+  assert(json.priceToConfirm === false, `expected priceToConfirm false, got ${json.priceToConfirm}`)
+  const order = (await db().collection('orders').doc(json.orderId).get()).data()
+  assert(order.priceToConfirm === false, 'stored order should have priceToConfirm false')
+})
+
+await check('a spoofed price on an "Ask for price" item (RM999) is ignored: line stays unpriced, total RM0', async () => {
+  const token = await getToken()
+  await sleep(3100)
+  const { status, json } = await postOrder(
+    validOrderBody({ phone: phoneFor(23), token, productId: 'test-ask-price', priceOverride: 999 }),
+    { 'x-forwarded-for': '203.0.113.23' }
+  )
+  assert(status === 201, `expected 201, got ${status}: ${JSON.stringify(json)}`)
+  assert(json.estimatedTotal === 0, `expected the spoofed 999 to be ignored, got ${json.estimatedTotal}`)
+  const order = (await db().collection('orders').doc(json.orderId).get()).data()
+  assert(order.items[0].unitPriceSnapshot === null, `spoofed price leaked into the order: ${order.items[0].unitPriceSnapshot}`)
+})
+
+for (const [label, productId, n] of [
+  ['a fake product ID mixed with an "Ask for price" item', 'does-not-exist-abc', 24],
+  ['a soft-deleted product', 'test-deleted', 25],
+  ['an inactive product', 'test-inactive', 26],
+]) {
+  await check(`${label} is still rejected (400)`, async () => {
+    const token = await getToken()
+    await sleep(3100)
+    const { status, json } = await postOrder(
+      validOrderBody({
+        phone: phoneFor(n),
+        token,
+        items: [
+          { productId: 'test-ask-price', name: 'x', qty: 1 },
+          { productId, name: 'x', qty: 1 },
+        ],
+      }),
+      { 'x-forwarded-for': `203.0.113.${n}` }
+    )
+    assert(status === 400, `expected 400, got ${status}: ${JSON.stringify(json)}`)
+    assert(/no longer available/.test(json.error || ''), `unexpected error: ${json.error}`)
+  })
+}
 
 // --- Bot defense ---
 
