@@ -20,5 +20,15 @@ await db.collection('products').doc('test-flour-1kg').set({
   inStock: true,
 })
 
-console.log('Seeded products/test-flour-1kg (price RM12.50)')
+// "Ask for price": no price field at all. Orderable; priced later by the owner.
+await db.collection('products').doc('test-ask-price').set({
+  name: 'Test Wedding Cake Topper',
+  category: 'tools',
+  inStock: true,
+})
+// Must still be rejected.
+await db.collection('products').doc('test-deleted').set({ name: 'Deleted', price: 3, isDeleted: true })
+await db.collection('products').doc('test-inactive').set({ name: 'Inactive', isActive: false })
+
+console.log('Seeded products/test-flour-1kg (RM12.50), test-ask-price (no price), test-deleted, test-inactive')
 process.exit(0)

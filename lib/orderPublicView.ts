@@ -13,6 +13,7 @@ export function toPublicOrderView(order: Order): PublicOrderView {
     collectTime: order.collectTime,
     items: order.items,
     estimatedTotal: order.estimatedTotal,
+    priceToConfirm: order.priceToConfirm === true,
     confirmedTotal: order.confirmedTotal,
     cancelReason: order.cancelReason,
     createdAt: order.createdAt,

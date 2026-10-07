@@ -82,7 +82,10 @@ export async function POST(request: NextRequest) {
       }
       items.push({ productId: item.productId, name: product.name, qty: item.qty, unitPriceSnapshot: product.price })
     }
+    // "Ask for price" lines (unitPriceSnapshot null) are left out of the
+    // estimate and flag the order so the admin prices it before confirming.
     const estimatedTotal = items.reduce((sum, item) => sum + (item.unitPriceSnapshot ?? 0) * item.qty, 0)
+    const priceToConfirm = items.some((item) => item.unitPriceSnapshot === null)
 
     const db = getAdminDb()
     const counterRef = db.collection('counters').doc('orders')
@@ -107,6 +110,7 @@ export async function POST(request: NextRequest) {
         notes: data.notes,
         items,
         estimatedTotal,
+        priceToConfirm,
         confirmedTotal: null,
         createdAt: nowIso,
         updatedAt: nowIso,
@@ -118,7 +122,7 @@ export async function POST(request: NextRequest) {
       return id
     })
 
-    return NextResponse.json({ orderId, estimatedTotal }, { status: 201 })
+    return NextResponse.json({ orderId, estimatedTotal, priceToConfirm }, { status: 201 })
   } catch (error) {
     console.error('[orders] failed to create order:', error)
     return NextResponse.json({ error: 'Something went wrong, please try again' }, { status: 500 })

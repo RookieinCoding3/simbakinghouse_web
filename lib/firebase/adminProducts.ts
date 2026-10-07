@@ -3,7 +3,8 @@ import { getAdminDb } from './admin'
 export interface ResolvedProduct {
   id: string
   name: string
-  price: number
+  /** null = "Ask for price": orderable, priced later by the owner. */
+  price: number | null
 }
 
 /**
@@ -13,10 +14,12 @@ export interface ResolvedProduct {
  * in app/api/orders, deliberately, since a customer's own browser is not a
  * trustworthy source for what something costs.
  *
- * A product that doesn't exist, is soft-deleted, or has no price set
- * (price?: undefined — "Ask for price", not orderable via this flow) is
- * simply absent from the returned map; the caller treats a missing ID as
- * "reject the order", not as a fallback to anything the client provided.
+ * A product that doesn't exist, is soft-deleted or is inactive is simply
+ * absent from the returned map; the caller treats a missing ID as "reject
+ * the order", not as a fallback to anything the client provided. A product
+ * with no price set ("Ask for price") IS returned, with price: null — the
+ * owner prices it when confirming the order. A client-sent price is still
+ * never used in its place.
  */
 export async function resolveOrderItemPrices(productIds: string[]): Promise<Map<string, ResolvedProduct>> {
   const db = getAdminDb()
@@ -36,13 +39,12 @@ export async function resolveOrderItemPrices(productIds: string[]): Promise<Map<
       const price = [data.price, data.Price, data.cost].find(
         (v): v is number => typeof v === 'number' && Number.isFinite(v)
       )
-      if (price === undefined) return
 
       const name = [data.name, data.title, data.productName, data.Name].find(
         (v): v is string => typeof v === 'string' && v.length > 0
       )
 
-      results.set(id, { id, name: name ?? 'Product', price })
+      results.set(id, { id, name: name ?? 'Product', price: price ?? null })
     })
   )
 

@@ -33,6 +33,10 @@ export interface Order {
   // owner in admin (Phase 4). Do not use estimatedTotal anywhere a charge is
   // decided or displayed as final.
   estimatedTotal: number
+  /** True when at least one line is "Ask for price" (unitPriceSnapshot
+   *  null): estimatedTotal leaves those lines out, so the owner must set
+   *  the price before confirming. Missing on orders written before this. */
+  priceToConfirm?: boolean
   confirmedTotal: number | null
   cancelReason?: string
   createdAt: string
@@ -50,6 +54,7 @@ export interface PublicOrderView {
   collectTime: string | null
   items: OrderItem[]
   estimatedTotal: number
+  priceToConfirm?: boolean
   confirmedTotal: number | null
   cancelReason?: string
   createdAt: string
