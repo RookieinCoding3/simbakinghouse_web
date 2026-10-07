@@ -13,7 +13,7 @@ deployed**: no code, no Firestore rules, no Firestore indexes.
 | b. Product editor form | **DONE** | see `git log` ("2b") |
 | c. Quick sale screen `/admin/sale` | **DONE** | see `git log` ("2c") |
 | d. Stock-tab badge | **DONE** | see `git log` ("2d") |
-| e. Browser pass (WebKit 390/1440) + browser tests | not started | |
+| e. Browser pass (WebKit 390/1440) + browser tests | **DONE** | see `git log` ("2e") |
 | f. Lighthouse + bundle sizes | not started | |
 | g. Final handoff update + deploy plan | not started | |
 
@@ -62,7 +62,9 @@ deployed**: no code, no Firestore rules, no Firestore indexes.
 | Walk-in quick sale (**UI**) | **DONE** (2c) | `app/(admin)/admin/(protected)/sale/page.tsx`: search (name/category/barcode), size incl. wholesale, qty, **till price keypad for "Ask for price" sizes** (Add blocked until typed), running total, paid by Cash/DuitNow/Card/Other, Done with one `saleId` per sale (duplicate reply shown as "already recorded"), 409 short list + "Sell anyway", today's sales with Void (reason). Server: `tillPriceSen` per line, used only for unpriced sizes (integer sen, ≥ 1), stored on the sale line with `priceSource: 'till'`; ignored for priced sizes; never written to the product. Tested: `scripts/admin-sale.test.mjs` (13) |
 | Stock-tab badge (running low count) | **DONE** (2d) | `components/admin/AdminShell.tsx` + `runningLowStore` in `lib/admin/collectionStore.ts`: one live query `products where managedStock == true and stockStatus in [low, out]` (reads only those docs), bottom tab (phone) and top bar (desktop), aria-label "Stock, N running low". **Needs the new composite index `products (managedStock, stockStatus)`** in `firestore.indexes.json`. Tested in `admin-sale` suite (live 0 → 1 → 2 → 1, desktop) |
 | Tests: unit + API end-to-end | **DONE** | `scripts/unit/inventory.test.ts` (23), `scripts/stock.test.mjs` (27) |
-| Tests: browser E2E for new screens, screenshots 390/1440, customer-site pixel check, Lighthouse/bundle | **NOT STARTED** | — |
+| Tests: browser E2E for new screens, screenshots 390/1440 | **DONE** (2e) | `scripts/admin-screens.test.mjs` (35: Stock tab + filters, history, adjust with confirm line, expiry, count mode, switch-on, switch-over per category, switch-off, then all 11 admin screens at 390 and 1440 for sideways overflow + errors + screenshots), `scripts/shop-stock.test.mjs` (16: card status labels, out-of-stock overlay, prices incl. Ask for price, no numbers in the page, modal sizes/status/wholesale note, out disabled, cart + checkout with sizes → order saved with size and priceToConfirm). Screenshots go to `.screenshots/phase2/` (gitignored). |
+| Customer-site pixel diff vs production | **NOT DONE** | Would need production screenshots (live-domain requests); skipped to stay inside the request budget. The shop suite covers the Phase 2 changes functionally. |
+| Lighthouse / bundle sizes | see 2f | |
 
 ---
 
@@ -77,7 +79,8 @@ npm run test:e2e            # builds .next-test against the emulators, then all 
                             #   order-abuse 10, admin 29, admin-auth 10, admin-users 18, stock 27
 bash scripts/test-env.sh bash scripts/e2e-suites.sh stock      # one suite
 VERBOSE=1 ...                                                  # full Playwright call log on a FAIL
-# Phase 2 browser suites (WebKit): admin-orders, admin-products, admin-sale
+# Phase 2 browser suites (WebKit): admin-orders, admin-products, admin-sale, admin-screens
+npm run test:shop           # customer side; seeds BEFORE building (ISR /products), own build
 SKIP_BUILD=1 bash scripts/test-env.sh bash scripts/e2e-suites.sh stock   # reuse last test build
 ```
 
@@ -121,8 +124,11 @@ Last full run (2026-10-07, on this WIP): all green, 375 checks.
    in the old form would be **ignored** by the shop. Replace the form with one
    that calls the product routes.
 3. ~~`/admin/sale` link 404s~~ Fixed in 2c.
-4. **New screens are untested in a browser.** They type-check and lint, but have
-   never been rendered.
+4. ~~New screens are untested in a browser.~~ Done in 2e. Bugs found and fixed
+   there: a saved opening count was not prefilled when the product's Stock
+   page (or a Switch-over category) was opened directly, because counts load
+   after the form; filter-chip scrollbar visible in WebKit; old products showed
+   a meaningless "· 1 pc" size on order lines; wholesale option label cut off.
 5. **`/products` is cached for 5 minutes (ISR).** A product that just ran out can
    still show as available for up to 5 minutes; the server refuses the order with a
    clear message, so this is cosmetic.

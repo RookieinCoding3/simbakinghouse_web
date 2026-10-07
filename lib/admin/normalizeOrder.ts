@@ -106,7 +106,8 @@ export function normalizeOrder(docId: string, raw: unknown): AdminOrder {
         name: str(it.name) || 'Unnamed item',
         qty: Math.max(0, Math.round(toNumber(it.qty) ?? 0)),
         unitPrice: toNumber(it.unitPriceSnapshot),
-        sizeLabel: str(it.sellUnitLabel),
+        // The built-in size of an old product ("1 pc") says nothing: hide it.
+        sizeLabel: it.sellUnitId === 'default' ? '' : str(it.sellUnitLabel),
       }))
   } else {
     problems.push('no items list')

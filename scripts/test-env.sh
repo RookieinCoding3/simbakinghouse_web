@@ -5,6 +5,7 @@
 #   bash scripts/test-env.sh node scripts/admin.test.mjs
 #   DEV=1 bash scripts/test-env.sh node scripts/repro.mjs     # next dev instead of build+start
 #   SKIP_BUILD=1 bash scripts/test-env.sh ...                 # reuse the last .next-test build
+#   PRE_BUILD="node scripts/seed-shop.mjs" bash scripts/test-env.sh ...   # seed before building
 #
 # Test builds go to .next-test (see next.config.js distDir), never .next.
 set -euo pipefail
@@ -81,6 +82,12 @@ if [ "${DEV:-}" = "1" ]; then
   npx next dev -p $TEST_PORT > /tmp/sbh-test-next.log 2>&1 &
   NEXT_PID=$!
 else
+  # PRE_BUILD: seed data that must exist when ISR pages (/products) are
+  # rendered at build time — see scripts/seed-shop.mjs.
+  if [ -n "${PRE_BUILD:-}" ]; then
+    echo "[test-env] pre-build: $PRE_BUILD"
+    bash -c "$PRE_BUILD"
+  fi
   if [ "${SKIP_BUILD:-}" != "1" ]; then
     echo "[test-env] building (NEXT_PUBLIC_* baked in pointing at the emulators)..."
     # next build adds "<distDir>/types/**" to tsconfig.json; don't let a test

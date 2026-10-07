@@ -76,6 +76,11 @@ test('confirmedTotal undefined → null (the detail page used to call .toFixed o
   eq(normalizeOrder('X', { items: [] }).confirmedTotal, null)
 })
 
+test("an old product's built-in size label is hidden; a real size is shown", () => {
+  eq(normalizeOrder('X', { items: [{ productId: 'a', qty: 1, sellUnitId: 'default', sellUnitLabel: '1 pc' }] }).items[0].sizeLabel, '')
+  eq(normalizeOrder('X', { items: [{ productId: 'a', qty: 1, sellUnitId: 'g500', sellUnitLabel: '500 g pack' }] }).items[0].sizeLabel, '500 g pack')
+})
+
 test('priceToConfirm: stored flag, or any unpriced line; false for a fully priced order', () => {
   eq(normalizeOrder('X', { priceToConfirm: true, items: [] }).priceToConfirm, true)
   eq(normalizeOrder('X', { items: [{ productId: 'a', qty: 1, unitPriceSnapshot: null }] }).priceToConfirm, true)

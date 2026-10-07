@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils/cn'
 import { useAdminSession } from '@/lib/admin/AdminSession'
@@ -79,6 +79,14 @@ function CategorySwitch({ category, rows }: { category: string; rows: StockRow[]
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(pending.map((r) => [r.product.id, r.draft ? milliToString(r.draft.countedMilli) : '']))
   )
+  // Same for counts that load after the category was opened.
+  useEffect(() => {
+    setValues((cur) => {
+      const missing = pending.filter((r) => r.draft && !cur[r.product.id])
+      if (missing.length === 0) return cur // same object: no re-render
+      return { ...cur, ...Object.fromEntries(missing.map((r) => [r.product.id, milliToString(r.draft!.countedMilli)])) }
+    })
+  }, [pending])
   const [confirming, setConfirming] = useState(false)
   const [stopped, setStopped] = useState(false)
   const [busy, setBusy] = useState(false)

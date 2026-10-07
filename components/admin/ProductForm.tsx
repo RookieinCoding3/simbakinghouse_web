@@ -40,7 +40,7 @@ interface UnitDraft {
 const CHANNELS: { key: Channel; label: string }[] = [
   { key: 'both', label: 'Shop and online' },
   { key: 'online', label: 'Online only' },
-  { key: 'wholesale', label: 'Wholesale (shop only, price hidden online)' },
+  { key: 'wholesale', label: 'Wholesale, in the shop only' },
 ]
 
 const ADD_NEW = '__add_new__'
@@ -268,7 +268,7 @@ export default function ProductForm({ productId, initial }: ProductFormProps) {
         <div>
           <h2 id="sizes-title" className="text-sm font-semibold text-ink">Sizes and prices</h2>
           <p className="text-xs text-muted mt-1">
-            How this product is sold. Leave the price as &quot;Ask for price&quot; to quote it yourself (the order shows
+            How this product is sold. Wholesale sizes and their prices are never shown online. Leave the price as &quot;Ask for price&quot; to quote it yourself (the order shows
             &quot;price to confirm&quot;).
           </p>
         </div>

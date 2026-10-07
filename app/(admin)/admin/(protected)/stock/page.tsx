@@ -109,7 +109,7 @@ export default function StockPage() {
           placeholder="Search name, category or barcode"
           className="w-full bg-white border border-line py-3 px-4 text-base focus:outline-none focus:border-ink/40"
         />
-        <div className="-mx-4 px-4 overflow-x-auto">
+        <div className="-mx-4 px-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="flex gap-2 w-max" role="tablist" aria-label="Filter">
             {FILTERS.map((f) => (
               <button

@@ -25,7 +25,7 @@ const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, is
 const page = await ctx.newPage()
 const pageErrors = []
 page.on('pageerror', (e) => {
-  if (!/Firestore\/(Listen|Write)\/channel.*access control checks/.test(e.message)) pageErrors.push(e.message)
+  if (!/127\.0\.0\.1:(8080|9099|9199)\/.*access control checks/.test(e.message)) pageErrors.push(e.message)
 })
 await loginAdmin(page, sim.email)
 

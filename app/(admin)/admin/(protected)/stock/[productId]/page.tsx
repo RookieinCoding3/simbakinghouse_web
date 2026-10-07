@@ -310,6 +310,11 @@ function AdjustForm({ productId, unit, onHandMilli, trackExpiry, name, onDone }:
 
 function SwitchOn({ productId, name, unit, draftMilli }: { productId: string; name: string; unit: string; draftMilli: number | null }) {
   const [qty, setQty] = useState(draftMilli !== null ? milliToString(draftMilli) : '')
+  // Saved counts usually arrive after the page first renders (opened from a
+  // link or reloaded): fill them in then, unless something was typed already.
+  useEffect(() => {
+    if (draftMilli !== null) setQty((cur) => (cur === '' ? milliToString(draftMilli) : cur))
+  }, [draftMilli])
   const [stopped, setStopped] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
