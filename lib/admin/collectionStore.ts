@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useSyncExternalStore } from 'react'
-import { collection, onSnapshot, type Unsubscribe } from 'firebase/firestore'
+import { collection, onSnapshot, query, where, type Query, type Unsubscribe } from 'firebase/firestore'
 import { db } from '@/lib/firebase/config'
 import { recordReads } from './readMetrics'
 
@@ -14,7 +14,12 @@ export interface CollectionState<T> {
   status: 'idle' | 'loading' | 'ready' | 'error'
 }
 
-export function createCollectionStore<T>(name: string, normalize: (id: string, data: Record<string, unknown>) => T) {
+/** `source` narrows the listener to a query; default is the whole collection. */
+export function createCollectionStore<T>(
+  name: string,
+  normalize: (id: string, data: Record<string, unknown>) => T,
+  source: () => Query = () => collection(db, name)
+) {
   let state: CollectionState<T> = { docs: null, status: 'idle' }
   const listeners = new Set<() => void>()
   let unsubscribe: Unsubscribe | null = null
@@ -26,7 +31,7 @@ export function createCollectionStore<T>(name: string, normalize: (id: string, d
     if (unsubscribe) return
     emit({ ...state, status: state.docs ? 'ready' : 'loading' })
     unsubscribe = onSnapshot(
-      collection(db, name),
+      source(),
       (snap) => {
         recordReads(snap.docChanges().length)
         emit({ docs: new Map(snap.docs.map((d) => [d.id, normalize(d.id, d.data())])), status: 'ready' })
@@ -102,3 +107,17 @@ export interface PrivateProduct {
 export const privateStore = createCollectionStore<PrivateProduct>('productPrivate', (_id, d) => ({
   wholesaleUnits: Array.isArray(d.wholesaleUnits) ? d.wholesaleUnits : [],
 }))
+
+export interface RunningLowDoc {
+  stockStatus: 'low' | 'out'
+}
+
+/** Managed products that are low or out, for the Stock-tab badge. Reads only
+ *  those docs (usually a handful), not the whole catalogue, so it's cheap to
+ *  run on every admin page. stockStatus is set by the server in the same
+ *  transaction as every stock change, so this stays exact. */
+export const runningLowStore = createCollectionStore<RunningLowDoc>(
+  'products',
+  (_id, d) => ({ stockStatus: d.stockStatus === 'out' ? 'out' : 'low' }),
+  () => query(collection(db, 'products'), where('managedStock', '==', true), where('stockStatus', 'in', ['low', 'out']))
+)

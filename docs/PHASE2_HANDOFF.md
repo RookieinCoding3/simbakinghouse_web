@@ -12,7 +12,7 @@ deployed**: no code, no Firestore rules, no Firestore indexes.
 | a. Admin order page → transition route | **DONE** | see `git log` ("2a") |
 | b. Product editor form | **DONE** | see `git log` ("2b") |
 | c. Quick sale screen `/admin/sale` | **DONE** | see `git log` ("2c") |
-| d. Stock-tab badge | not started | |
+| d. Stock-tab badge | **DONE** | see `git log` ("2d") |
 | e. Browser pass (WebKit 390/1440) + browser tests | not started | |
 | f. Lighthouse + bundle sizes | not started | |
 | g. Final handoff update + deploy plan | not started | |
@@ -52,7 +52,7 @@ deployed**: no code, no Firestore rules, no Firestore indexes.
 | Customer stock status | **PARTIAL** | data side DONE and tested; shop UI written but not browser-tested: `lib/productView.ts`, `components/products/ProductCard.tsx`, `components/products/ProductModal.tsx`, `lib/firebase/products.ts`, `types/product.ts`, `lib/structuredData.ts` |
 | Cart and checkout with sizes | **PARTIAL** | written, not browser-tested: `lib/cart/CartContext.tsx`, `types/cart.ts`, `components/cart/CartDrawer.tsx`, `app/(site)/checkout/page.tsx` |
 | Rules for inventory/stockMovements/batches/sales/productPrivate/stockCountDrafts/stockOps; stock fields on products; orders holding stock | **DONE** (tested, not deployed) | `firestore.rules`, `scripts/firestore-rules-roles.test.mjs` |
-| Indexes (stock history, today's sales) | **DONE** (not deployed) | `firestore.indexes.json` |
+| Indexes (stock history, today's sales, running-low badge) | **DONE** (not deployed) | `firestore.indexes.json` |
 | Stock tab (list, filters, running low, search) | **PARTIAL** | written, not browser-tested: `app/(admin)/admin/(protected)/stock/page.tsx`, `lib/admin/stockView.ts`, `lib/admin/collectionStore.ts`, `lib/admin/productsStore.ts` |
 | Product history (ledger) | **PARTIAL** | in `stock/[productId]/page.tsx`, not browser-tested |
 | Stock count mode | **PARTIAL** | `stock/count/page.tsx`, not browser-tested |
@@ -60,7 +60,7 @@ deployed**: no code, no Firestore rules, no Firestore indexes.
 | Product editor (**UI**) | **DONE** (2b) | `components/admin/ProductForm.tsx` (calls the product routes; no browser writes), `components/admin/PriceKeypad.tsx` (till-style RM keypad, also typeable). Category dropdown + "Add new category" (EN + optional ZH), sizes editor (name, uses N base units, channel, price on keypad or **Ask for price**), base unit (locked while managed), low level, expiry, barcodes. Stock tracking is switched on from the product's Stock page (needs a count); the editor links there and shows on-shelf/held/available when managed. Products list: In-stock toggle only on unmanaged products, managed show their status. Tested: `scripts/admin-products.test.mjs` (13) |
 | Walk-in quick sale (server, incl. oversold, void, FEFO, wholesale) | **DONE** | `app/api/admin/sales/route.ts`, `app/api/admin/sales/[saleId]/void/route.ts` |
 | Walk-in quick sale (**UI**) | **DONE** (2c) | `app/(admin)/admin/(protected)/sale/page.tsx`: search (name/category/barcode), size incl. wholesale, qty, **till price keypad for "Ask for price" sizes** (Add blocked until typed), running total, paid by Cash/DuitNow/Card/Other, Done with one `saleId` per sale (duplicate reply shown as "already recorded"), 409 short list + "Sell anyway", today's sales with Void (reason). Server: `tillPriceSen` per line, used only for unpriced sizes (integer sen, ≥ 1), stored on the sale line with `priceSource: 'till'`; ignored for priced sizes; never written to the product. Tested: `scripts/admin-sale.test.mjs` (13) |
-| Stock-tab badge (running low count on the bottom tab) | **NOT STARTED** | `components/admin/AdminShell.tsx` |
+| Stock-tab badge (running low count) | **DONE** (2d) | `components/admin/AdminShell.tsx` + `runningLowStore` in `lib/admin/collectionStore.ts`: one live query `products where managedStock == true and stockStatus in [low, out]` (reads only those docs), bottom tab (phone) and top bar (desktop), aria-label "Stock, N running low". **Needs the new composite index `products (managedStock, stockStatus)`** in `firestore.indexes.json`. Tested in `admin-sale` suite (live 0 → 1 → 2 → 1, desktop) |
 | Tests: unit + API end-to-end | **DONE** | `scripts/unit/inventory.test.ts` (23), `scripts/stock.test.mjs` (27) |
 | Tests: browser E2E for new screens, screenshots 390/1440, customer-site pixel check, Lighthouse/bundle | **NOT STARTED** | — |
 
@@ -76,6 +76,7 @@ npm run test:unit           # scripts/unit/*.test.ts (inventory 23, normalizeOrd
 npm run test:e2e            # builds .next-test against the emulators, then all suites:
                             #   order-abuse 10, admin 29, admin-auth 10, admin-users 18, stock 27
 bash scripts/test-env.sh bash scripts/e2e-suites.sh stock      # one suite
+VERBOSE=1 ...                                                  # full Playwright call log on a FAIL
 # Phase 2 browser suites (WebKit): admin-orders, admin-products, admin-sale
 SKIP_BUILD=1 bash scripts/test-env.sh bash scripts/e2e-suites.sh stock   # reuse last test build
 ```

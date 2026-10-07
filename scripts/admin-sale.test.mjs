@@ -49,6 +49,15 @@ async function payAndFinish(method = 'Cash') {
   await page.getByRole('button', { name: /^Done/ }).click()
 }
 
+const bottomBadge = () => page.locator('nav[aria-label="Admin sections"]').getByTestId('stock-badge')
+
+await check('Stock-tab badge: hidden while nothing is running low', async () => {
+  await page.goto(`${BASE_URL}/admin`)
+  await page.locator('nav[aria-label="Admin sections"]').waitFor()
+  await sleep(1500)
+  assert((await bottomBadge().count()) === 0, 'badge shown with nothing low')
+})
+
 await check('the Stock tab "Quick sale" link opens the sale screen (no 404)', async () => {
   await page.goto(`${BASE_URL}/admin/stock`)
   await page.getByRole('link', { name: /Quick sale/i }).click()
@@ -110,16 +119,41 @@ await check('selling more than available shows the short list; "Sell anyway" rec
   assert((await salesOf()).some((s) => s.oversold === true), 'sale not flagged oversold')
 })
 
+await check('Stock-tab badge: shows 1 live once Fondant runs out; the tab is labelled for screen readers', async () => {
+  await bottomBadge().filter({ hasText: /^1$/ }).waitFor({ timeout: 10000 })
+  const label = await page.locator('nav[aria-label="Admin sections"] a', { hasText: 'Stock' }).getAttribute('aria-label')
+  assert(label === 'Stock, 1 running low', `aria-label: ${label}`)
+})
+
+await check('Stock-tab badge: a second product going low makes it 2; a restock brings it back to 1 (live, no reload)', async () => {
+  await api('POST', '/api/admin/stock/adjust', { opId: opId(), productId: rice, reason: 'count', countedMilli: 500 })
+  await bottomBadge().filter({ hasText: /^2$/ }).waitFor({ timeout: 10000 })
+  await api('POST', '/api/admin/stock/adjust', { opId: opId(), productId: rice, reason: 'count', countedMilli: 15000 })
+  await bottomBadge().filter({ hasText: /^1$/ }).waitFor({ timeout: 10000 })
+})
+
+await check('Stock-tab badge on desktop (1440 px): shown next to "Stock" in the top bar', async () => {
+  const desk = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+  const p2 = await desk.newPage()
+  await loginAdmin(p2, sim.email)
+  await p2.locator('header').getByTestId('stock-badge').filter({ hasText: /^1$/ }).waitFor({ timeout: 10000 })
+  await desk.close()
+})
+
 await check('double-tapping Done records the sale once', async () => {
   await addItem('rice', 'Rice flour', '1 kg')
   await page.getByRole('radio', { name: 'Cash' }).click()
   const before = (await salesOf()).length
-  const done = page.getByRole('button', { name: /^Done/ })
-  await Promise.all([done.click(), done.click({ force: true }).catch(() => {})])
+  // Two clicks in the same tick: both handlers run before React re-renders
+  // the button as busy, so two requests really go out with the same saleId.
+  await page.getByRole('button', { name: /^Done/ }).evaluate((b) => {
+    b.click()
+    b.click()
+  })
   await page.getByTestId('sale-done').filter({ hasText: 'RM 6.50' }).waitFor()
   await sleep(1000)
   assert((await salesOf()).length === before + 1, `sales: ${before} → ${(await salesOf()).length}`)
-  assert((await getDoc('inventory', rice)).onHandMilli === 12000, 'deducted twice')
+  assert((await getDoc('inventory', rice)).onHandMilli === 14000, 'deducted twice')
 })
 
 await check('Void from today\'s list (with a reason) restores the stock and keeps the sale, marked voided', async () => {
@@ -130,7 +164,7 @@ await check('Void from today\'s list (with a reason) restores the stock and keep
   await row.getByRole('button', { name: 'Confirm void' }).click()
   await waitForDoc('sales', sale.id, (s) => s.status === 'voided')
   await row.getByText(/voided/).waitFor()
-  assert((await getDoc('inventory', rice)).onHandMilli === 14000, 'stock not restored')
+  assert((await getDoc('inventory', rice)).onHandMilli === 16000, 'stock not restored')
 })
 
 console.log('\n--- Till price rules (API) ---')

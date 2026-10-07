@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
 import { useAdminSession } from '@/lib/admin/AdminSession'
+import { runningLowStore } from '@/lib/admin/collectionStore'
 
 const TABS = [
   { name: 'Orders', href: '/admin', match: (p: string) => p === '/admin' || p.startsWith('/admin/orders'), icon: OrdersIcon },
@@ -33,6 +34,8 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   }, [session.phase, pathname, router])
 
   const showContent = session.phase === 'admin' || session.phase === 'checking' || session.likelyAdmin
+  const runningLow = runningLowStore.use(session.phase === 'admin').docs?.size ?? 0
+  const badgeFor = (name: string) => (name === 'Stock' && runningLow > 0 ? runningLow : 0)
 
   return (
     <div className="min-h-screen bg-paper">
@@ -55,6 +58,12 @@ export default function AdminShell({ children }: { children: ReactNode }) {
                   )}
                 >
                   {t.name}
+                  {badgeFor(t.name) > 0 && (
+                    <>
+                      <Badge count={badgeFor(t.name)} className="ml-1.5" />
+                      <span className="sr-only">, {badgeFor(t.name)} running low</span>
+                    </>
+                  )}
                 </Link>
               ))}
             </div>
@@ -102,12 +111,16 @@ export default function AdminShell({ children }: { children: ReactNode }) {
                 prefetch={false}
                 onPointerDown={() => router.prefetch(t.href)}
                 aria-current={active ? 'page' : undefined}
+                aria-label={badgeFor(t.name) ? `${t.name}, ${badgeFor(t.name)} running low` : undefined}
                 className={cn(
-                  'flex flex-col items-center justify-center gap-1 h-16 text-[11px] font-medium',
+                  'relative flex flex-col items-center justify-center gap-1 h-16 text-[11px] font-medium',
                   active ? 'text-ink' : 'text-muted'
                 )}
               >
-                <Icon active={active} />
+                <span className="relative">
+                  <Icon active={active} />
+                  {badgeFor(t.name) > 0 && <Badge count={badgeFor(t.name)} className="absolute -top-1.5 -right-3" />}
+                </span>
                 {t.name}
               </Link>
             )
@@ -126,6 +139,19 @@ export function PageSkeleton() {
         <div key={i} className="h-16 bg-sand/70 rounded" />
       ))}
     </div>
+  )
+}
+
+/** Running-low count on the Stock tab. Decorative: the tab's aria-label says it. */
+function Badge({ count, className }: { count: number; className?: string }) {
+  return (
+    <span
+      data-testid="stock-badge"
+      aria-hidden="true"
+      className={cn('inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-clay text-paper text-[10px] font-semibold leading-none tabular-nums', className)}
+    >
+      {count > 99 ? '99+' : count}
+    </span>
   )
 }
 

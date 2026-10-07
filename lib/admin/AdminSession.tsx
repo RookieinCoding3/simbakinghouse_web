@@ -8,7 +8,7 @@ import { db } from '@/lib/firebase/config'
 import { recordReads } from './readMetrics'
 import { resetProductsStore } from './productsStore'
 import { clearCachedOrders } from './ordersCache'
-import { inventoryStore, draftsStore, privateStore } from './collectionStore'
+import { inventoryStore, draftsStore, privateStore, runningLowStore } from './collectionStore'
 
 export type AdminRole = 'admin' | 'owner'
 
@@ -117,6 +117,7 @@ export function AdminSessionProvider({ children }: { children: ReactNode }) {
         inventoryStore.reset()
         draftsStore.reset()
         privateStore.reset()
+        runningLowStore.reset()
         checkSeq.current++
         setRole(null)
         setPhase('signed-out')

@@ -69,7 +69,7 @@ export async function check(name, run) {
     passed++
   } catch (e) {
     console.log(`FAIL  ${name}`)
-    console.log(`      ${String(e?.message || e).split('\n')[0]}`)
+    console.log(`      ${String(e?.message || e).split('\n').slice(0, process.env.VERBOSE ? 12 : 1).join('\n      ')}`)
     failed++
   }
 }
