@@ -9,7 +9,7 @@ import { useAdminSession } from '@/lib/admin/AdminSession'
 const TABS = [
   { name: 'Orders', href: '/admin', match: (p: string) => p === '/admin' || p.startsWith('/admin/orders'), icon: OrdersIcon },
   { name: 'Products', href: '/admin/products', match: (p: string) => p.startsWith('/admin/products'), icon: ProductsIcon },
-  { name: 'Stock', href: '/admin/stock', match: (p: string) => p.startsWith('/admin/stock'), icon: StockIcon },
+  { name: 'Stock', href: '/admin/stock', match: (p: string) => p.startsWith('/admin/stock') || p.startsWith('/admin/sale'), icon: StockIcon },
   { name: 'Settings', href: '/admin/settings', match: (p: string) => p.startsWith('/admin/settings'), icon: SettingsIcon },
 ]
 

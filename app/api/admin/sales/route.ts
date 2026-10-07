@@ -13,6 +13,7 @@ import { Refused, readJson, handleRouteError, isOpId } from '@/lib/server/http'
 export const runtime = 'nodejs'
 
 const PAYMENT_METHODS = ['cash', 'duitnow', 'card', 'other'] as const
+const MAX_TILL_PRICE_SEN = 10_000_000
 
 /**
  * Records a walk-in sale. The phone generates `saleId` once per sale, so a
@@ -29,12 +30,19 @@ export async function POST(request: NextRequest) {
   const paymentMethod = b.paymentMethod as (typeof PAYMENT_METHODS)[number]
   const rawItems = Array.isArray(b.items) ? b.items : []
   const items: LineRequest[] = []
+  // Price typed at the till, per line — used only for "Ask for price" sizes.
+  const tillPrices: (number | null)[] = []
   for (const r of rawItems) {
     const it = (r ?? {}) as Record<string, unknown>
     if (typeof it.productId !== 'string' || typeof it.qty !== 'number' || !Number.isInteger(it.qty) || it.qty < 1 || it.qty > 999) {
       return NextResponse.json({ error: 'Invalid item.' }, { status: 400 })
     }
+    const till = it.tillPriceSen
+    if (till !== undefined && till !== null && (typeof till !== 'number' || !Number.isInteger(till) || till < 1 || till > MAX_TILL_PRICE_SEN)) {
+      return NextResponse.json({ error: 'Enter a valid price.' }, { status: 400 })
+    }
     items.push({ productId: it.productId, sellUnitId: typeof it.sellUnitId === 'string' ? it.sellUnitId : null, qty: it.qty })
+    tillPrices.push(typeof till === 'number' ? till : null)
   }
   if (!isOpId(b.saleId) || items.length === 0 || items.length > 100 || !PAYMENT_METHODS.includes(paymentMethod)) {
     return NextResponse.json({ error: 'Add at least one item and choose how they paid.' }, { status: 400 })
@@ -60,8 +68,16 @@ export async function POST(request: NextRequest) {
         new Map(ids.map((id, i) => [id, snaps[ids.length + i]])),
         'walkin'
       )
-      const unpriced = lines.filter((l) => l.unitPriceSen === null)
-      if (unpriced.length) throw new Refused(`Set a price for ${unpriced.map((l) => `${l.name} (${l.unit.label})`).join(', ')} first.`, 400)
+      // "Ask for price" sizes take the price typed at the till, for this sale
+      // line only (the product stays "Ask for price"). A priced size always
+      // sells at its own price; a till price sent for it is ignored.
+      const priced = lines.map((l, i) => {
+        if (l.unitPriceSen !== null) return { ...l, priceSource: 'catalog' as const }
+        const till = tillPrices[i]
+        return till === null ? l : { ...l, unitPriceSen: till, lineTotalSen: till * l.qty, priceSource: 'till' as const }
+      })
+      const unpriced = priced.filter((l) => l.unitPriceSen === null)
+      if (unpriced.length) throw new Refused(`Type the price for ${unpriced.map((l) => `${l.name} (${l.unit.label})`).join(', ')} first.`, 400)
 
       const need = neededPerProduct(lines.filter((l) => l.managed))
       const session = new StockSession(tx, auth.caller)
@@ -90,12 +106,12 @@ export async function POST(request: NextRequest) {
         stock.push({ productId: id, qtyMilli: n, reason, allocations: m?.allocations ?? [] })
       }
 
-      const totalSen = lines.reduce((sum, l) => sum + (l.lineTotalSen ?? 0), 0)
+      const totalSen = priced.reduce((sum, l) => sum + (l.lineTotalSen ?? 0), 0)
       tx.set(saleRef, {
         shopId: SHOP_ID,
         source: 'walkin',
         status: 'completed',
-        items: lines.map((l) => ({
+        items: priced.map((l) => ({
           productId: l.productId,
           name: l.name,
           sellUnitId: l.unit.id,
@@ -106,6 +122,7 @@ export async function POST(request: NextRequest) {
           baseQtyMilli: l.baseQtyMilli,
           unitPriceSen: l.unitPriceSen,
           lineTotalSen: l.lineTotalSen,
+          priceSource: 'priceSource' in l ? l.priceSource : 'catalog',
           managed: l.managed,
         })),
         stock,

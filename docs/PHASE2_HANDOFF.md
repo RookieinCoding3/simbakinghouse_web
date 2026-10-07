@@ -11,7 +11,7 @@ deployed**: no code, no Firestore rules, no Firestore indexes.
 |---|---|---|
 | a. Admin order page → transition route | **DONE** | see `git log` ("2a") |
 | b. Product editor form | **DONE** | see `git log` ("2b") |
-| c. Quick sale screen `/admin/sale` | not started | |
+| c. Quick sale screen `/admin/sale` | **DONE** | see `git log` ("2c") |
 | d. Stock-tab badge | not started | |
 | e. Browser pass (WebKit 390/1440) + browser tests | not started | |
 | f. Lighthouse + bundle sizes | not started | |
@@ -59,7 +59,7 @@ deployed**: no code, no Firestore rules, no Firestore indexes.
 | Product editor (server) | **DONE** | `app/api/admin/products/route.ts`, `app/api/admin/products/[productId]/route.ts`, `app/api/admin/categories/route.ts`, `lib/server/productInput.ts`, `lib/server/saveProduct.ts` |
 | Product editor (**UI**) | **DONE** (2b) | `components/admin/ProductForm.tsx` (calls the product routes; no browser writes), `components/admin/PriceKeypad.tsx` (till-style RM keypad, also typeable). Category dropdown + "Add new category" (EN + optional ZH), sizes editor (name, uses N base units, channel, price on keypad or **Ask for price**), base unit (locked while managed), low level, expiry, barcodes. Stock tracking is switched on from the product's Stock page (needs a count); the editor links there and shows on-shelf/held/available when managed. Products list: In-stock toggle only on unmanaged products, managed show their status. Tested: `scripts/admin-products.test.mjs` (13) |
 | Walk-in quick sale (server, incl. oversold, void, FEFO, wholesale) | **DONE** | `app/api/admin/sales/route.ts`, `app/api/admin/sales/[saleId]/void/route.ts` |
-| Walk-in quick sale (**UI**) | **NOT STARTED** | `/admin/sale` does not exist; the Stock tab already links to it (404) |
+| Walk-in quick sale (**UI**) | **DONE** (2c) | `app/(admin)/admin/(protected)/sale/page.tsx`: search (name/category/barcode), size incl. wholesale, qty, **till price keypad for "Ask for price" sizes** (Add blocked until typed), running total, paid by Cash/DuitNow/Card/Other, Done with one `saleId` per sale (duplicate reply shown as "already recorded"), 409 short list + "Sell anyway", today's sales with Void (reason). Server: `tillPriceSen` per line, used only for unpriced sizes (integer sen, ≥ 1), stored on the sale line with `priceSource: 'till'`; ignored for priced sizes; never written to the product. Tested: `scripts/admin-sale.test.mjs` (13) |
 | Stock-tab badge (running low count on the bottom tab) | **NOT STARTED** | `components/admin/AdminShell.tsx` |
 | Tests: unit + API end-to-end | **DONE** | `scripts/unit/inventory.test.ts` (23), `scripts/stock.test.mjs` (27) |
 | Tests: browser E2E for new screens, screenshots 390/1440, customer-site pixel check, Lighthouse/bundle | **NOT STARTED** | — |
@@ -76,7 +76,7 @@ npm run test:unit           # scripts/unit/*.test.ts (inventory 23, normalizeOrd
 npm run test:e2e            # builds .next-test against the emulators, then all suites:
                             #   order-abuse 10, admin 29, admin-auth 10, admin-users 18, stock 27
 bash scripts/test-env.sh bash scripts/e2e-suites.sh stock      # one suite
-# Phase 2 browser suites (WebKit): admin-orders, admin-products
+# Phase 2 browser suites (WebKit): admin-orders, admin-products, admin-sale
 SKIP_BUILD=1 bash scripts/test-env.sh bash scripts/e2e-suites.sh stock   # reuse last test build
 ```
 
@@ -98,8 +98,10 @@ Last full run (2026-10-07, on this WIP): all green, 375 checks.
 - Managed stock applies exactly as for priced products: availability check at
   order time, hold on confirm, deduct on collect, release on cancel (tested in
   `admin-products` suite).
-- Quick sale: the seller types the price at the till; it is stored on that sale
-  line only (see 2c).
+- Quick sale: the seller must type the price at the till (keypad) before the
+  line can be added; the server refuses an unpriced line without `tillPriceSen`.
+  Stored on that sale line only (`unitPriceSen`, `priceSource: 'till'`); the
+  product stays "Ask for price". Managed stock still comes off as usual.
 - **Phase 2B promotions must exclude "Ask for price" lines/products**: a
   percentage or fixed discount has nothing to apply to, and a "spend RM X"
   threshold must not count them. Check `unitPriceSen === null` (orders) /
@@ -117,7 +119,7 @@ Last full run (2026-10-07, on this WIP): all green, 375 checks.
    saved by the new editor route, the shop reads `sellUnits`, so a price changed
    in the old form would be **ignored** by the shop. Replace the form with one
    that calls the product routes.
-3. **`/admin/sale` link 404s** until the quick-sale screen exists.
+3. ~~`/admin/sale` link 404s~~ Fixed in 2c.
 4. **New screens are untested in a browser.** They type-check and lint, but have
    never been rendered.
 5. **`/products` is cached for 5 minutes (ISR).** A product that just ran out can
