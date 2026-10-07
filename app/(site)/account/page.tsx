@@ -116,6 +116,7 @@ export default function AccountPage() {
               </ul>
               <p className="text-sm font-medium text-ink">
                 RM {(order.confirmedTotal ?? order.estimatedTotal).toFixed(2)}
+                {order.confirmedTotal === null && order.priceToConfirm && ' + price to confirm'}
               </p>
             </li>
           ))}

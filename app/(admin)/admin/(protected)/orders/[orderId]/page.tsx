@@ -49,7 +49,11 @@ export default function AdminOrderDetailPage() {
         }
         const o = normalizeOrder(snap.id, snap.data())
         setOrder(o)
-        setConfirmedTotalInput((prev) => (prev === '' && o.estimatedTotal !== null ? o.estimatedTotal.toFixed(2) : prev))
+        // Don't prefill a total that leaves out "Ask for price" lines: the
+        // owner has to type the real one.
+        setConfirmedTotalInput((prev) =>
+          prev === '' && o.estimatedTotal !== null && !o.priceToConfirm ? o.estimatedTotal.toFixed(2) : prev
+        )
         setLoadState('ready')
       },
       () => setLoadState('error')
@@ -208,7 +212,10 @@ export default function AdminOrderDetailPage() {
         ))}
         <div className="flex justify-between py-3 text-sm font-medium">
           <span className="text-ink">Estimated total</span>
-          <span className="text-ink">{formatRM(order.estimatedTotal)}</span>
+          <span className="text-ink">
+            {formatRM(order.estimatedTotal)}
+            {order.priceToConfirm && ' + price to confirm'}
+          </span>
         </div>
         {order.confirmedTotal !== null && (
           <div className="flex justify-between py-3 text-sm font-medium">
@@ -217,6 +224,13 @@ export default function AdminOrderDetailPage() {
           </div>
         )}
       </div>
+
+      {order.priceToConfirm && order.confirmedTotal === null && (
+        <p data-testid="price-to-confirm" className="text-sm text-clay border border-clay/40 rounded px-3 py-2">
+          Price to confirm: some items are &quot;Ask for price&quot; and are not in the estimated total. Set their
+          price and enter the full final total before accepting.
+        </p>
+      )}
 
       {error && <p className="text-xs text-clay">{error}</p>}
 

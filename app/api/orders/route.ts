@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     const nowIso = new Date().toISOString()
     const productIds = [...new Set(data.items.map((i) => i.productId))]
 
-    const { orderId, estimatedTotal } = await db.runTransaction(async (transaction) => {
+    const { orderId, estimatedTotal, priceToConfirm } = await db.runTransaction(async (transaction) => {
       // Firestore transactions require all reads before any writes.
       const [counterSnap, ...productSnaps] = await transaction.getAll(
         counterRef,
@@ -113,6 +113,8 @@ export async function POST(request: NextRequest) {
       }))
       // Lines priced "on request" are kept in the order but left out of the total.
       const totalSen = lines.reduce((sum, l) => sum + (l.lineTotalSen ?? 0), 0)
+      // ...and flag the order so the admin prices it before confirming.
+      const priceToConfirm = lines.some((l) => l.unitPriceSen === null)
 
       const next = (counterSnap.exists ? (counterSnap.data()?.seq ?? 0) : 0) + 1
       const id = `SBH-${String(next).padStart(4, '0')}`
@@ -130,6 +132,7 @@ export async function POST(request: NextRequest) {
         items,
         estimatedTotal: totalSen / 100,
         estimatedTotalSen: totalSen,
+        priceToConfirm,
         confirmedTotal: null,
         createdAt: nowIso,
         updatedAt: nowIso,
@@ -138,10 +141,10 @@ export async function POST(request: NextRequest) {
 
       transaction.set(counterRef, { seq: next }, { merge: true })
       transaction.set(db.collection('orders').doc(id), order)
-      return { orderId: id, estimatedTotal: totalSen / 100 }
+      return { orderId: id, estimatedTotal: totalSen / 100, priceToConfirm }
     })
 
-    return NextResponse.json({ orderId, estimatedTotal }, { status: 201 })
+    return NextResponse.json({ orderId, estimatedTotal, priceToConfirm }, { status: 201 })
   } catch (error) {
     if (error instanceof LineError) {
       return NextResponse.json({ error: error.message, productId: error.productId }, { status: error.status })

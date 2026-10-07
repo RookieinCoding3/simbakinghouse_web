@@ -244,9 +244,16 @@ export default function AdminOrdersPage() {
                     </p>
                   )}
                 </div>
-                <p className="text-sm text-ink font-medium whitespace-nowrap">
-                  {formatRM(order.confirmedTotal ?? order.estimatedTotal)}
-                </p>
+                <div className="text-right whitespace-nowrap">
+                  <p className="text-sm text-ink font-medium">
+                    {formatRM(order.confirmedTotal ?? order.estimatedTotal)}
+                  </p>
+                  {order.priceToConfirm && order.confirmedTotal === null && (
+                    <p data-testid="price-to-confirm" className="text-[10px] uppercase tracking-wide text-clay">
+                      + price to confirm
+                    </p>
+                  )}
+                </div>
               </Link>
             </li>
           ))}

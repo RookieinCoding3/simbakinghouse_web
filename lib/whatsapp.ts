@@ -35,6 +35,8 @@ interface OrderMessageInput {
   collectTime: string | null
   items: OrderItem[]
   estimatedTotal: number
+  /** Some lines are "Ask for price" and aren't in estimatedTotal. */
+  priceToConfirm?: boolean
 }
 
 export function buildOrderMessage({
@@ -44,6 +46,7 @@ export function buildOrderMessage({
   collectTime,
   items,
   estimatedTotal,
+  priceToConfirm = false,
 }: OrderMessageInput): string {
   const itemsBlock =
     items.length > MAX_ITEMS_IN_MESSAGE
@@ -61,7 +64,9 @@ export function buildOrderMessage({
     '',
     itemsBlock,
     '',
-    `Estimated total: RM ${estimatedTotal.toFixed(2)}`,
+    priceToConfirm
+      ? `Estimated total: RM ${estimatedTotal.toFixed(2)} + items with price to confirm`
+      : `Estimated total: RM ${estimatedTotal.toFixed(2)}`,
     '',
     `Link: ${absoluteUrl(`/order/${orderId}`)}`,
   ].join('\n')
