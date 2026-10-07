@@ -15,9 +15,10 @@ deployed**: no code, no Firestore rules, no Firestore indexes.
 | d. Stock-tab badge | **DONE** | see `git log` ("2d") |
 | e. Browser pass (WebKit 390/1440) + browser tests | **DONE** | see `git log` ("2e") |
 | f. Lighthouse + bundle sizes | **DONE** | see `git log` ("2f") |
-| g. Final handoff update + deploy plan | not started | |
+| g. Final handoff update + deploy plan | **DONE** | see `git log` ("2g") |
 
-**Next action if picking this up cold:** start the first row that is not DONE.
+**Phase 2 is code-complete and tested. Next action: the owner reviews, then
+follows "Deploy plan" below. Nothing has been deployed.**
 
 ---
 
@@ -48,14 +49,14 @@ deployed**: no code, no Firestore rules, no Firestore indexes.
 | Stock-aware admin order steps (server) | **DONE** | `app/api/admin/orders/[orderId]/transition/route.ts` |
 | Stock-aware admin order steps (**UI**) | **DONE** (2a) | `orders/[orderId]/page.tsx` calls the transition route for every step (sends `confirmedTotalSen`, shows the 409 `short` list), shows each line's size and the stock state. No browser writes. Tested in WebKit: `scripts/admin-orders.test.mjs` (8) |
 | Adjust / count / switch / consistency check (server) | **DONE** | `app/api/admin/stock/{adjust,count,manage,check}/route.ts` |
-| managedStock transition mode | **PARTIAL** | server DONE and tested; UI written but never rendered or browser-tested: `stock/[productId]/page.tsx` (SwitchOn/SwitchOff), `stock/switch/page.tsx` |
-| Customer stock status | **PARTIAL** | data side DONE and tested; shop UI written but not browser-tested: `lib/productView.ts`, `components/products/ProductCard.tsx`, `components/products/ProductModal.tsx`, `lib/firebase/products.ts`, `types/product.ts`, `lib/structuredData.ts` |
-| Cart and checkout with sizes | **PARTIAL** | written, not browser-tested: `lib/cart/CartContext.tsx`, `types/cart.ts`, `components/cart/CartDrawer.tsx`, `app/(site)/checkout/page.tsx` |
+| managedStock transition mode | **DONE** | server + UI, browser-tested in `admin-screens` (switch-on, switch-over per category, switch-off): `stock/[productId]/page.tsx` (SwitchOn/SwitchOff), `stock/switch/page.tsx` |
+| Customer stock status | **DONE** | browser-tested in `shop-stock` (cards + modal, 390/1440): `lib/productView.ts`, `components/products/ProductCard.tsx`, `components/products/ProductModal.tsx`, `lib/firebase/products.ts`, `types/product.ts`, `lib/structuredData.ts` |
+| Cart and checkout with sizes | **DONE** | browser-tested in `shop-stock` (order saved with size + priceToConfirm): `lib/cart/CartContext.tsx`, `types/cart.ts`, `components/cart/CartDrawer.tsx`, `app/(site)/checkout/page.tsx` |
 | Rules for inventory/stockMovements/batches/sales/productPrivate/stockCountDrafts/stockOps; stock fields on products; orders holding stock | **DONE** (tested, not deployed) | `firestore.rules`, `scripts/firestore-rules-roles.test.mjs` |
 | Indexes (stock history, today's sales, running-low badge) | **DONE** (not deployed) | `firestore.indexes.json` |
-| Stock tab (list, filters, running low, search) | **PARTIAL** | written, not browser-tested: `app/(admin)/admin/(protected)/stock/page.tsx`, `lib/admin/stockView.ts`, `lib/admin/collectionStore.ts`, `lib/admin/productsStore.ts` |
-| Product history (ledger) | **PARTIAL** | in `stock/[productId]/page.tsx`, not browser-tested |
-| Stock count mode | **PARTIAL** | `stock/count/page.tsx`, not browser-tested |
+| Stock tab (list, filters, running low, search) | **DONE** | browser-tested in `admin-screens`: `app/(admin)/admin/(protected)/stock/page.tsx`, `lib/admin/stockView.ts`, `lib/admin/collectionStore.ts`, `lib/admin/productsStore.ts` |
+| Product history (ledger) + adjust | **DONE** | `stock/[productId]/page.tsx`, browser-tested in `admin-screens` |
+| Stock count mode | **DONE** | `stock/count/page.tsx`, browser-tested in `admin-screens` |
 | Product editor (server) | **DONE** | `app/api/admin/products/route.ts`, `app/api/admin/products/[productId]/route.ts`, `app/api/admin/categories/route.ts`, `lib/server/productInput.ts`, `lib/server/saveProduct.ts` |
 | Product editor (**UI**) | **DONE** (2b) | `components/admin/ProductForm.tsx` (calls the product routes; no browser writes), `components/admin/PriceKeypad.tsx` (till-style RM keypad, also typeable). Category dropdown + "Add new category" (EN + optional ZH), sizes editor (name, uses N base units, channel, price on keypad or **Ask for price**), base unit (locked while managed), low level, expiry, barcodes. Stock tracking is switched on from the product's Stock page (needs a count); the editor links there and shows on-shelf/held/available when managed. Products list: In-stock toggle only on unmanaged products, managed show their status. Tested: `scripts/admin-products.test.mjs` (13) |
 | Walk-in quick sale (server, incl. oversold, void, FEFO, wholesale) | **DONE** | `app/api/admin/sales/route.ts`, `app/api/admin/sales/[saleId]/void/route.ts` |
@@ -72,23 +73,28 @@ deployed**: no code, no Firestore rules, no Firestore indexes.
 
 ```bash
 npm test                    # everything below, in order
-npm run test:rules          # rules (16) + role matrix (215), Firestore emulator
+npm run test:rules          # rules (16) + role matrix (230), Firestore emulator
 npm run test:guest-checkout # 3
-npm run test:unit           # scripts/unit/*.test.ts (inventory 23, normalizeOrder 24)
+npm run test:unit           # scripts/unit/*.test.ts (inventory 23, normalizeOrder 26)
 npm run test:e2e            # builds .next-test against the emulators, then all suites:
-                            #   order-abuse 10, admin 29, admin-auth 10, admin-users 18, stock 27
-bash scripts/test-env.sh bash scripts/e2e-suites.sh stock      # one suite
-VERBOSE=1 ...                                                  # full Playwright call log on a FAIL
-# Phase 2 browser suites (WebKit): admin-orders, admin-products, admin-sale, admin-screens
-npm run test:shop           # customer side; seeds BEFORE building (ISR /products), own build
+                            #   order-abuse 17, admin 29, admin-auth 10, admin-users 18,
+                            #   stock 27, admin-orders 8, admin-products 13, admin-sale 17,
+                            #   admin-screens 35   (the last four: WebKit browser suites)
+npm run test:shop           # customer side, WebKit 390/1440 (16); seeds BEFORE its own
+                            #   build because /products is ISR
+bash scripts/test-env.sh bash scripts/e2e-suites.sh stock                # one suite
 SKIP_BUILD=1 bash scripts/test-env.sh bash scripts/e2e-suites.sh stock   # reuse last test build
+VERBOSE=1 ...               # full Playwright call log on a FAIL
 ```
 
 Everything runs against the Firebase emulators (project `demo-sbh-test`) and a
 local build in `.next-test/`; nothing touches production. Ports 8080, 9099,
-9199 and 3100 must be free.
+9199 and 3100 must be free (test-env.sh waits up to 20 s for a previous run to
+release them). Screenshots and Lighthouse reports: `.screenshots/phase2/`.
 
-Last full run (2026-10-07, on this WIP): all green, 375 checks.
+Last full run: 2026-10-08, `npm test` all green: 488 checks
+(rules 246, guest 3, unit 49, e2e 174, shop 16; order-abuse/admin/stock suites
+include the hotfix tests).
 
 ---
 
@@ -111,14 +117,16 @@ Nothing over 250 kB; no regression on existing routes. The product editor is
 lazy-loaded (its chunk is 5.5 kB gzip). Most of the 238 kB is Firebase
 (auth + firestore), shared by every admin page.
 
-Lighthouse 12 (mobile, simulated slow 4G, signed in), warm cache after the
-first page: performance 100, accessibility 100 on /admin, /admin/stock,
-/admin/stock/[id], /admin/products, /admin/products/new, /admin/sale. Cold
-first load of /admin: performance 75, LCP 4.8 s, 340 kB JS (Firebase SDK on a
-throttled phone; same code path as today). Best practices 89–93: report-only
-CSP warnings about the Auth emulator (test only) and the existing
-`upgrade-insecure-requests` warning, plus small text on the stock page (11 px
-raised to 12 px in 2f). Run: `LIGHTHOUSE_BIN=… bash scripts/test-env.sh node
+Lighthouse 12 (mobile, simulated slow 4G, signed in; re-run after the final
+build on 2026-10-08). Warm cache after the first page: performance 99–100,
+accessibility 100, best practices 93 on /admin, /admin/stock, /admin/stock/[id],
+/admin/products, /admin/products/new, /admin/sale. Cold first load of /admin
+varies run to run: performance 75–95, LCP 2.3–4.8 s, 340 kB JS (Firebase SDK on
+a throttled phone; same code path as today), CLS up to 0.11 on that first paint
+(skeleton → list). Best practices 93: report-only CSP warnings about the Auth
+emulator (test only) and the existing `upgrade-insecure-requests` warning. The
+11 px text Lighthouse flagged on the stock page is now 12 px (font-size audit
+passes). Run: `LIGHTHOUSE_BIN=… bash scripts/test-env.sh node
 scripts/admin-lighthouse.mjs` (Lighthouse is not a project dependency).
 
 ## "Ask for price" (no price) rules — apply everywhere
@@ -140,64 +148,152 @@ scripts/admin-lighthouse.mjs` (Lighthouse is not a project dependency).
   threshold must not count them. Check `unitPriceSen === null` (orders) /
   `priceSen === null` (sell units) / `priceSource === 'till'` (sale lines).
 
-## Known problems (fix before any of this is deployed)
+## Known limits (accepted, not blocking)
 
-1. ~~Admin order page writes status directly.~~ Fixed in 2a. Note: the
-   `orders` rule still lets an admin browser update an order that holds no
-   stock. That is deliberate so the code live today keeps working during the
-   deploy window (rules ship before code). No Phase 2 screen uses it. Optional
-   hardening once Phase 2 code is live: change `orders` to `allow update: if false`.
-2. ~~**Old product form vs sell units.**~~ Fixed in 2b. `ProductForm.tsx` writes `price` and
-   `stockCount` client-side and knows nothing about `sellUnits`. For a product
-   saved by the new editor route, the shop reads `sellUnits`, so a price changed
-   in the old form would be **ignored** by the shop. Replace the form with one
-   that calls the product routes.
-3. ~~`/admin/sale` link 404s~~ Fixed in 2c.
-4. ~~New screens are untested in a browser.~~ Done in 2e. Bugs found and fixed
-   there: a saved opening count was not prefilled when the product's Stock
-   page (or a Switch-over category) was opened directly, because counts load
-   after the form; filter-chip scrollbar visible in WebKit; old products showed
-   a meaningless "· 1 pc" size on order lines; wholesale option label cut off.
-5. **`/products` is cached for 5 minutes (ISR).** A product that just ran out can
-   still show as available for up to 5 minutes; the server refuses the order with a
-   clear message, so this is cosmetic.
-6. **Deploy order matters.** Firestore indexes must be built before the code that
-   queries `stockMovements`/`sales` ships, and the rules must ship with or before
-   the code. See Next steps.
-8. **Rules: "Ask for price" products couldn't be toggled In stock from the
-   products list** (`productShapeOk()` demanded `price is number`). Live today
-   too. Fixed in the Phase 2 rules (price optional, still a non-negative number
-   when present; tested). Goes live with the Phase 2 rules deploy.
-7. **Production bug already live (not from Phase 2).** Since `f5d9881`, ordering a
-   product with no price ("Ask for price") fails with "no longer available",
-   because the server re-pricing rejected unpriced products. The Phase 2 order
-   route fixes this (unpriced lines are accepted and left out of the total),
-   but the fix is not deployed.
+1. **`/products` is cached for 5 minutes (ISR).** A product that just ran out
+   can still look available for up to 5 minutes; the server refuses the order
+   with a clear message (no numbers). Cosmetic.
+2. **`orders` rule still allows admin browser status updates for orders that
+   hold no stock.** Deliberate, so the code live today keeps working between
+   the rules deploy and the code deploy. No Phase 2 screen uses it. Optional
+   hardening after Phase 2 code is live: deploy-plan step 5.
+3. **Customer-site pixel diff vs production not done** (it needs production
+   screenshots, i.e. live-domain requests). The shop browser suite checks the
+   Phase 2 changes; unmanaged products render exactly as before.
+4. **Cold first load of the admin on a slow phone is 2.3–4.8 s LCP** (Firebase
+   SDK, same as today; Phase 2 adds < 1 kB to existing routes).
+
+Fixed during step 2 (for the record): order page wrote status from the browser
+(2a); old product form ignored sizes (2b); `/admin/sale` 404 (2c); "Ask for
+price" products could not be toggled In stock because the rules demanded a
+numeric price — **also live today, fixed by the Phase 2 rules** (2b); managed
+products could have their base unit changed, which would silently rescale
+stock (server now refuses, 2b); saved opening counts not prefilled when the
+Stock page or a Switch-over category was opened directly (2e); small text and
+a few layout nits (2e/2f).
 
 ---
 
-## Next steps, in order
+## Deploy plan (owner runs this; nothing is deployed yet)
 
-1. ~~Wire the admin order page to the transition route~~ (done, 2a).
-2. Replace `ProductForm.tsx` with the new editor (problem #2): category dropdown
-   with "+ Add new category" (EN, optional ZH; uses `/api/admin/categories`),
-   sell units editor (label, factor in base units, price in RM →
-   `parseRMToSen`, channel), base unit, low-stock level, track expiry, barcodes.
-   Limit the products-list "In stock" toggle to unmanaged products.
-3. Build `/admin/sale` (quick sale): search, size and qty, running total, payment
-   method, Done with one `saleId` per sale, "Sell anyway" on 409, today's sales
-   with Void.
-4. Add the running-low badge to the Stock tab in `AdminShell.tsx`.
-5. Browser E2E (Playwright, emulator) for: shop status badges, size picker,
-   out-of-stock disabled, cart with sizes, checkout; Stock tab filters; adjust
-   with confirm line; count mode; switch-over per category; quick sale incl.
-   oversold and void; order page confirm/collect/cancel on a managed product.
-6. Screenshots at 390 px and 1440 px; customer-site pixel diff
-   (`scripts/site-screenshots.mjs`); bundle size and Lighthouse for `/admin` pages
-   (flag anything over 250 KB JS).
-7. Run `npm test`, then merge `phase2-inventory` into `main`.
-8. Deploy in this order: `firebase deploy --only firestore:indexes` (wait until
-   the indexes show as built), then `firebase deploy --only firestore:rules`, then
-   push `main` to trigger the Vercel build.
-9. Hand-test on a real phone: switch one product on with a count, place an order
-   for it, confirm/collect it, a walk-in sale, a void.
+Firebase project `sim-baking-house`, Vercel project `simbakinghouse-web`
+(production deploys on push to `main`). Production is `ac3fcdb`
+(deployment `dpl_8q11qBnvTEq18bZPoKVPgGZsm4PF`). No new environment variables.
+
+**0. Prepare (no effect on production)**
+```bash
+git checkout phase2-inventory && npm test        # must be all green
+git checkout main && git pull                    # main must still be ac3fcdb (or merge it in first)
+git merge --no-ff phase2-inventory -m "Phase 2: inventory"   # do NOT push yet
+firebase login && firebase use sim-baking-house
+```
+Pick a quiet time (no orders being processed). Each step below is safe for the
+code that is live at that moment.
+
+**1. Indexes, then wait for them to build**
+```bash
+firebase deploy --only firestore:indexes
+```
+- If asked whether to delete indexes that are not in the file, answer **No**.
+- Firebase console → Firestore → Indexes: wait until all three new ones show
+  **Enabled** (not "Building"): `stockMovements (productId ↑, at ↓)`,
+  `sales (dayKey ↑, atMs ↓)`, `products (managedStock ↑, stockStatus ↑)`.
+  Usually a few minutes with this much data. Do not go on while any is building
+  (product history, today's sales and the Stock badge would fail).
+- Effect on the live site: none (unused until Phase 2 code ships).
+- **Rollback:** not needed. To remove anyway: console → Indexes → delete the three.
+
+**2. Rules**
+```bash
+firebase deploy --only firestore:rules
+```
+- Safe for today's code: it never writes `managedStock`/`stockStatus`, no
+  order holds stock yet, and the product price rule only got looser (fixes the
+  In-stock toggle on "Ask for price" products today).
+- Check right after, on the **current** admin: accept a test order, toggle In
+  stock on a product, save a product in the old form. All must still work.
+- **Rollback** (only while Phase 2 code is NOT live): console → Firestore →
+  Rules → history → restore the previous version, or
+  `git checkout ac3fcdb -- firestore.rules && firebase deploy --only firestore:rules && git checkout HEAD -- firestore.rules`.
+  Do not roll the rules back while Phase 2 code is live: the Stock screens read
+  `inventory`/`stockMovements`/`sales`/`productPrivate`/`stockCountDrafts`, which
+  the old rules deny.
+
+**3. Code**
+```bash
+git push origin main
+```
+- Vercel → wait for the production deployment of the merge commit to be
+  **Ready** and to carry the production domains.
+- Smoke check (≤ 3 requests): homepage 200; `/admin` signs in; Stock tab shows
+  "0 of N products managed here" (nothing is managed until Sim switches it on,
+  so the shop behaves exactly as before).
+- **Rollback:** Vercel → Deployments → `dpl_8q11qBnvTEq18bZPoKVPgGZsm4PF`
+  (`ac3fcdb`) → **Instant Rollback** (Vercel then stops auto-promoting new
+  pushes until you promote one). Then `git revert -m 1 <merge sha>` on `main` and
+  push so `main` matches production again. Data written by Phase 2 stays
+  readable by the old code (products keep `price` and `inStock`; sizes are extra
+  fields), with these caveats:
+  - Orders confirmed under Phase 2 that **hold stock** (`stock.state: reserved`)
+    cannot change status from the old admin while the Phase 2 rules are live.
+    Before rolling back, finish or cancel them in Phase 2; or also roll back the
+    rules (step 2 rollback) — the holds are then simply forgotten.
+  - Managed products: the old shop ignores `stockStatus`, so a managed product
+    that is "out" shows as available if its `inStock` is on. Turn `inStock` off
+    for those by hand if needed.
+  - Walk-in sales recorded in Phase 2 stay in `sales` (old code ignores them).
+
+**4. Hand test** (checklist below) on a real phone, same day.
+
+**5. Optional hardening, a few days later** (once nothing old is in use): set the
+`orders` rule to `allow update: if false;` (all status changes go through the
+API), run `npm run test:rules`, deploy rules. Rollback = redeploy the previous
+rules.
+
+---
+
+## Hand-test checklist (real phone, production, after step 3)
+
+Use one cheap test product first, e.g. a spare item Sim can count easily.
+
+**Stock tab**
+- [ ] Stock tab opens; shows "0 of N products managed here"; no badge on the tab.
+- [ ] Open the test product → "Not managed here yet" → type the shelf count →
+      tick "I'll stop updating it in the old system" → Switch on. Numbers appear:
+      On hand = your count, Held 0, Available = count.
+- [ ] Change stock → Restock 2 → Review shows "X → X+2" → Confirm. History shows
+      "Restock +2" with your email.
+- [ ] Count stock → type a different number for the test product → Review → Apply.
+      History shows "Count".
+- [ ] Set the product's "Running low at" (editor) above its stock → the Stock tab
+      badge shows 1 and the product is in "Running low". Shop card says "Low stock"
+      (may take up to 5 minutes, ISR).
+- [ ] Filters: Low / Out / Not managed show the right products; search by name works.
+- [ ] Products tab → the test product shows its status instead of the In-stock button.
+
+**Quick sale**
+- [ ] Stock tab → Quick sale → search the test product → pick size → qty 1 → Add
+      → Cash → Done. "Sale recorded: RM …"; it appears under Today's sales; stock
+      went down by 1 size.
+- [ ] Sell more than is left → red list "selling N, only M available" → Sell
+      anyway → recorded; product shows Out; badge counts it.
+- [ ] Void that sale with a reason → stock comes back; the sale stays, marked voided.
+- [ ] An "Ask for price" product: "Add to sale" stays disabled until you type the
+      price on the keypad; after Done, the product is still "Ask for price".
+
+**Customer order for a managed product**
+- [ ] Restock the test product so it is In stock.
+- [ ] On the shop (phone, logged out): open the product → status "In stock",
+      sizes if any, no numbers anywhere → add to cart → checkout → send.
+- [ ] Try to order more than is in stock → clear "We don't have enough …"
+      message with no numbers.
+- [ ] Admin → the order → line shows the size → type the total → Accept →
+      "Stock is held for this order"; Stock page shows it under Held.
+- [ ] Mark paid → ready → collected → "Stock was taken off"; On hand went down.
+- [ ] Place another order, Accept it, then Cancel with a reason → "Held stock was
+      released".
+- [ ] An order mixing a priced item and an "Ask for price" item → order page shows
+      "price to confirm"; the total box is empty until you type it.
+
+If anything in this list fails: stop, note the step, and use the rollback for
+step 3 (code) — rules and indexes can stay.

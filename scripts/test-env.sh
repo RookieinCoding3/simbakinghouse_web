@@ -14,7 +14,13 @@ cd "$(dirname "$0")/.."
 TEST_PORT=3100
 PROJECT="demo-sbh-test"
 
+# A previous run's emulators can take a few seconds to release their ports
+# (npm test runs test:e2e then test:shop back to back): wait up to 20 s.
 for port in 8080 9099 9199 $TEST_PORT; do
+  for _ in $(seq 1 20); do
+    lsof -i:$port -sTCP:LISTEN >/dev/null 2>&1 || break
+    sleep 1
+  done
   if lsof -i:$port -sTCP:LISTEN >/dev/null 2>&1; then
     echo "Port $port is already in use — aborting so this doesn't collide with something else." >&2
     exit 1
