@@ -68,7 +68,7 @@ test('orderId falls back to the document id', () => {
 
 test('item qty "3" → 3; missing name → "Unnamed item"; missing price → null', () => {
   const o = normalizeOrder('X', { items: [{ productId: 'p', qty: '3' }] })
-  eq(o.items[0], { productId: 'p', name: 'Unnamed item', qty: 3, unitPrice: null })
+  eq(o.items[0], { productId: 'p', name: 'Unnamed item', qty: 3, unitPrice: null, sizeLabel: '' })
   eq(o.itemCount, 3)
 })
 

@@ -14,6 +14,8 @@ export interface AdminOrderItem {
   name: string
   qty: number
   unitPrice: number | null
+  /** Size the customer picked ("1 kg", "Bag of 25 kg"); '' on old orders. */
+  sizeLabel: string
 }
 
 export interface AdminOrder {
@@ -36,6 +38,8 @@ export interface AdminOrder {
   priceToConfirm: boolean
   confirmedTotal: number | null
   cancelReason: string
+  /** What happened to stock for this order (managed products only). */
+  stockState: 'reserved' | 'deducted' | 'released' | null
   createdAt: Date | null
   statusHistory: { status: string; at: string }[]
   /** Human-readable list of anything that had to be patched — shown as a "legacy data" hint. */
@@ -78,6 +82,11 @@ function str(value: unknown): string {
   return typeof value === 'string' ? value : ''
 }
 
+function stockStateOf(value: unknown): AdminOrder['stockState'] {
+  const state = value && typeof value === 'object' ? (value as { state?: unknown }).state : null
+  return state === 'reserved' || state === 'deducted' || state === 'released' ? state : null
+}
+
 export function normalizeOrder(docId: string, raw: unknown): AdminOrder {
   const d = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>
   const problems: string[] = []
@@ -97,6 +106,7 @@ export function normalizeOrder(docId: string, raw: unknown): AdminOrder {
         name: str(it.name) || 'Unnamed item',
         qty: Math.max(0, Math.round(toNumber(it.qty) ?? 0)),
         unitPrice: toNumber(it.unitPriceSnapshot),
+        sizeLabel: str(it.sellUnitLabel),
       }))
   } else {
     problems.push('no items list')
@@ -129,6 +139,7 @@ export function normalizeOrder(docId: string, raw: unknown): AdminOrder {
     priceToConfirm: d.priceToConfirm === true || items.some((i) => i.unitPrice === null),
     confirmedTotal: toNumber(d.confirmedTotal),
     cancelReason: str(d.cancelReason),
+    stockState: stockStateOf(d.stock),
     createdAt,
     statusHistory: Array.isArray(d.statusHistory)
       ? d.statusHistory

@@ -1,8 +1,23 @@
 # Phase 2 handoff — inventory core
 
 Status as of 2026-10-07. Branch: `phase2-inventory` (local only, not pushed).
-`main` and production are at `2efa064` (Roles phase). **Nothing from Phase 2 is
+`main` and production are at `ac3fcdb` (Roles phase + the "Ask for price"
+hotfix, merged into this branch as `f3a861c`). **Nothing from Phase 2 is
 deployed**: no code, no Firestore rules, no Firestore indexes.
+
+## Progress log (step 2, updated after every sub-step)
+
+| Sub-step | Status | Commit |
+|---|---|---|
+| a. Admin order page → transition route | **DONE** | see `git log` ("2a") |
+| b. Product editor form | not started | |
+| c. Quick sale screen `/admin/sale` | not started | |
+| d. Stock-tab badge | not started | |
+| e. Browser pass (WebKit 390/1440) + browser tests | not started | |
+| f. Lighthouse + bundle sizes | not started | |
+| g. Final handoff update + deploy plan | not started | |
+
+**Next action if picking this up cold:** start the first row that is not DONE.
 
 ---
 
@@ -31,7 +46,7 @@ deployed**: no code, no Firestore rules, no Firestore indexes.
 | Stock transactions (server) | **DONE** | `lib/server/stock.ts` (StockSession), `lib/server/lines.ts`, `lib/server/http.ts`, `lib/time.ts` |
 | Stock-aware customer orders | **DONE** | `app/api/orders/route.ts`, `lib/orderValidation.ts`, `types/order.ts` |
 | Stock-aware admin order steps (server) | **DONE** | `app/api/admin/orders/[orderId]/transition/route.ts` |
-| Stock-aware admin order steps (**UI**) | **NOT STARTED** | `app/(admin)/admin/(protected)/orders/[orderId]/page.tsx` still calls `updateDoc` directly (see Known problems #1) |
+| Stock-aware admin order steps (**UI**) | **DONE** (2a) | `orders/[orderId]/page.tsx` calls the transition route for every step (sends `confirmedTotalSen`, shows the 409 `short` list), shows each line's size and the stock state. No browser writes. Tested in WebKit: `scripts/admin-orders.test.mjs` (8) |
 | Adjust / count / switch / consistency check (server) | **DONE** | `app/api/admin/stock/{adjust,count,manage,check}/route.ts` |
 | managedStock transition mode | **PARTIAL** | server DONE and tested; UI written but never rendered or browser-tested: `stock/[productId]/page.tsx` (SwitchOn/SwitchOff), `stock/switch/page.tsx` |
 | Customer stock status | **PARTIAL** | data side DONE and tested; shop UI written but not browser-tested: `lib/productView.ts`, `components/products/ProductCard.tsx`, `components/products/ProductModal.tsx`, `lib/firebase/products.ts`, `types/product.ts`, `lib/structuredData.ts` |
@@ -61,6 +76,7 @@ npm run test:unit           # scripts/unit/*.test.ts (inventory 23, normalizeOrd
 npm run test:e2e            # builds .next-test against the emulators, then all suites:
                             #   order-abuse 10, admin 29, admin-auth 10, admin-users 18, stock 27
 bash scripts/test-env.sh bash scripts/e2e-suites.sh stock      # one suite
+# Phase 2 browser suites (WebKit): admin-orders
 SKIP_BUILD=1 bash scripts/test-env.sh bash scripts/e2e-suites.sh stock   # reuse last test build
 ```
 
@@ -74,12 +90,11 @@ Last full run (2026-10-07, on this WIP): all green, 375 checks.
 
 ## Known problems (fix before any of this is deployed)
 
-1. **Admin order page writes status directly.** `orders/[orderId]/page.tsx` still
-   uses client `updateDoc` and the old `stockCount` loop. With the Phase 2 rules,
-   an order that holds stock can't change status from a browser, so that page
-   would fail for orders containing managed products, and it never moves stock.
-   It must call `/api/admin/orders/[orderId]/transition` (send
-   `confirmedTotalSen`; show the 409 `short` list).
+1. ~~Admin order page writes status directly.~~ Fixed in 2a. Note: the
+   `orders` rule still lets an admin browser update an order that holds no
+   stock. That is deliberate so the code live today keeps working during the
+   deploy window (rules ship before code). No Phase 2 screen uses it. Optional
+   hardening once Phase 2 code is live: change `orders` to `allow update: if false`.
 2. **Old product form vs sell units.** `ProductForm.tsx` writes `price` and
    `stockCount` client-side and knows nothing about `sellUnits`. For a product
    saved by the new editor route, the shop reads `sellUnits`, so a price changed
@@ -104,8 +119,7 @@ Last full run (2026-10-07, on this WIP): all green, 375 checks.
 
 ## Next steps, in order
 
-1. Wire the admin order page to the transition route (problem #1), and show each
-   line's size label.
+1. ~~Wire the admin order page to the transition route~~ (done, 2a).
 2. Replace `ProductForm.tsx` with the new editor (problem #2): category dropdown
    with "+ Add new category" (EN, optional ZH; uses `/api/admin/categories`),
    sell units editor (label, factor in base units, price in RM →
