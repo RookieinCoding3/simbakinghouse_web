@@ -77,3 +77,18 @@ export async function waitForDoc(c, id, test, timeout = 10000) {
   }
   throw new Error(`${c}/${id} never matched: ${JSON.stringify(last)}`)
 }
+
+// WebKit reports a request that the browser itself cut off (because the test
+// navigated away) as a page error "… due to access control checks". Only
+// these two shapes are ignored; every other page error still fails a test:
+//  - the emulators' long-poll / auth requests (127.0.0.1:8080/9099/9199)
+//  - Next.js page-data requests on the app's own address (…?_rsc=…)
+const APP = new URL(BASE_URL)
+const escapeRe = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+const CANCELLED_EMULATOR = /127\.0\.0\.1:(8080|9099|9199)\/.*access control checks/
+const CANCELLED_RSC = new RegExp(
+  `^(Fetch API cannot load )?(${escapeRe(APP.protocol)})?\\/?\\/${escapeRe(APP.host)}\\/\\S*[?&]_rsc=[\\w-]+ due to access control checks\\.$`
+)
+export function isCancelledRequestNoise(message) {
+  return CANCELLED_EMULATOR.test(message) || CANCELLED_RSC.test(message)
+}

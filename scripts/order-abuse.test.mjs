@@ -234,10 +234,17 @@ await check('20 rapid orders from the SAME phone: exactly 3 succeed, the rest ar
   const results = await Promise.all(tokens.map((token) => postOrder(validOrderBody({ phone, token }))))
   const ok = results.filter((r) => r.status === 201).length
   const blocked = results.filter((r) => r.status === 429).length
+  // A request that loses a race with the others for the shared counters is
+  // retried, and if it still can't get through it is answered 503 + Retry-After
+  // with the same "try again" wording: blocked either way, never a 500.
+  const busy = results.filter((r) => r.status === 503).length
+  for (const r of results) {
+    if (r.status !== 201 && r.status !== 429 && r.status !== 503) console.log(`      unexpected response: ${r.status} ${JSON.stringify(r.json)}`)
+  }
   assert(ok === 3, `expected exactly 3 orders to succeed (phone limit is 3/hour), got ${ok}`)
-  assert(blocked === 17, `expected the remaining 17 to be 429, got ${blocked}`)
+  assert(blocked + busy === 17, `expected the remaining 17 to be 429 (or 503 busy), got 429 x${blocked}, 503 x${busy}`)
   assert(
-    results.every((r) => r.status === 201 || (r.status === 429 && /Too many orders/.test(r.json.error || ''))),
+    results.every((r) => r.status === 201 || ((r.status === 429 || r.status === 503) && /Too many orders/.test(r.json.error || ''))),
     'every blocked response should carry a clear retry message'
   )
 })
@@ -256,8 +263,43 @@ await check('11 rapid orders from 11 DIFFERENT phones but the SAME IP: exactly 1
   )
   const ok = results.filter((r) => r.status === 201).length
   const blocked = results.filter((r) => r.status === 429).length
+  for (const r of results) {
+    if (r.status !== 201 && r.status !== 429) console.log(`      unexpected response: ${r.status} ${JSON.stringify(r.json)}`)
+  }
+  assert(results.every((r) => r.status !== 500), 'a request got a generic 500')
   assert(ok === 10, `expected exactly 10 orders to succeed (IP limit is 10/hour), got ${ok}`)
   assert(blocked === 1, `expected exactly 1 to be blocked, got ${blocked}`)
+})
+
+// --- Contention: many orders at the same instant fight over the same
+// counter docs. Nobody may get a generic 500; exactly the allowed orders are
+// created; the counters match the orders (nothing double-counted or leaked).
+
+await check('40 simultaneous orders from one phone: no 500s, 503s carry Retry-After, exactly 3 orders, counters = 3', async () => {
+  const phone = phoneFor(300)
+  const tokens = await Promise.all(Array.from({ length: 40 }, () => getToken()))
+  await sleep(3100)
+  const results = await Promise.all(
+    tokens.map(async (token) => {
+      const res = await fetch(`${BASE_URL}/api/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-forwarded-for': '203.0.113.99' },
+        body: JSON.stringify(validOrderBody({ phone, token })),
+      })
+      return { status: res.status, retryAfter: res.headers.get('retry-after'), json: await res.json().catch(() => ({})) }
+    })
+  )
+  const tally = results.reduce((m, r) => ({ ...m, [r.status]: (m[r.status] ?? 0) + 1 }), {})
+  console.log(`      statuses: ${JSON.stringify(tally)}`)
+  assert(results.every((r) => [201, 429, 503].includes(r.status)), `unexpected: ${JSON.stringify(results.filter((r) => ![201, 429, 503].includes(r.status)))}`)
+  for (const r of results.filter((x) => x.status === 503)) {
+    assert(r.retryAfter === '60' && /Too many orders — please try again in about 1 minute/.test(r.json.error), `503 without Retry-After/wording: ${JSON.stringify(r)}`)
+  }
+  assert(tally[201] === 3, `expected exactly 3 orders accepted, got ${tally[201]}`)
+  const orders = await db().collection('orders').where('customerPhone', '==', phone).get()
+  assert(orders.size === 3, `expected exactly 3 orders written, found ${orders.size}`)
+  const counter = (await db().collection('rateLimits').doc(`phone_${phone}`).get()).data()
+  assert(counter?.hour?.count === 3 && counter?.day?.count === 3, `phone counter ${JSON.stringify(counter)} (should equal the 3 orders)`)
 })
 
 console.log(`\n${passed} passed, ${failed} failed`)

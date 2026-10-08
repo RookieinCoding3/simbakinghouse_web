@@ -3,7 +3,7 @@
 // Run inside scripts/test-env.sh.
 import { webkit } from 'playwright'
 import { BASE_URL, db, resetEmulators, createAdmin, check, assert, summary } from './lib/emu.mjs'
-import { apiAs, createProduct, switchOn, loginAdmin, waitForDoc, getDoc, opId, sleep } from './lib/phase2.mjs'
+import { apiAs, createProduct, switchOn, loginAdmin, waitForDoc, getDoc, opId, sleep, isCancelledRequestNoise } from './lib/phase2.mjs'
 
 await resetEmulators()
 const sim = await createAdmin('sim@sbh.test', 'owner')
@@ -30,7 +30,7 @@ const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, is
 const page = await ctx.newPage()
 const pageErrors = []
 page.on('pageerror', (e) => {
-  if (!/127\.0\.0\.1:(8080|9099|9199)\/.*access control checks/.test(e.message)) pageErrors.push(e.message)
+  if (!isCancelledRequestNoise(e.message)) pageErrors.push(e.message)
 })
 await loginAdmin(page, sim.email)
 

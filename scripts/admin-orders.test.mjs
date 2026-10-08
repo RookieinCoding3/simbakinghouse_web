@@ -2,7 +2,7 @@
 // (WebKit, phone size) against the emulator. Run inside scripts/test-env.sh.
 import { webkit } from 'playwright'
 import { BASE_URL, db, resetEmulators, createAdmin, check, assert, summary } from './lib/emu.mjs'
-import { apiAs, createProduct, switchOn, placeOrders, loginAdmin, waitForDoc, getDoc, opId } from './lib/phase2.mjs'
+import { apiAs, createProduct, switchOn, placeOrders, loginAdmin, waitForDoc, getDoc, opId, isCancelledRequestNoise } from './lib/phase2.mjs'
 
 await resetEmulators()
 const sim = await createAdmin('sim@sbh.test', 'owner')
@@ -33,7 +33,7 @@ const pageErrors = []
 // navigation as an error; that's the browser tearing down a request, not
 // the app failing.
 page.on('pageerror', (e) => {
-  if (!/127\.0\.0\.1:(8080|9099|9199)\/.*access control checks/.test(e.message)) pageErrors.push(e.message)
+  if (!isCancelledRequestNoise(e.message)) pageErrors.push(e.message)
 })
 await loginAdmin(page, sim.email)
 

@@ -5,7 +5,7 @@
 import { mkdirSync } from 'fs'
 import { webkit } from 'playwright'
 import { BASE_URL, db, resetEmulators, createAdmin, check, assert, summary } from './lib/emu.mjs'
-import { apiAs, createProduct, switchOn, placeOrders, loginAdmin, waitForDoc, getDoc, opId, sleep } from './lib/phase2.mjs'
+import { apiAs, createProduct, switchOn, placeOrders, loginAdmin, waitForDoc, getDoc, opId, sleep, isCancelledRequestNoise } from './lib/phase2.mjs'
 
 const SHOTS = process.env.SHOTS_DIR || '.screenshots/phase2'
 mkdirSync(SHOTS, { recursive: true })
@@ -57,7 +57,7 @@ async function newPage(width) {
   )
   const page = await ctx.newPage()
   page.on('pageerror', (e) => {
-    if (!/127\.0\.0\.1:(8080|9099|9199)\/.*access control checks/.test(e.message)) pageErrors.push(`${width}px ${page.url()}: ${e.message}`)
+    if (!isCancelledRequestNoise(e.message)) pageErrors.push(`${width}px ${page.url()}: ${e.message}`)
   })
   return page
 }

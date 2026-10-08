@@ -4,7 +4,7 @@
 set -u
 cd "$(dirname "$0")/.."
 
-ALL=(order-abuse admin admin-auth admin-users stock admin-orders admin-products admin-sale admin-screens)
+ALL=(order-abuse rate-limit admin admin-auth admin-users stock admin-orders admin-products admin-sale admin-screens)
 if [ $# -eq 0 ]; then SUITES=("${ALL[@]}"); else SUITES=("$@"); fi
 
 FAILED=()
@@ -13,6 +13,7 @@ for suite in "${SUITES[@]}"; do
   echo "===== suite: $suite ====="
   node --input-type=module -e "const m = await import('./scripts/lib/emu.mjs'); await m.resetEmulators()"
   case "$suite" in
+    rate-limit) npx tsx scripts/rate-limit.test.mts ;;
     order-abuse) node scripts/seed-order-abuse-product.mjs && node scripts/order-abuse.test.mjs ;;
     admin) node scripts/admin.test.mjs ;;
     admin-auth) node scripts/admin-auth.test.mjs ;;
