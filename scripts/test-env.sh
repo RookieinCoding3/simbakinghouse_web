@@ -5,6 +5,7 @@
 #   bash scripts/test-env.sh node scripts/admin.test.mjs
 #   DEV=1 bash scripts/test-env.sh node scripts/repro.mjs     # next dev instead of build+start
 #   SKIP_BUILD=1 bash scripts/test-env.sh ...                 # reuse the last .next-test build
+#   PRE_BUILD="node scripts/seed-shop.mjs" bash scripts/test-env.sh ...   # seed before building
 #
 # Test builds go to .next-test (see next.config.js distDir), never .next.
 set -euo pipefail
@@ -13,7 +14,13 @@ cd "$(dirname "$0")/.."
 TEST_PORT=3100
 PROJECT="demo-sbh-test"
 
+# A previous run's emulators can take a few seconds to release their ports
+# (npm test runs test:e2e then test:shop back to back): wait up to 20 s.
 for port in 8080 9099 9199 $TEST_PORT; do
+  for _ in $(seq 1 20); do
+    lsof -i:$port -sTCP:LISTEN >/dev/null 2>&1 || break
+    sleep 1
+  done
   if lsof -i:$port -sTCP:LISTEN >/dev/null 2>&1; then
     echo "Port $port is already in use — aborting so this doesn't collide with something else." >&2
     exit 1
@@ -81,6 +88,12 @@ if [ "${DEV:-}" = "1" ]; then
   npx next dev -p $TEST_PORT > /tmp/sbh-test-next.log 2>&1 &
   NEXT_PID=$!
 else
+  # PRE_BUILD: seed data that must exist when ISR pages (/products) are
+  # rendered at build time — see scripts/seed-shop.mjs.
+  if [ -n "${PRE_BUILD:-}" ]; then
+    echo "[test-env] pre-build: $PRE_BUILD"
+    bash -c "$PRE_BUILD"
+  fi
   if [ "${SKIP_BUILD:-}" != "1" ]; then
     echo "[test-env] building (NEXT_PUBLIC_* baked in pointing at the emulators)..."
     # next build adds "<distDir>/types/**" to tsconfig.json; don't let a test

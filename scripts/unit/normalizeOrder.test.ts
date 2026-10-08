@@ -68,12 +68,17 @@ test('orderId falls back to the document id', () => {
 
 test('item qty "3" → 3; missing name → "Unnamed item"; missing price → null', () => {
   const o = normalizeOrder('X', { items: [{ productId: 'p', qty: '3' }] })
-  eq(o.items[0], { productId: 'p', name: 'Unnamed item', qty: 3, unitPrice: null })
+  eq(o.items[0], { productId: 'p', name: 'Unnamed item', qty: 3, unitPrice: null, sizeLabel: '' })
   eq(o.itemCount, 3)
 })
 
 test('confirmedTotal undefined → null (the detail page used to call .toFixed on it)', () => {
   eq(normalizeOrder('X', { items: [] }).confirmedTotal, null)
+})
+
+test("an old product's built-in size label is hidden; a real size is shown", () => {
+  eq(normalizeOrder('X', { items: [{ productId: 'a', qty: 1, sellUnitId: 'default', sellUnitLabel: '1 pc' }] }).items[0].sizeLabel, '')
+  eq(normalizeOrder('X', { items: [{ productId: 'a', qty: 1, sellUnitId: 'g500', sellUnitLabel: '500 g pack' }] }).items[0].sizeLabel, '500 g pack')
 })
 
 test('priceToConfirm: stored flag, or any unpriced line; false for a fully priced order', () => {

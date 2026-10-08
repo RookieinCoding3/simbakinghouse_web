@@ -7,6 +7,10 @@ import Button from '@/components/ui/Button'
 import ProductBadge from './ProductBadge'
 import { logProductView, logOrderIntent } from '@/lib/firebase/analytics'
 import { useCart } from '@/lib/cart/CartContext'
+import { productAvailability, onlineUnits, STOCK_LABEL } from '@/lib/productView'
+import { formatSen } from '@/lib/money'
+import { CONTACT_WHATSAPP_URL } from '@/lib/site'
+import { cn } from '@/lib/utils/cn'
 
 interface ProductModalProps {
   product: Product | null
@@ -23,6 +27,7 @@ export default function ProductModal({
   const lastLoggedProductId = useRef<string | null>(null)
   const { addItem } = useCart()
   const [qty, setQty] = useState(1)
+  const [unitId, setUnitId] = useState<string | null>(null)
 
   // Handle ESC key to close modal
   useEffect(() => {
@@ -52,13 +57,20 @@ export default function ProductModal({
   // Reset the quantity picker each time a different product is opened
   useEffect(() => {
     setQty(1)
+    setUnitId(null)
   }, [product?.id])
 
   if (!isOpen || !product) return null
 
+  const units = onlineUnits(product)
+  const unit = units.find((u) => u.id === unitId) ?? units[0] ?? null
+  const { sellable, status } = productAvailability(product)
+  const canAdd = sellable && unit !== null
+  const wholesaleHref = `${CONTACT_WHATSAPP_URL}?text=${encodeURIComponent(`Hi Sim Baking House, I'd like to ask about wholesale ${product.name}.`)}`
+
   const handleAddToCart = () => {
-    logOrderIntent(product.id, product.name, product.price ?? 0)
-    addItem(product, qty)
+    logOrderIntent(product.id, product.name, unit?.priceSen != null ? unit.priceSen / 100 : 0)
+    addItem(product, qty, unit ?? undefined)
     onClose()
   }
 
@@ -160,12 +172,50 @@ export default function ProductModal({
                     Total Value
                   </p>
                   <span className="font-heading text-4xl text-ink">
-                    {product.price !== undefined ? `RM ${product.price.toFixed(2)}` : 'Ask for price'}
+                    {unit ? formatSen(unit.priceSen) : 'Wholesale'}
                   </span>
+                  {status && (
+                    <p className={cn('text-[11px] uppercase tracking-widest mt-2 font-medium', status === 'in_stock' ? 'text-ink/60' : 'text-clay')} data-testid="stock-status">
+                      {STOCK_LABEL[status]}
+                    </p>
+                  )}
                 </div>
               </div>
 
-              {product.inStock && (
+              {units.length > 1 && (
+                <div className="mb-4" role="radiogroup" aria-label="Size">
+                  <span className="block text-[10px] uppercase tracking-widest text-ink/50 font-body mb-2">Size</span>
+                  <div className="flex flex-wrap gap-2">
+                    {units.map((u) => (
+                      <button
+                        key={u.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={unit?.id === u.id}
+                        onClick={() => setUnitId(u.id)}
+                        className={cn(
+                          'px-3 py-2 text-xs border transition-colors',
+                          unit?.id === u.id ? 'border-ink bg-ink text-paper' : 'border-line text-ink hover:border-ink'
+                        )}
+                      >
+                        {u.label} · {formatSen(u.priceSen)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {product.hasWholesale && units.length > 0 && (
+                <p className="text-[11px] text-ink/60 mb-4">
+                  Bigger wholesale sizes are available —{' '}
+                  <a href={wholesaleHref} target="_blank" rel="noopener noreferrer" className="underline hover:text-clay">
+                    ask us on WhatsApp
+                  </a>
+                  .
+                </p>
+              )}
+
+              {canAdd && (
                 <div className="flex items-center gap-4 mb-4">
                   <span className="text-[10px] uppercase tracking-widest text-ink/50 font-body">Qty</span>
                   <div className="flex items-center gap-3">
@@ -188,15 +238,26 @@ export default function ProductModal({
                 </div>
               )}
 
-              <Button
-                variant="primary"
-                size="lg"
-                onClick={handleAddToCart}
-                className="w-full py-5"
-                disabled={!product.inStock}
-              >
-                {product.inStock ? 'Add to cart' : 'Out of stock'}
-              </Button>
+              {units.length === 0 ? (
+                <a
+                  href={wholesaleHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full text-center bg-ink hover:bg-clay text-paper py-5 font-body font-medium uppercase tracking-widest text-xs transition-colors"
+                >
+                  Ask on WhatsApp for wholesale
+                </a>
+              ) : (
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={handleAddToCart}
+                  className="w-full py-5"
+                  disabled={!canAdd}
+                >
+                  {canAdd ? 'Add to cart' : 'Out of stock'}
+                </Button>
+              )}
             </div>
           </div>
         </div>

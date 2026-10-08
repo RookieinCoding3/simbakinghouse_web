@@ -3,11 +3,13 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { doc, onSnapshot, runTransaction, updateDoc } from 'firebase/firestore'
+import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '@/lib/firebase/config'
 import { buildConfirmationMessage, buildAdminWhatsAppLink } from '@/lib/whatsapp'
 import { useAdminSession } from '@/lib/admin/AdminSession'
 import { recordReads } from '@/lib/admin/readMetrics'
+import { adminFetch, AdminApiError } from '@/lib/admin/api'
+import { parseRMToSen } from '@/lib/money'
 import {
   normalizeOrder,
   formatRM,
@@ -18,8 +20,17 @@ import {
 } from '@/lib/admin/normalizeOrder'
 import type { OrderStatus } from '@/types/order'
 
-function nowIso() {
-  return new Date().toISOString()
+interface ShortItem {
+  productId: string
+  name: string
+  needed: string
+  available: string
+}
+
+const STOCK_NOTE: Record<NonNullable<AdminOrder['stockState']>, string> = {
+  reserved: 'Stock is held for this order.',
+  deducted: 'Stock was taken off when collected.',
+  released: 'Held stock was released.',
 }
 
 export default function AdminOrderDetailPage() {
@@ -35,6 +46,7 @@ export default function AdminOrderDetailPage() {
   const [showCancelForm, setShowCancelForm] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [short, setShort] = useState<ShortItem[]>([])
 
   useEffect(() => {
     if (!user) return
@@ -81,75 +93,49 @@ export default function AdminOrderDetailPage() {
     )
   }
 
-  const updateStatus = async (status: OrderStatus, extra: Record<string, unknown> = {}) => {
+  // Every status change goes through the server, which moves stock for
+  // managed products in the same transaction (hold on confirm, deduct on
+  // collect, release on cancel). The page itself never writes the order.
+  const updateStatus = async (to: OrderStatus, extra: Record<string, unknown> = {}) => {
     setBusy(true)
     setError(null)
+    setShort([])
     try {
-      await updateDoc(doc(db, 'orders', docId), {
-        status,
-        updatedAt: nowIso(),
-        statusHistory: [...order.statusHistory, { status, at: nowIso() }],
-        ...extra,
+      await adminFetch(`/api/admin/orders/${encodeURIComponent(docId)}/transition`, {
+        method: 'POST',
+        body: JSON.stringify({ to, ...extra }),
       })
-    } catch {
-      setError('Could not update the order. Check your connection and try again.')
+      return true
+    } catch (e) {
+      if (e instanceof AdminApiError) {
+        setError(e.message)
+        if (Array.isArray(e.data.short)) setShort(e.data.short as ShortItem[])
+      } else {
+        setError('Could not update the order. Check your connection and try again.')
+      }
+      return false
     } finally {
       setBusy(false)
     }
   }
 
   const handleAccept = async () => {
-    const total = Number(confirmedTotalInput)
-    if (confirmedTotalInput.trim() === '' || !Number.isFinite(total) || total < 0) {
+    const sen = parseRMToSen(confirmedTotalInput)
+    if (sen === null) {
       setError('Enter a valid total')
       return
     }
-    await updateStatus('confirmed', { confirmedTotal: Math.round(total * 100) / 100 })
+    await updateStatus('confirmed', { confirmedTotalSen: sen })
   }
 
-  const handleMarkCollected = async () => {
-    setBusy(true)
-    setError(null)
-    try {
-      // Legacy per-product stockCount decrement, best-effort per item and
-      // never blocking the status change.
-      await Promise.all(
-        order.items
-          .filter((item) => item.productId)
-          .map(async (item) => {
-            const productRef = doc(db, 'products', item.productId)
-            try {
-              await runTransaction(db, async (tx) => {
-                const snap = await tx.get(productRef)
-                if (!snap.exists()) return
-                const stockCount = snap.data().stockCount
-                if (typeof stockCount !== 'number') return
-                tx.update(productRef, { stockCount: Math.max(0, stockCount - item.qty) })
-              })
-            } catch {
-              // A missing/renamed product shouldn't block marking collected.
-            }
-          })
-      )
-      await updateDoc(doc(db, 'orders', docId), {
-        status: 'collected',
-        updatedAt: nowIso(),
-        statusHistory: [...order.statusHistory, { status: 'collected', at: nowIso() }],
-      })
-    } catch {
-      setError('Could not update the order. Check your connection and try again.')
-    } finally {
-      setBusy(false)
-    }
-  }
+  const handleMarkCollected = () => updateStatus('collected')
 
   const handleCancel = async () => {
     if (!cancelReason.trim()) {
       setError('Enter a reason')
       return
     }
-    await updateStatus('cancelled', { cancelReason: cancelReason.trim() })
-    setShowCancelForm(false)
+    if (await updateStatus('cancelled', { cancelReason: cancelReason.trim() })) setShowCancelForm(false)
   }
 
   const confirmationWaLink =
@@ -204,6 +190,7 @@ export default function AdminOrderDetailPage() {
           <div key={`${item.productId}-${i}`} className="flex justify-between gap-4 py-3 text-sm">
             <span className="text-ink">
               {item.qty} x {item.name}
+              {item.sizeLabel && <span className="text-muted"> · {item.sizeLabel}</span>}
             </span>
             <span className="text-muted whitespace-nowrap">
               {item.unitPrice !== null ? formatRM(item.unitPrice * item.qty) : 'Ask for price'}
@@ -232,7 +219,26 @@ export default function AdminOrderDetailPage() {
         </p>
       )}
 
-      {error && <p className="text-xs text-clay">{error}</p>}
+      {order.stockState && (
+        <p data-testid="stock-state" className="text-xs text-muted">
+          {STOCK_NOTE[order.stockState]}
+        </p>
+      )}
+
+      {error && (
+        <div role="alert" className="text-xs text-clay space-y-1">
+          <p>{error}</p>
+          {short.length > 0 && (
+            <ul data-testid="short-list" className="list-disc pl-5">
+              {short.map((s) => (
+                <li key={s.productId}>
+                  {s.name}: need {s.needed}, only {s.available} available
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       {order.status === 'new' && (
         <div className="space-y-3">

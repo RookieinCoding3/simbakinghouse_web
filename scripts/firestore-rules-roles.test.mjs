@@ -20,12 +20,18 @@ await testEnv.withSecurityRulesDisabled(async (ctx) => {
   await setDoc(doc(db, 'admins', 'legacy'), { addedAt: 1 })
   await setDoc(doc(db, 'orders', 'SBH-1'), { status: 'new', items: [] })
   await setDoc(doc(db, 'products', 'p1'), { name: 'Flour', price: 5, category: 'Flour' })
+  await setDoc(doc(db, 'products', 'ask'), { name: 'Cake topper', category: 'Decorations', inStock: true })
   await setDoc(doc(db, 'categories', 'c1'), { name: 'Flour' })
   await setDoc(doc(db, 'settings', 'shop'), { shopOpensAt: '6:30 AM' })
   await setDoc(doc(db, 'auditLog', 'a1'), { action: 'user.add' })
   await setDoc(doc(db, 'counters', 'orders'), { seq: 1 })
   await setDoc(doc(db, 'rateLimits', 'global'), { count: 1 })
   await setDoc(doc(db, 'carts', 'cust'), { items: [] })
+  await setDoc(doc(db, 'products', 'managed'), { name: 'Rice flour', price: 4, category: 'Flour', managedStock: true, stockStatus: 'low' })
+  await setDoc(doc(db, 'orders', 'HELD'), { status: 'confirmed', items: [], stock: { state: 'reserved', lines: [] } })
+  for (const c of ['inventory', 'stockMovements', 'batches', 'sales', 'stockCountDrafts', 'productPrivate', 'stockOps']) {
+    await setDoc(doc(db, c, 'x1'), { qtyMilli: 1000 })
+  }
 })
 
 const PERSONAS = {
@@ -75,6 +81,22 @@ const CASES = [
   ['read rateLimits', () => false, (db) => getDoc(doc(db, 'rateLimits', 'global'))],
   ['write rateLimits', () => false, (db) => setDoc(doc(db, 'rateLimits', 'global'), { count: 0 })],
   ["read someone else's cart", (p) => p === 'customer', (db) => getDoc(doc(db, 'carts', 'cust'))],
+  // Stock engine: admin/owner can read, nobody can write from a client.
+  ...['inventory', 'stockMovements', 'batches', 'sales', 'stockCountDrafts', 'productPrivate'].flatMap((c) => [
+    [`read ${c}`, (p) => STAFF.has(p), (db) => getDoc(doc(db, c, 'x1'))],
+    [`write ${c}`, () => false, (db) => setDoc(doc(db, c, 'x1'), { qtyMilli: 999999 })],
+  ]),
+  ['read stockOps', () => false, (db) => getDoc(doc(db, 'stockOps', 'x1'))],
+  ['public can read a managed product (status only)', () => true, (db) => getDoc(doc(db, 'products', 'managed'))],
+  ['switch a product to managed from a client', () => false, (db) => updateDoc(doc(db, 'products', 'p1'), { managedStock: true })],
+  ['edit stockStatus from a client', () => false, (db) => updateDoc(doc(db, 'products', 'managed'), { stockStatus: 'in_stock' })],
+  ['create a product that claims managedStock', () => false, (db) => setDoc(doc(db, 'products', 'sneaky'), { name: 'x', price: 1, category: 'x', managedStock: true })],
+  ['edit a managed product name (other fields stay client-editable)', (p) => STAFF.has(p), (db) => updateDoc(doc(db, 'products', 'managed'), { name: 'Rice flour 1kg' })],
+  ['change status of an order that holds stock', () => false, (db) => updateDoc(doc(db, 'orders', 'HELD'), { status: 'cancelled' })],
+  ['toggle In stock on an "Ask for price" product (no price field)', (p) => STAFF.has(p), (db) => updateDoc(doc(db, 'products', 'ask'), { inStock: false })],
+  ['write a product price as text', () => false, (db) => updateDoc(doc(db, 'products', 'p1'), { price: '5' })],
+  ['write a negative product price', () => false, (db) => updateDoc(doc(db, 'products', 'p1'), { price: -1 })],
+  ["edit an order's stock record", () => false, (db) => updateDoc(doc(db, 'orders', 'SBH-1'), { stock: { state: 'released', lines: [] } })],
 ]
 
 for (const [label, allowedFor, run] of CASES) {

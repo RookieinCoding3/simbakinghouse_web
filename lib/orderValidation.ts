@@ -10,6 +10,8 @@ export const MAX_QTY = 99
 
 export interface ValidatedOrderItem {
   productId: string
+  /** Absent in carts saved before sell units existed = the product's first unit. */
+  sellUnitId: string | null
   name: string
   qty: number
 }
@@ -134,11 +136,12 @@ export function validateOrderInput(
     const productId = typeof item.productId === 'string' ? item.productId : null
     const name = typeof item.name === 'string' ? item.name.slice(0, MAX_ITEM_NAME_LENGTH) : null
     const qty = typeof item.qty === 'number' && Number.isInteger(item.qty) ? item.qty : null
+    const sellUnitId = typeof item.sellUnitId === 'string' && item.sellUnitId.length <= 60 ? item.sellUnitId : null
 
     if (!productId || !name || !qty || qty < 1 || qty > MAX_QTY) {
       return { ok: false, error: 'Invalid item in cart' }
     }
-    items.push({ productId, name, qty })
+    items.push({ productId, sellUnitId, name, qty })
   }
 
   return {
