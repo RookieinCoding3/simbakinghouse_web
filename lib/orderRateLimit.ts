@@ -1,4 +1,5 @@
 import { getAdminDb } from './firebase/admin'
+import { withContentionRetry } from './server/contention'
 
 // Firestore-backed, not in-memory: a serverless function's memory resets
 // on every cold start and isn't shared across concurrent instances, so an
@@ -47,17 +48,29 @@ export class RateLimitExceeded extends Error {
  *
  * Throws RateLimitExceeded (not swallowed) when any limit is hit, naming
  * which one and how long until it has room again — callers map that to a
- * 429 with a human-readable retry time. Any other error (e.g. a genuine
- * Firestore outage) propagates as-is to the caller's own error handling.
+ * 429 with a human-readable retry time. Throws Busy (lib/server/contention)
+ * if the transaction keeps losing races with other orders; nothing was
+ * recorded in that case. Any other error (e.g. a genuine Firestore outage)
+ * propagates as-is to the caller's own error handling.
  */
-export async function checkAndRecordOrderAttempt(opts: { phone: string; ipHash: string }): Promise<void> {
+/** Which counter windows an attempt was recorded in, so it can be undone. */
+export interface AttemptReceipt {
+  phone: string
+  ipHash: string
+  starts: { phoneHour: number; phoneDay: number; ipHour: number; ipDay: number; global: number }
+}
+
+export async function checkAndRecordOrderAttempt(opts: { phone: string; ipHash: string }): Promise<AttemptReceipt> {
   const db = getAdminDb()
-  const now = Date.now()
   const phoneRef = db.collection('rateLimits').doc(`phone_${opts.phone}`)
   const ipRef = db.collection('rateLimits').doc(`ip_${opts.ipHash}`)
   const globalRef = db.collection('rateLimits').doc('global')
 
-  await db.runTransaction(async (tx) => {
+  // Every order touches the same "global" counter, so a burst of orders can
+  // make these transactions lose races: retried (it never committed), and
+  // after a few tries the caller gets Busy and answers "try again shortly".
+  return withContentionRetry(() => db.runTransaction(async (tx): Promise<AttemptReceipt> => {
+    const now = Date.now()
     const [phoneSnap, ipSnap, globalSnap] = await Promise.all([
       tx.get(phoneRef),
       tx.get(ipRef),
@@ -100,7 +113,37 @@ export async function checkAndRecordOrderAttempt(opts: { phone: string; ipHash: 
     tx.set(globalRef, {
       window: { count: global.count + 1, windowStart: global.windowStart },
     })
-  })
+    return {
+      phone: opts.phone,
+      ipHash: opts.ipHash,
+      starts: { phoneHour: phoneHour.windowStart, phoneDay: phoneDay.windowStart, ipHour: ipHour.windowStart, ipDay: ipDay.windowStart, global: global.windowStart },
+    }
+  }))
+}
+
+/**
+ * Undoes one recorded attempt, for when the order itself then could not be
+ * written (Busy): the customer was told to try again, so that attempt must
+ * not use up one of their slots. Only decrements a window that is still the
+ * one the attempt was recorded in (a window that has since rolled over
+ * already forgot it). Best effort: if this fails too, one slot stays used.
+ */
+export async function refundOrderAttempt(receipt: AttemptReceipt): Promise<void> {
+  const db = getAdminDb()
+  const phoneRef = db.collection('rateLimits').doc(`phone_${receipt.phone}`)
+  const ipRef = db.collection('rateLimits').doc(`ip_${receipt.ipHash}`)
+  const globalRef = db.collection('rateLimits').doc('global')
+  const dec = (w: WindowState | undefined, start: number) =>
+    w && w.windowStart === start && w.count > 0 ? { count: w.count - 1, windowStart: w.windowStart } : w
+  await withContentionRetry(() => db.runTransaction(async (tx) => {
+    const [p, i, g] = await Promise.all([tx.get(phoneRef), tx.get(ipRef), tx.get(globalRef)])
+    const pd = (p.data() as { hour?: WindowState; day?: WindowState }) || {}
+    const id = (i.data() as { hour?: WindowState; day?: WindowState }) || {}
+    const gd = (g.data() as { window?: WindowState }) || {}
+    if (p.exists) tx.set(phoneRef, { hour: dec(pd.hour, receipt.starts.phoneHour), day: dec(pd.day, receipt.starts.phoneDay) })
+    if (i.exists) tx.set(ipRef, { hour: dec(id.hour, receipt.starts.ipHour), day: dec(id.day, receipt.starts.ipDay) })
+    if (g.exists) tx.set(globalRef, { window: dec(gd.window, receipt.starts.global) })
+  }))
 }
 
 export function formatRetryAfter(retryAfterMs: number): string {

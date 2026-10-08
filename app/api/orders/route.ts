@@ -8,7 +8,8 @@ import { verifyFirebaseIdToken } from '@/lib/firebase/verifyIdToken'
 import { isHoneypotTripped, isSubmittedTooFast } from '@/lib/botDefense'
 import { verifyCheckoutToken } from '@/lib/checkoutToken'
 import { getClientIp, hashIp } from '@/lib/clientIp'
-import { checkAndRecordOrderAttempt, RateLimitExceeded, formatRetryAfter } from '@/lib/orderRateLimit'
+import { checkAndRecordOrderAttempt, refundOrderAttempt, RateLimitExceeded, formatRetryAfter, type AttemptReceipt } from '@/lib/orderRateLimit'
+import { withContentionRetry, Busy } from '@/lib/server/contention'
 import type { Order, OrderItem } from '@/types/order'
 
 // Orders are written here via the Admin SDK, not from the client through
@@ -56,8 +57,9 @@ export async function POST(request: NextRequest) {
     const userId = await verifyFirebaseIdToken(bearerToken)
 
     const ipHash = hashIp(getClientIp(request))
+    let receipt: AttemptReceipt
     try {
-      await checkAndRecordOrderAttempt({ phone: data.customerPhone, ipHash })
+      receipt = await checkAndRecordOrderAttempt({ phone: data.customerPhone, ipHash })
     } catch (error) {
       if (error instanceof RateLimitExceeded) {
         return NextResponse.json(
@@ -73,7 +75,10 @@ export async function POST(request: NextRequest) {
     const nowIso = new Date().toISOString()
     const productIds = [...new Set(data.items.map((i) => i.productId))]
 
-    const { orderId, estimatedTotal, priceToConfirm } = await db.runTransaction(async (transaction) => {
+    // The order number counter is one shared doc: retried on a lost race
+    // (nothing committed). If it still can't be written, give back the
+    // rate-limit slot this attempt used, then answer Busy (503).
+    const placeOrder = () => withContentionRetry(() => db.runTransaction(async (transaction) => {
       // Firestore transactions require all reads before any writes.
       const [counterSnap, ...productSnaps] = await transaction.getAll(
         counterRef,
@@ -142,10 +147,28 @@ export async function POST(request: NextRequest) {
       transaction.set(counterRef, { seq: next }, { merge: true })
       transaction.set(db.collection('orders').doc(id), order)
       return { orderId: id, estimatedTotal: totalSen / 100, priceToConfirm }
-    })
+    }))
+    let placed: Awaited<ReturnType<typeof placeOrder>>
+    try {
+      placed = await placeOrder()
+    } catch (error) {
+      if (error instanceof Busy) {
+        await refundOrderAttempt(receipt).catch((e) => console.error('[orders] could not refund rate-limit slot:', e))
+      }
+      throw error
+    }
+    const { orderId, estimatedTotal, priceToConfirm } = placed
 
     return NextResponse.json({ orderId, estimatedTotal, priceToConfirm }, { status: 201 })
   } catch (error) {
+    if (error instanceof Busy) {
+      // A burst of orders at the same moment, not the customer's fault: the
+      // same wording as the rate limit, never a generic error.
+      return NextResponse.json(
+        { error: `Too many orders — please try again in ${formatRetryAfter(60_000)}` },
+        { status: 503, headers: { 'Retry-After': '60' } }
+      )
+    }
     if (error instanceof LineError) {
       return NextResponse.json({ error: error.message, productId: error.productId }, { status: error.status })
     }
