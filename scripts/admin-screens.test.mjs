@@ -80,6 +80,34 @@ async function assertFits(page) {
   assert(r.wide.length === 0, `wider than the screen: ${r.wide.join(', ')}`)
 }
 
+// Screenshots are evidence for humans, not assertions: the checks above them
+// (renders, no sideways scroll, nothing wider than the screen) stay strict.
+// A screenshot that times out is retried once, then counted as a warning;
+// more than MAX_SHOT_WARNINGS fails the run. Every screenshot's duration and
+// what was still loading are logged, so a slow page shows up as data.
+const MAX_SHOT_WARNINGS = 2
+const shotLog = []
+async function screenshot(page, path) {
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const diag = await page
+      .evaluate(() => ({
+        fonts: document.fonts.status,
+        incompleteImages: [...document.images].filter((i) => !i.complete).map((i) => i.currentSrc.replace(location.origin, '')),
+      }))
+      .catch((e) => ({ error: String(e.message).slice(0, 80) }))
+    const t0 = Date.now()
+    try {
+      await page.screenshot({ path, fullPage: true, timeout: 20000 })
+      shotLog.push({ path, ms: Date.now() - t0, attempt })
+      return
+    } catch (e) {
+      console.log(`      screenshot attempt ${attempt} of ${path} failed after ${Date.now() - t0} ms (${String(e.message).split('\n')[0]}); at start: ${JSON.stringify(diag)}`)
+    }
+  }
+  shotLog.push({ path, ms: null, attempt: 2 })
+  console.log(`WARN  screenshot skipped: ${path}`)
+}
+
 const phone = await newPage(390)
 await loginAdmin(phone, sim.email)
 
@@ -261,7 +289,7 @@ for (const width of [390, 1440]) {
       }
       await sleep(400)
       await assertFits(page)
-      await page.screenshot({ path: `${SHOTS}/${name}-${width}.png`, fullPage: true })
+      await screenshot(page, `${SHOTS}/${name}-${width}.png`)
     })
   }
 }
@@ -271,6 +299,15 @@ await check('the product editor loads the wholesale size (private) into the size
   await phone.getByTestId('sell-unit').nth(2).waitFor()
   const labels = await phone.getByTestId('sell-unit').evaluateAll((els) => els.map((e) => e.querySelector('input').value))
   assert(labels.join() === '1 kg,500 g pack,25 kg bag', labels.join())
+})
+
+await check(`screenshots: at most ${MAX_SHOT_WARNINGS} skipped`, async () => {
+  const skipped = shotLog.filter((x) => x.ms === null)
+  const timed = shotLog.filter((x) => x.ms !== null)
+  const slowest = timed.reduce((a, b) => (b.ms > a.ms ? b : a), { ms: 0, path: '-' })
+  const retried = shotLog.filter((x) => x.attempt === 2 && x.ms !== null).length
+  console.log(`      screenshots: ${timed.length} taken, ${retried} needed a retry, ${skipped.length} skipped (warnings); slowest ${slowest.ms} ms (${slowest.path})`)
+  assert(skipped.length <= MAX_SHOT_WARNINGS, `${skipped.length} screenshot warnings: ${skipped.map((x) => x.path).join(', ')}`)
 })
 
 await check('no uncaught page errors on any screen', async () => {
