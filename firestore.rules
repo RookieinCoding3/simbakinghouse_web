@@ -22,6 +22,25 @@ service cloud.firestore {
         exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
 
+    // ---- SBH Inventory (iPad app) roles: Firebase Auth custom claim
+    // `role`, set only by the setUserRole Cloud Function. Claims only, no
+    // get()/exists(): one inventory write batch holds ~12 writes and per-write
+    // lookups would hit the 20-lookup limit and refuse the whole batch.
+    // (See sbh-inventory/docs/ASSUMPTIONS.md B7.)
+    function invRole() {
+      return request.auth == null ? '' : request.auth.token.get('role', '');
+    }
+    function isInvStaff() { return invRole() in ['admin', 'owner', 'staff']; }
+    function isInvOwner() { return invRole() in ['admin', 'owner']; }
+    function isInvAdmin() { return invRole() == 'admin'; }
+    // Website admin OR inventory owner/admin.
+    function isShopManager() { return isInvOwner() || isAdmin(); }
+    function writesOnly(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+    function createdOnly(keys) { return request.resource.data.keys().hasOnly(keys); }
+    function byMe() { return request.resource.data.userId == request.auth.uid; }
+
     // Per-item shape check for a cart item (see carts/{uid} below). Rules
     // has no forEach/every for a variable-length list, so itemOk() is
     // checked at a fixed, bounded set of indices instead of iterating —
@@ -92,11 +111,135 @@ service cloud.firestore {
     }
     match /products/{productId} {
       allow read: if true;
-      allow create: if isAdmin() && productShapeOk()
+      allow create: if isShopManager() && productShapeOk()
         && !request.resource.data.keys().hasAny(stockFields());
-      allow update: if isAdmin() && productShapeOk()
-        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(stockFields());
+      allow update: if (isShopManager() && productShapeOk()
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(stockFields()))
+        // Inventory staff counting stock may only stamp these two fields.
+        || (isInvStaff() && writesOnly(['openingCount', 'lastCountedAt', 'updatedAt']));
       allow delete: if isAdmin();
+    }
+
+    // ---- SBH Inventory collections (deny by default, claims only) ----
+
+    // Latest cost per product: never visible to staff or the public.
+    match /productCosts/{productId} {
+      allow read, write: if isInvOwner();
+    }
+    match /shelfLifeTemplates/{id} {
+      allow read: if isInvStaff();
+      allow write: if isInvOwner();
+    }
+    match /locations/{id} {
+      allow read: if isInvStaff();
+      allow write: if isInvAdmin();
+    }
+    // Not under settings/ (public read): thresholds and payment QR stay private.
+    match /invSettings/{id} {
+      allow read: if isInvStaff();
+      allow write: if (id == 'ownership' && isInvAdmin()) || (id != 'ownership' && isInvOwner());
+    }
+    // Stock lots. Created with the full shape; afterwards only the quantity
+    // moves (FieldValue.increment in the same batch as its ledger entry).
+    // No cost here: staff can read batches.
+    match /batches/{id} {
+      allow read: if isInvStaff();
+      allow create: if isInvStaff()
+        && request.resource.data.productId is string
+        && request.resource.data.locationId is string
+        && request.resource.data.qtyMilli is int
+        && !('unitCostSen' in request.resource.data);
+      allow update: if isInvStaff() && writesOnly(['qtyMilli', 'updatedAt']) && request.resource.data.qtyMilli is int;
+      allow delete: if false;
+    }
+    match /batchCosts/{batchId} {
+      allow read: if isInvOwner();
+      allow create: if isInvOwner() && request.resource.data.unitCostSen is int;
+      allow update, delete: if false;
+    }
+    // The ledger: append-only. Corrections are new entries, never edits.
+    match /stockMovements/{id} {
+      allow read: if isInvStaff();
+      allow create: if isInvStaff() && byMe()
+        && request.resource.data.productId is string
+        && request.resource.data.locationId is string
+        && request.resource.data.qtyDeltaMilli is int
+        && request.resource.data.reservedDeltaMilli is int
+        && (request.resource.data.type in ['opening', 'receive', 'repack_out', 'repack_in', 'repack_loss',
+              'transfer_out', 'transfer_in', 'sent_to_shop', 'count_adjust', 'wastage']
+          || (isInvOwner() && request.resource.data.type in ['online_sale', 'online_reserve', 'online_release']));
+      allow update, delete: if false;
+    }
+    // Derived totals, moved only by increments (and the reconcile function).
+    match /stockLevels/{id} {
+      allow read: if isInvStaff();
+      allow create: if isInvStaff()
+        && createdOnly(['productId', 'locationId', 'onHandMilli', 'reservedMilli', 'lastMovementAt', 'lastCountedAt', 'updatedAt'])
+        && id == request.resource.data.productId + '_' + request.resource.data.locationId;
+      allow update: if isInvStaff()
+        && writesOnly(['productId', 'locationId', 'onHandMilli', 'reservedMilli', 'lastMovementAt', 'lastCountedAt', 'updatedAt'])
+        && request.resource.data.productId == resource.data.productId
+        && request.resource.data.locationId == resource.data.locationId
+        && request.resource.data.onHandMilli is int
+        && request.resource.data.reservedMilli is int;
+      allow delete: if false;
+    }
+    // Operation records. Created once; the only later change is the Undo mark.
+    match /receipts/{id} {
+      allow read: if isInvStaff();
+      allow create: if isInvStaff() && byMe();
+      allow update: if isInvStaff() && writesOnly(['undone', 'undoneAt', 'undoneBy']);
+      allow delete: if false;
+    }
+    match /repacks/{id} {
+      allow read: if isInvStaff();
+      allow create: if isInvStaff() && byMe();
+      allow update: if isInvStaff() && writesOnly(['undone', 'undoneAt', 'undoneBy']);
+      allow delete: if false;
+    }
+    match /transfers/{id} {
+      allow read: if isInvStaff();
+      allow create: if isInvStaff() && byMe();
+      allow update: if isInvStaff() && writesOnly(['undone', 'undoneAt', 'undoneBy']);
+      allow delete: if false;
+    }
+    match /wastage/{id} {
+      allow read: if isInvStaff();
+      allow create: if isInvStaff() && byMe();
+      allow update: if isInvStaff() && writesOnly(['undone', 'undoneAt', 'undoneBy']);
+      allow delete: if false;
+    }
+    match /undos/{id} {
+      allow read: if isInvStaff();
+      allow create: if isInvStaff() && byMe();
+      allow update, delete: if false;
+    }
+    match /stockTakes/{id} {
+      allow read, create, update: if isInvStaff();
+      allow delete: if false;
+    }
+    match /dailyCountLists/{day} {
+      allow read, create, update: if isInvStaff();
+      allow delete: if false;
+    }
+    // Product code numbers: reserved only through the allocateCodeBlock function.
+    match /codeBlocks/{prefix} {
+      allow read, write: if false;
+    }
+    match /deviceBlocks/{id} {
+      allow read: if isInvStaff();
+      allow write: if false;
+    }
+    // Website-safe catalogue: written only by Cloud Functions.
+    match /publicCatalog/{productId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /needsAttention/{id} {
+      allow read: if isInvStaff();
+      allow create: if isInvStaff() && request.resource.data.resolved == false;
+      allow update: if isInvStaff() && writesOnly(['resolved', 'resolvedBy', 'resolvedAt']);
+      allow delete: if false;
     }
 
     // Stock engine data and walk-in sales: readable by admins and owners,
@@ -106,14 +249,9 @@ service cloud.firestore {
       allow read: if isAdmin();
       allow write: if false;
     }
-    match /stockMovements/{id} {
-      allow read: if isAdmin();
-      allow write: if false;
-    }
-    match /batches/{id} {
-      allow read: if isAdmin();
-      allow write: if false;
-    }
+    // (stockMovements and batches moved to the SBH Inventory section below:
+    // same names, new schema, written by the iPad app. Phase 2 never stored
+    // any docs in them.)
     match /sales/{id} {
       allow read: if isAdmin();
       allow write: if false;
@@ -133,7 +271,7 @@ service cloud.firestore {
 
     match /categories/{categoryId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isShopManager();
     }
 
     // Orders — never created or deleted from the client. Creation happens
@@ -145,10 +283,11 @@ service cloud.firestore {
     // This rule exists solely for the admin dashboard: read the queue,
     // and update status/confirmedTotal/etc.
     match /orders/{orderId} {
-      allow read: if isAdmin();
+      allow read: if isShopManager();
       // An order that holds or took stock changes status only through the
       // admin API (so stock moves with it); nobody can edit its stock record.
-      allow update: if isAdmin()
+      // The iPad (inventory owner/admin) records its own holds in `inv`.
+      allow update: if isShopManager()
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['stock'])
         && (resource.data.get('stock', null) == null
           || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status']));
@@ -215,8 +354,11 @@ service cloud.firestore {
     // the change itself (lib/server/audit.ts). Admins and owners may read it;
     // no client can ever write, edit or delete an entry.
     match /auditLog/{id} {
-      allow read: if isAdmin();
-      allow write: if false;
+      allow read: if isAdmin() || isInvAdmin();
+      // The iPad logs price/cost changes in the same batch as the change.
+      allow create: if isInvOwner() && request.resource.data.by == request.auth.uid
+        && request.resource.data.source == 'ipad';
+      allow update, delete: if false;
     }
 
     // Analytics collections. The browser never writes to these directly —
