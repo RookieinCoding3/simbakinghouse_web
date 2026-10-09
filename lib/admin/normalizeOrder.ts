@@ -7,7 +7,7 @@ import type { OrderStatus } from '@/types/order'
 // Order` and call e.g. order.items.reduce(...) directly, so one such doc
 // crashed the whole app. Everything the admin renders goes through here.
 
-export const KNOWN_STATUSES: OrderStatus[] = ['new', 'confirmed', 'paid', 'ready', 'collected', 'cancelled']
+export const KNOWN_STATUSES: OrderStatus[] = ['new', 'confirmed', 'awaiting_payment', 'paid', 'ready', 'collected', 'cancelled']
 
 export interface AdminOrderItem {
   productId: string
@@ -27,7 +27,10 @@ export interface AdminOrder {
   rawStatus: string
   customerName: string
   customerPhone: string
-  fulfilment: 'pickup' | 'delivery' | null
+  fulfilment: 'pickup' | 'courier_pickup' | 'delivery' | null
+  courierNote: string
+  /** Held by the iPad app: change status there, not here. */
+  heldOnIpad: boolean
   collectDate: string | null
   collectTime: string | null
   notes: string
@@ -121,7 +124,7 @@ export function normalizeOrder(docId: string, raw: unknown): AdminOrder {
   const createdAt = toDate(d.createdAt)
   if (d.createdAt && typeof d.createdAt !== 'string') problems.push('date stored in an old format')
 
-  const fulfilment = d.fulfilment === 'pickup' || d.fulfilment === 'delivery' ? d.fulfilment : null
+  const fulfilment = d.fulfilment === 'pickup' || d.fulfilment === 'courier_pickup' || d.fulfilment === 'delivery' ? d.fulfilment : null
 
   return {
     docId,
@@ -131,6 +134,8 @@ export function normalizeOrder(docId: string, raw: unknown): AdminOrder {
     customerName: str(d.customerName) || '(no name)',
     customerPhone: str(d.customerPhone),
     fulfilment,
+    courierNote: str(d.courierNote),
+    heldOnIpad: !!d.inv && typeof d.inv === 'object',
     collectDate: str(d.collectDate) || null,
     collectTime: str(d.collectTime) || null,
     notes: str(d.notes),

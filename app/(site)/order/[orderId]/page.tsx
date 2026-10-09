@@ -142,7 +142,10 @@ function OrderStatusView({ order }: { order: PublicOrderView }) {
       <div className="text-sm text-muted space-y-1">
         {order.collectDate && <p>Collect: {formatDate(order.collectDate)}</p>}
         {order.collectTime && <p>Time: {formatTime(order.collectTime)}</p>}
-        <p>Fulfilment: {order.fulfilment === 'pickup' ? 'Self pickup' : 'Delivery'}</p>
+        <p>
+          Fulfilment:{' '}
+          {order.fulfilment === 'pickup' ? 'Self pickup' : order.fulfilment === 'courier_pickup' ? 'Courier pickup (Grab / Lalamove)' : 'Delivery'}
+        </p>
       </div>
     </div>
   )
@@ -153,6 +156,7 @@ function StatusMessage({ order }: { order: PublicOrderView }) {
     case 'new':
       return <p className="text-sm text-ink">Order received. Sim is checking stock.</p>
     case 'confirmed':
+    case 'awaiting_payment':
       return (
         <div className="space-y-3">
           <p className="text-sm text-ink">

@@ -30,7 +30,7 @@ import {
 import type { OrderStatus } from '@/types/order'
 
 const PAGE_SIZE = 50
-const ACTIVE_STATUSES: OrderStatus[] = ['new', 'confirmed', 'paid', 'ready']
+const ACTIVE_STATUSES: OrderStatus[] = ['new', 'confirmed', 'awaiting_payment', 'paid', 'ready']
 
 type TabKey = 'active' | OrderStatus | 'all'
 
@@ -38,6 +38,7 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'active', label: 'Active' },
   { key: 'new', label: 'New' },
   { key: 'confirmed', label: 'Confirmed' },
+  { key: 'awaiting_payment', label: 'Awaiting payment' },
   { key: 'paid', label: 'Paid' },
   { key: 'ready', label: 'Ready' },
   { key: 'collected', label: 'Collected' },
@@ -279,6 +280,7 @@ export default function AdminOrdersPage() {
 const STATUS_STYLE: Record<OrderStatus, string> = {
   new: 'bg-clay text-paper',
   confirmed: 'bg-amber-100 text-amber-900',
+  awaiting_payment: 'bg-amber-100 text-amber-900',
   paid: 'bg-emerald-100 text-emerald-900',
   ready: 'bg-sky-100 text-sky-900',
   collected: 'bg-sand text-muted',

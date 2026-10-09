@@ -11,7 +11,32 @@ import { readPublicSellUnits, isOnline } from '@/lib/inventory/catalog'
 function isProductVisible(data: DocumentData): boolean {
   const isActive = data.isActive !== false
   const isDeleted = data.isDeleted === true
-  return isActive && !isDeleted
+  // Fields set by the SBH Inventory iPad app (absent on older products).
+  const hidden = data.showOnWebsite === false || data.status === 'archived'
+  return isActive && !isDeleted && !hidden
+}
+
+/**
+ * Availability per product id from publicCatalog (written by the
+ * inventory Cloud Function; public read). An empty map if it is not set up
+ * yet, so the shop falls back to the old inStock flag.
+ */
+async function fetchAvailability(): Promise<Map<string, Product['availability']>> {
+  try {
+    const snap = await getDocs(collection(db, 'publicCatalog'))
+    const out = new Map<string, Product['availability']>()
+    snap.forEach((d) => {
+      const a = d.data().availability
+      if (a === 'in_stock' || a === 'low' || a === 'out' || a === 'ask_us') out.set(d.id, a)
+    })
+    return out
+  } catch {
+    return new Map()
+  }
+}
+
+function withAvailability(products: Product[], availability: Map<string, Product['availability']>): Product[] {
+  return products.map((p) => (availability.has(p.id) ? { ...p, availability: availability.get(p.id) } : p))
 }
 
 /**
@@ -81,7 +106,7 @@ export async function fetchProducts(limitCount?: number): Promise<Product[]> {
         : productsRef
     }
 
-    const querySnapshot = await getDocs(q)
+    const [querySnapshot, availability] = await Promise.all([getDocs(q), fetchAvailability()])
 
     if (querySnapshot.empty) {
       return []
@@ -95,7 +120,7 @@ export async function fetchProducts(limitCount?: number): Promise<Product[]> {
       }
     })
 
-    return products
+    return withAvailability(products, availability)
 
   } catch (error: any) {
     throw new Error(`Failed to fetch products from Firestore: ${error.message}`)
@@ -110,7 +135,7 @@ export async function fetchProducts(limitCount?: number): Promise<Product[]> {
 export async function fetchProductById(id: string): Promise<Product | null> {
   try {
     const productsRef = collection(db, 'products')
-    const querySnapshot = await getDocs(productsRef)
+    const [querySnapshot, availability] = await Promise.all([getDocs(productsRef), fetchAvailability()])
 
     let product: Product | null = null
     querySnapshot.forEach((doc) => {
@@ -120,7 +145,7 @@ export async function fetchProductById(id: string): Promise<Product | null> {
       }
     })
 
-    return product
+    return product ? withAvailability([product], availability)[0] : null
   } catch (error: any) {
     return null
   }

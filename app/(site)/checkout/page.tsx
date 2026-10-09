@@ -57,6 +57,19 @@ export default function CheckoutPage() {
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [fulfilment, setFulfilment] = useState<Fulfilment>('pickup')
+  const [courierNote, setCourierNote] = useState('')
+  // Which ways of collecting the shop has on (set on the iPad).
+  const [orderTypes, setOrderTypes] = useState({ pickup: true, courierPickup: true })
+  useEffect(() => {
+    fetch('/api/order-options')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((t) => {
+        if (!t) return
+        setOrderTypes(t)
+        if (!t.pickup && t.courierPickup) setFulfilment('courier_pickup')
+      })
+      .catch(() => {})
+  }, [])
   const [collectDate, setCollectDate] = useState('')
   const [collectTime, setCollectTime] = useState('')
   const [timeError, setTimeError] = useState<string | null>(null)
@@ -111,7 +124,7 @@ export default function CheckoutPage() {
     const normalizedPhone = normalizeMyPhone(phone)
     if (!name.trim()) return setError('Enter your name')
     if (!normalizedPhone) return setError('Enter a valid Malaysian phone number')
-    if (fulfilment === 'pickup' && !collectDate) return setError('Choose a collection date')
+    if (!collectDate) return setError('Choose a collection date')
     if (!collectTime) return setError('Choose a collection time')
     if (!isTimeWithinRange(collectTime, timeMin, timeMax)) {
       return setTimeError(`Choose a time between ${settings.shopOpensAt} and ${settings.shopClosesAt}`)
@@ -135,7 +148,8 @@ export default function CheckoutPage() {
           customerName: name.trim(),
           customerPhone: normalizedPhone,
           fulfilment,
-          collectDate: fulfilment === 'pickup' ? collectDate : collectDate || null,
+          ...(fulfilment === 'courier_pickup' && { courierNote: courierNote.trim() }),
+          collectDate,
           collectTime,
           notes,
           items: items.map((item) => ({
@@ -176,7 +190,7 @@ export default function CheckoutPage() {
       const waLink = buildOrderWhatsAppLink({
         orderId,
         name: name.trim(),
-        collectDate: fulfilment === 'pickup' ? collectDate : collectDate || null,
+        collectDate,
         collectTime,
         items: items.map((item) => ({
           productId: item.productId,
@@ -273,31 +287,46 @@ export default function CheckoutPage() {
           <div>
             <span className="block text-xs uppercase tracking-widest text-ink/70 mb-2">Fulfilment</span>
             <div className="flex flex-col gap-2">
-              <label className="flex items-center gap-2 text-sm text-ink">
-                <input
-                  type="radio"
-                  name="fulfilment"
-                  checked={fulfilment === 'pickup'}
-                  onChange={() => setFulfilment('pickup')}
+              {orderTypes.pickup && (
+                <label className="flex items-center gap-2 text-sm text-ink">
+                  <input
+                    type="radio"
+                    name="fulfilment"
+                    checked={fulfilment === 'pickup'}
+                    onChange={() => setFulfilment('pickup')}
+                  />
+                  Self pickup at the shop
+                </label>
+              )}
+              {orderTypes.courierPickup && (
+                <label className="flex items-center gap-2 text-sm text-ink">
+                  <input
+                    type="radio"
+                    name="fulfilment"
+                    checked={fulfilment === 'courier_pickup'}
+                    onChange={() => setFulfilment('courier_pickup')}
+                  />
+                  Courier pickup — you book Grab / Lalamove to collect from the shop
+                </label>
+              )}
+              {fulfilment === 'courier_pickup' && (
+                <textarea
+                  aria-label="Courier details"
+                  value={courierNote}
+                  onChange={(e) => setCourierNote(e.target.value)}
+                  maxLength={300}
+                  rows={2}
+                  placeholder="Courier details (e.g. Grab, driver will come at 11am)"
+                  className="w-full bg-white border border-line py-3 px-4 text-ink text-sm focus:outline-none focus:border-ink/40"
                 />
-                Self pickup
-              </label>
-              <label className="flex items-center gap-2 text-sm text-ink">
-                <input
-                  type="radio"
-                  name="fulfilment"
-                  checked={fulfilment === 'delivery'}
-                  onChange={() => setFulfilment('delivery')}
-                />
-                Delivery — we&apos;ll quote you the fee
-              </label>
+              )}
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="collectDate" className="block text-xs uppercase tracking-widest text-ink/70 mb-2">
-                {fulfilment === 'pickup' ? 'Collection date' : 'Preferred date'}
+                Collection date
               </label>
               <input
                 id="collectDate"
@@ -305,7 +334,7 @@ export default function CheckoutPage() {
                 value={collectDate}
                 onChange={(e) => setCollectDate(e.target.value)}
                 min={minDate}
-                required={fulfilment === 'pickup'}
+                required
                 className="w-full bg-white border border-line py-3 px-4 text-ink text-sm focus:outline-none focus:border-ink/40"
               />
             </div>

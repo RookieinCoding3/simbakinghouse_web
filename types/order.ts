@@ -1,5 +1,16 @@
-export type OrderStatus = 'new' | 'confirmed' | 'paid' | 'ready' | 'collected' | 'cancelled'
-export type Fulfilment = 'pickup' | 'delivery'
+// 'awaiting_payment' is set by the SBH Inventory iPad app (Request payment).
+export type OrderStatus = 'new' | 'confirmed' | 'awaiting_payment' | 'paid' | 'ready' | 'collected' | 'cancelled'
+// New orders are 'pickup' or 'courier_pickup' (the customer books Grab /
+// Lalamove). 'delivery' is kept so older orders still read.
+export type Fulfilment = 'pickup' | 'courier_pickup' | 'delivery'
+
+/** Stock held by the SBH Inventory iPad app for this order (it, not the
+ *  web admin, moves such an order through its steps). */
+export interface InventoryHold {
+  state: 'reserved' | 'collected' | 'released'
+  locationId: string
+  lines: { productId: string; qtyMilli: number }[]
+}
 
 export interface OrderItem {
   productId: string
@@ -38,6 +49,8 @@ export interface Order {
   customerPhone: string // 60XXXXXXXXX
   phoneLast4: string
   fulfilment: Fulfilment
+  /** Courier booking details, for 'courier_pickup'. */
+  courierNote?: string
   collectDate: string | null // YYYY-MM-DD
   collectTime: string | null // HH:MM
   notes: string
@@ -54,6 +67,7 @@ export interface Order {
   priceToConfirm?: boolean
   confirmedTotal: number | null
   stock?: OrderStock
+  inv?: InventoryHold
   cancelReason?: string
   createdAt: string
   updatedAt: string

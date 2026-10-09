@@ -95,6 +95,11 @@ function ProductCard({ product, onClick, index = 0, responsiveTheme = false }: P
               {STOCK_LABEL[status]}
             </p>
           )}
+          {product.featured && (
+            <p className="text-[10px] uppercase tracking-widest mt-1 font-medium text-clay" data-testid="bestseller">
+              Bestseller
+            </p>
+          )}
         </div>
         <div className="text-right">
           <p className={cn(

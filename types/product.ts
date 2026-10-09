@@ -17,6 +17,9 @@ export interface Product {
   managedStock?: boolean
   /** Public, derived by the server for managed products only — never a number. */
   stockStatus?: 'in_stock' | 'low' | 'out'
+  /** From publicCatalog (SBH Inventory iPad, via Cloud Function). Never a
+   *  number: just in stock / low / out / ask us. Wins over the above. */
+  availability?: 'in_stock' | 'low' | 'out' | 'ask_us'
   /** Sizes sold online (public). Old products get one default size. */
   sellUnits?: PublicSellUnit[]
   /** Larger wholesale sizes exist — sold in the shop / on WhatsApp only. */

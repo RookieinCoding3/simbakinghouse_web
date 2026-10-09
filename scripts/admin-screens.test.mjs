@@ -111,148 +111,13 @@ async function screenshot(page, path) {
 const phone = await newPage(390)
 await loginAdmin(phone, sim.email)
 
-console.log('--- Stock tab ---')
+console.log('--- Stock screens (retired: stock is kept on the iPad app) ---')
 
-await check('Stock tab: managed count, running-low box (Butter low, Fondant out), Quick sale / Count / Switch over links', async () => {
-  await phone.goto(`${BASE_URL}/admin/stock`)
-  await phone.getByTestId('stock-list').waitFor()
-  await phone.getByText('3 of 7 products managed here').waitFor()
-  const low = await phone.locator('section[aria-labelledby="running-low"]').innerText()
-  assert(/Running low \(2\)/.test(low) && /Butter 250g\s*2 pc left/.test(low) && /Fondant \(custom colour\)\s*Out/.test(low), low)
-  for (const name of ['Quick sale', /Count stock/, /Switch over/]) assert(await phone.getByRole('link', { name }).count(), `link ${name}`)
-})
-
-await check('Stock tab: rice row shows on hand, held and available; filters Low / Out / Not managed; barcode search', async () => {
-  const riceRow = await phone.locator(`[data-product-id="${rice}"]`).innerText()
-  assert(/14 kg on hand · 2 kg held · 12 kg available/.test(riceRow), riceRow)
-  const names = async () => phone.locator('[data-testid=stock-list] [data-product-id] p:first-child').allInnerTexts()
-  await phone.getByRole('tab', { name: 'Low' }).click()
-  assert(JSON.stringify(await names()) === '["Butter 250g"]', `Low: ${await names()}`)
-  await phone.getByRole('tab', { name: 'Out' }).click()
-  assert(JSON.stringify(await names()) === '["Fondant (custom colour)"]', `Out: ${await names()}`)
-  await phone.getByRole('tab', { name: 'Not managed' }).click()
-  assert((await names()).sort().join() === 'Balloon whisk,Cake tin 8in,Cocoa powder 500g,Rainbow sprinkles', `Not managed: ${await names()}`)
-  await phone.getByRole('tab', { name: 'All' }).click()
-  await phone.locator('#stock-search').fill('9555000000017')
-  assert(JSON.stringify(await names()) === '["Rice flour"]', `barcode: ${await names()}`)
-})
-
-console.log('\n--- Product history and adjust ---')
-
-await check('history lists every change with who and why (switch-on count, restock, damaged, order hold)', async () => {
-  await phone.goto(`${BASE_URL}/admin/stock/${rice}`)
-  await phone.getByTestId('history').waitFor()
-  const h = await phone.getByTestId('history').innerText()
-  for (const want of ['Held for order', 'Damaged', 'torn bag', 'Restock', 'supplier delivery', 'sim@sbh.test']) assert(h.includes(want), `history missing "${want}":\n${h}`)
-  const nums = await phone.getByTestId('stock-numbers').innerText()
-  assert(/14 kg\s*On hand\s*2 kg\s*Held for orders\s*12 kg\s*Available/.test(nums), nums)
-})
-
-await check('adjust: Restock 3 kg shows a confirm line (14 kg → 17 kg), saves, and appears at the top of the history', async () => {
-  await phone.locator('#adjust-qty').fill('3')
-  await phone.getByRole('button', { name: 'Review' }).click()
-  const line = await phone.getByTestId('confirm-line').innerText()
-  assert(line === 'Rice flour: 14 kg → 17 kg', line)
-  await phone.getByRole('button', { name: 'Confirm' }).click()
-  await phone.getByRole('status').filter({ hasText: 'Saved: Rice flour is now 17 kg.' }).waitFor()
-  assert((await getDoc('inventory', rice)).onHandMilli === 17000, 'not saved')
-  await phone.getByTestId('history').locator('li').first().filter({ hasText: '+3 kg' }).waitFor()
-})
-
-await check('adjust: a count correction with the − / + buttons (17 → 16 kg)', async () => {
-  await phone.getByRole('radio', { name: /Count correction/ }).click()
-  await phone.locator('#adjust-qty').fill('17')
-  await phone.getByRole('button', { name: 'Less' }).click()
-  await phone.getByRole('button', { name: 'Review' }).click()
-  assert((await phone.getByTestId('confirm-line').innerText()) === 'Rice flour: 17 kg → 16 kg', 'confirm line')
-  await phone.getByRole('button', { name: 'Confirm' }).click()
-  await waitForDoc('inventory', rice, (i) => i.onHandMilli === 16000)
-})
-
-await check('adjust on an expiry-tracked product asks for the expiry date and records a batch', async () => {
-  await phone.goto(`${BASE_URL}/admin/stock/${butter}`)
-  await phone.getByLabel('Expiry date').fill('2027-01-15')
-  await phone.locator('#adjust-qty').fill('4')
-  await phone.getByRole('button', { name: 'Review' }).click()
-  await phone.getByRole('button', { name: 'Confirm' }).click()
-  await waitForDoc('inventory', butter, (i) => i.onHandMilli === 6000)
-  const batches = (await db().collection('batches').where('productId', '==', butter).get()).docs.map((d) => d.data().expiryDate)
-  assert(batches.includes('2027-01-15'), `batches: ${batches}`)
-})
-
-console.log('\n--- Count mode ---')
-
-await check('count mode: managed only by default; typed counts show the difference; review → apply updates stock', async () => {
-  await phone.goto(`${BASE_URL}/admin/stock/count`)
-  await phone.getByLabel('Counted Rice flour').fill('15.5')
-  await phone.getByText('system says 16 kg · -0.5 kg').waitFor()
-  await phone.getByLabel('Counted Butter 250g').fill('6')
-  await phone.getByText('system says 6 pc · matches').waitFor()
-  assert((await phone.getByLabel('Counted Cake tin 8in').count()) === 0, 'unmanaged shown with "Managed only" ticked')
-  await phone.getByRole('button', { name: 'Review 2 counts' }).click()
-  const review = await phone.getByTestId('count-review').innerText()
-  assert(/Rice flour\s*16 kg → 15.5 kg/.test(review), review)
-  await phone.getByRole('button', { name: 'Apply count' }).click()
-  await phone.getByRole('status').filter({ hasText: 'Count saved: 2 managed products updated' }).waitFor()
-  assert((await getDoc('inventory', rice)).onHandMilli === 15500, 'count not applied')
-})
-
-await check('count mode: a bad number blocks review; an unmanaged product count is saved as an opening count only', async () => {
-  await phone.getByLabel('Managed only').uncheck()
-  await phone.getByLabel('Counted Cocoa powder 500g').fill('7,5x')
-  await phone.getByRole('button', { name: 'Fix 1 number' }).waitFor()
-  await phone.getByLabel('Counted Cocoa powder 500g').fill('7')
-  await phone.getByRole('button', { name: 'Review 1 count' }).click()
-  assert(/opening count 7 pc/.test(await phone.getByTestId('count-review').innerText()), 'review text')
-  await phone.getByRole('button', { name: 'Apply count' }).click()
-  await phone.getByRole('status').filter({ hasText: '1 opening count saved for switching on' }).waitFor()
-  assert((await getDoc('stockCountDrafts', 'cocoa')).countedMilli === 7000, 'draft not saved')
-  assert((await getDoc('products', 'cocoa')).managedStock !== true && (await getDoc('inventory', 'cocoa')) === null, 'became managed')
-})
-
-console.log('\n--- Switching on and off ---')
-
-await check('switch-on (one product): the opening count is prefilled; needs the "old system" tick; then managed with 7 pc', async () => {
-  await phone.goto(`${BASE_URL}/admin/stock/cocoa`)
-  await phone.getByRole('heading', { name: 'Not managed here yet' }).waitFor()
-  assert((await phone.locator('#opening-count').inputValue()) === '7', 'draft not prefilled')
-  const go = phone.getByRole('button', { name: '3. Switch on' })
-  assert(await go.isDisabled(), 'enabled before the tick')
-  await phone.locator('#stopped-old').check()
-  await go.click()
-  // The live data flips the page to its managed view (numbers + history).
-  await phone.getByTestId('stock-numbers').filter({ hasText: '7 pc' }).waitFor()
-  await waitForDoc('products', 'cocoa', (p) => p.managedStock === true && p.stockStatus === 'in_stock')
-  assert((await getDoc('inventory', 'cocoa')).onHandMilli === 7000, 'inventory')
-  await phone.getByTestId('stock-numbers').waitFor()
-})
-
-await check('switch over a whole category (Tools): count both (one with "Set 0"), save, confirm, switch on', async () => {
-  await phone.goto(`${BASE_URL}/admin/stock/switch`)
-  await phone.getByRole('button', { name: /Tools/ }).click()
-  assert((await phone.getByTestId('progress-Tools').innerText()) === '0 of 2 managed', 'progress')
-  assert(await phone.getByRole('button', { name: 'Count all 2 products first' }).isDisabled(), 'switch enabled before counts')
-  await phone.getByLabel('Count for Cake tin 8in').fill('4')
-  await phone.locator('li li', { hasText: 'Balloon whisk' }).getByRole('button', { name: 'Set 0' }).click()
-  await phone.getByRole('button', { name: 'Save 2 counts' }).click()
-  await phone.getByRole('button', { name: 'Switch Tools to managed' }).click()
-  const on = phone.getByRole('button', { name: 'Switch on' })
-  assert(await on.isDisabled(), 'switch on enabled before the confirmation tick')
-  await phone.locator('#confirm-old-system').check()
-  await on.click()
-  await phone.getByText('Every product in Tools is managed here.').waitFor()
-  await phone.getByTestId('progress-Tools').filter({ hasText: '2 of 2 managed' }).waitFor()
-  assert((await getDoc('products', 'whisk')).stockStatus === 'out' && (await getDoc('products', 'tin')).stockStatus === 'low', 'statuses (tin: 4 pc is under the default low level of 5)')
-})
-
-await check('switch off: product sells like before; numbers and history are kept', async () => {
-  await phone.goto(`${BASE_URL}/admin/stock/whisk`)
-  await phone.getByRole('button', { name: 'Stop managing stock here' }).click()
-  await phone.getByRole('button', { name: 'Stop managing' }).click()
-  await phone.getByRole('heading', { name: 'Not managed here yet' }).waitFor()
-  const p = await getDoc('products', 'whisk')
-  assert(p.managedStock === false && !('stockStatus' in p), JSON.stringify(p))
-  assert((await getDoc('inventory', 'whisk')) !== null, 'inventory deleted')
+await check('old Stock and Quick sale links show the "kept on the iPad" notice', async () => {
+  for (const path of ['/admin/stock', `/admin/stock/${rice}`, '/admin/stock/count', '/admin/stock/switch', '/admin/sale']) {
+    await phone.goto(`${BASE_URL}${path}`)
+    await phone.getByTestId('stock-moved').waitFor()
+  }
 })
 
 console.log('\n--- Every screen at 390 px and 1440 px ---')
@@ -260,15 +125,9 @@ console.log('\n--- Every screen at 390 px and 1440 px ---')
 const SCREENS = [
   ['orders', '/admin', 'Orders'],
   ['order-held', `/admin/orders/${held.json.orderId}`, held.json.orderId],
-  ['stock', '/admin/stock', 'Stock'],
-  ['stock-product', `/admin/stock/${rice}`, 'Rice flour'],
-  ['stock-unmanaged', '/admin/stock/sprinkles', 'Rainbow sprinkles'],
-  ['stock-count', '/admin/stock/count', 'Count stock'],
-  ['stock-switch', '/admin/stock/switch', 'Switch over'],
   ['products', '/admin/products', 'Products'],
   ['product-new', '/admin/products/new', 'Add product'],
   ['product-edit', `/admin/products/${rice}`, 'Edit product'],
-  ['sale', '/admin/sale', 'Quick sale'],
 ]
 
 for (const width of [390, 1440]) {
