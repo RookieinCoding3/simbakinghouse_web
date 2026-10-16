@@ -55,6 +55,10 @@ for (const width of [390, 1440]) {
     assert((await card(page, 'Cocoa powder').innerText()).includes('RM 9.90'), 'cocoa')
   })
 
+  await check(`${width}px a draft quick-added on the iPad is not listed`, async () => {
+    assert(!(await page.content()).includes('Draft secret item'), 'draft is listed')
+  })
+
   await check(`${width}px the shop never shows stock numbers`, async () => {
     const html = await page.content()
     for (const leak of ['onHandMilli', 'reservedMilli', '12 kg', '2 pc left', '13000', '25 kg bag']) assert(!html.includes(leak), `page contains "${leak}"`)

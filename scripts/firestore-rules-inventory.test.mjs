@@ -82,6 +82,23 @@ function repackBatch(db, uid) {
   return b.commit()
 }
 
+/** Quick add from the shelf: a draft product + its opening count, one batch. */
+function quickAddBatch(db, uid) {
+  const b = writeBatch(db)
+  const pid = id()
+  const bid = id()
+  b.set(doc(db, 'products', pid), {
+    code: `SHELF-${pid}`, name: '', nameZh: '', category: '', categoryId: null, kind: 'standard', unitLabel: 'pack',
+    sellPrice: 450, price: 4.5, status: 'draft', isActive: false, createdVia: 'quick_add', imageUrls: [],
+    openingCount: { done: true, doneAt: new Date() }, lastCountedAt: new Date(),
+  })
+  b.set(doc(db, 'stockMovements', id()), movement(uid, { type: 'opening', productId: pid, batchId: bid, qtyDeltaMilli: 6000 }))
+  b.set(doc(db, 'batches', bid), { productId: pid, locationId: 'storeroom', qtyMilli: 6000, expiryDate: '2027-01-16' })
+  b.set(doc(db, 'stockLevels', `${pid}_storeroom`), { productId: pid, locationId: 'storeroom', onHandMilli: increment(6000), reservedMilli: increment(0) }, { merge: true })
+  b.set(doc(db, 'stockTakes', `quickadd-${uid}`), { mode: 'opening', status: 'completed', source: 'quick_add' }, { merge: true })
+  return b.commit()
+}
+
 const CASES = [
   // catalog
   ['read products', () => true, (db) => getDoc(doc(db, 'products', 'p1'))],
@@ -102,6 +119,8 @@ const CASES = [
   // stock batches as the iPad sends them
   ['receive (one batch: parent + ledger + batch + level)', (p) => INV.has(p), (db, uid) => receiveBatch(db, uid)],
   ['repack (decrement + new batch + two levels)', (p) => INV.has(p), (db, uid) => repackBatch(db, uid)],
+  ['quick add (draft product + opening count in one batch)', (p) => OWNER.has(p), (db, uid) => quickAddBatch(db, uid)],
+  ['complete a draft (details + status active)', (p) => WEB_OR_OWNER.has(p), (db) => updateDoc(doc(db, 'products', 'p1'), { name: `Done ${id()}`, status: 'active', isActive: true, category: 'Flours and Grains' })],
   ['ledger entry in someone else\'s name', () => false, (db) => setDoc(doc(db, 'stockMovements', id()), movement('someone-else'))],
   ['ledger entry with a decimal quantity', () => false, (db, uid) => setDoc(doc(db, 'stockMovements', id()), movement(uid, { qtyDeltaMilli: 0.5 }))],
   ['ledger entry with an unknown type', () => false, (db, uid) => setDoc(doc(db, 'stockMovements', id()), movement(uid, { type: 'sale_pos' }))],

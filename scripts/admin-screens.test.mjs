@@ -120,12 +120,46 @@ await check('old Stock and Quick sale links show the "kept on the iPad" notice',
   }
 })
 
+console.log('--- Complete details (drafts quick-added on the iPad) ---')
+
+await check('complete a draft in the browser: details saved, status active, audited; the queue empties', async () => {
+  const d = db()
+  await d.collection('categories').doc('flour-cat').set({ name: 'Flours and Grains', nameZh: '面粉', isActive: true, order: 1 })
+  await d.collection('products').doc('draft-1').set({
+    code: 'SHELF-001', name: '', category: '', status: 'draft', isActive: false, sellPrice: 450, price: 4.5,
+    createdVia: 'quick_add', imageUrls: [], unitLabel: 'pack', kind: 'standard', createdAt: new Date(),
+  })
+  await phone.goto(`${BASE_URL}/admin/drafts`)
+  const form = phone.getByTestId('draft-form')
+  await form.waitFor()
+  await form.getByText('Code SHELF-001').waitFor()
+  await form.getByLabel('Name (English)').fill('Cake flour 1kg')
+  await form.getByLabel('Name (Chinese)').fill('低筋面粉 1公斤')
+  await form.getByLabel('Category').selectOption('flour-cat')
+  await form.getByLabel('Cost (RM)').fill('3.00')
+  await form.getByRole('button', { name: 'Save and next' }).click()
+  await phone.getByTestId('no-drafts').waitFor()
+  const p = await getDoc('products', 'draft-1')
+  assert(p.status === 'active' && p.isActive === true, JSON.stringify(p))
+  assert(p.name === 'Cake flour 1kg' && p.nameZh === '低筋面粉 1公斤' && p.category === 'Flours and Grains', JSON.stringify(p))
+  assert(p.sellPrice === 450 && p.price === 4.5 && p.code === 'SHELF-001', JSON.stringify(p))
+  assert((await getDoc('productCosts', 'draft-1'))?.costPerUnitSen === 300, 'cost not saved')
+  const audit = await d.collection('auditLog').where('action', '==', 'draft.complete').get()
+  assert(audit.size === 1, `audit entries: ${audit.size}`)
+})
+
+await check('completing the same draft twice is refused (e.g. already done on the iPad)', async () => {
+  const res = await api('POST', '/api/admin/drafts/draft-1', { name: 'x', categoryId: 'flour-cat' })
+  assert(res.status === 409, `status ${res.status}`)
+})
+
 console.log('\n--- Every screen at 390 px and 1440 px ---')
 
 const SCREENS = [
   ['orders', '/admin', 'Orders'],
   ['order-held', `/admin/orders/${held.json.orderId}`, held.json.orderId],
   ['products', '/admin/products', 'Products'],
+  ['drafts', '/admin/drafts', 'Complete details'],
   ['product-new', '/admin/products/new', 'Add product'],
   ['product-edit', `/admin/products/${rice}`, 'Edit product'],
 ]

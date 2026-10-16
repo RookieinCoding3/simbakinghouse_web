@@ -12,7 +12,8 @@ function isProductVisible(data: DocumentData): boolean {
   const isActive = data.isActive !== false
   const isDeleted = data.isDeleted === true
   // Fields set by the SBH Inventory iPad app (absent on older products).
-  const hidden = data.showOnWebsite === false || data.status === 'archived'
+  // 'draft' = quick-added on the iPad, details not filled in yet.
+  const hidden = data.showOnWebsite === false || data.status === 'archived' || data.status === 'draft'
   return isActive && !isDeleted && !hidden
 }
 

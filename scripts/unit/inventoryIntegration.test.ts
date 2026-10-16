@@ -3,6 +3,7 @@
 import { validateOrderInput } from '../../lib/orderValidation'
 import { productAvailability, STOCK_LABEL } from '../../lib/productView'
 import { normalizeOrder } from '../../lib/admin/normalizeOrder'
+import { parseDraftCompletion } from '../../lib/server/draftInput'
 import type { Product } from '../../types/product'
 import { test, eq, ok, done } from './harness'
 
@@ -79,6 +80,30 @@ test('admin reads iPad statuses, courier notes and holds', () => {
   eq(o.courierNote, 'Lalamove')
   eq(o.heldOnIpad, true)
   eq(o.problems.length, 0)
+})
+
+test('complete a draft: names, category and repack checked; prices in sen', () => {
+  const ok1 = parseDraftCompletion({ name: ' Cake flour ', nameZh: '低筋面粉', categoryId: 'flour', unitLabel: 'pack', kind: 'standard', sellPriceSen: 450, costSen: 300 })
+  eq(ok1.name, 'Cake flour')
+  eq(ok1.sellPriceSen, 450)
+  eq(ok1.costSen, 300)
+  eq(ok1.repackSourceProductId, null)
+  eq(parseDraftCompletion({ nameZh: '低筋面粉', categoryId: 'flour' }).name, '低筋面粉')
+  const rep = parseDraftCompletion({ name: 'AP 1kg', categoryId: 'flour', kind: 'repack', repackSourceProductId: 'bag', repackYield: 25 })
+  eq([rep.repackSourceProductId, rep.repackYield], ['bag', 25])
+  const refuses = (b: Record<string, unknown>) => {
+    try {
+      parseDraftCompletion(b)
+      return false
+    } catch {
+      return true
+    }
+  }
+  ok(refuses({ categoryId: 'flour' }), 'no name accepted')
+  ok(refuses({ name: 'x' }), 'no category accepted')
+  ok(refuses({ name: 'x', categoryId: 'c', kind: 'repack', repackYield: 25 }), 'repack without source accepted')
+  ok(refuses({ name: 'x', categoryId: 'c', kind: 'repack', repackSourceProductId: 'b', repackYield: 0 }), 'zero yield accepted')
+  ok(refuses({ name: 'x', categoryId: 'c', sellPriceSen: 4.5 }), 'float price accepted')
 })
 
 done()

@@ -33,5 +33,8 @@ await d.collection('products').doc('shop-tin').set({ name: 'Old cake tin', price
 await d.collection('products').doc('shop-topper').set({ name: 'Cake topper custom', category: 'Decorations', inStock: true, description: 'Ask us.' })
 await d.collection('products').doc('shop-cocoa').set({ name: 'Cocoa powder', price: 9.9, category: 'Baking', inStock: true, description: 'Dutch.' })
 
-console.log('Seeded shop catalogue (3 managed, 3 old)')
+// Quick-added on the iPad, details not filled in yet: must never show.
+await d.collection('products').doc('shop-draft').set({ name: 'Draft secret item', code: 'SHELF-DRAFT', category: '', status: 'draft', isActive: false, sellPrice: 450, price: 4.5, inStock: true, description: '' })
+
+console.log('Seeded shop catalogue (3 managed, 3 old, 1 draft)')
 process.exit(0)
