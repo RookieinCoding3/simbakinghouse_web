@@ -11,6 +11,7 @@ import type { PublicOrderView, OrderStatus } from '@/types/order'
 const STATUS_LABEL: Record<OrderStatus, string> = {
   new: 'Order received',
   confirmed: 'Awaiting payment',
+  awaiting_payment: 'Awaiting payment',
   paid: 'Packing your order',
   ready: 'Ready for collection',
   collected: 'Collected',

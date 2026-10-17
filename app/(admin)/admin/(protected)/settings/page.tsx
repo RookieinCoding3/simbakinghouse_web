@@ -23,6 +23,9 @@ export default function AdminSettingsPage() {
   const [opensAt24, setOpensAt24] = useState('06:30')
   const [closesAt24, setClosesAt24] = useState('13:00')
   const [whatsappNumber, setWhatsappNumber] = useState('')
+  const [chilledEn, setChilledEn] = useState('')
+  const [chilledZh, setChilledZh] = useState('')
+  const [showLanguageLine, setShowLanguageLine] = useState(false)
   const [qrPreviewUrl, setQrPreviewUrl] = useState<string | null>(null)
   const [qrFile, setQrFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(true)
@@ -35,6 +38,9 @@ export default function AdminSettingsPage() {
       setOpensAt24(displayTimeTo24h(settings.shopOpensAt))
       setClosesAt24(displayTimeTo24h(settings.shopClosesAt))
       setWhatsappNumber(settings.whatsappNumber)
+      setChilledEn(settings.chilledNoticeEn)
+      setChilledZh(settings.chilledNoticeZh)
+      setShowLanguageLine(settings.showLanguageLine)
       setLoading(false)
       if (settings.duitNowQrPath) {
         getDownloadURL(ref(storage, settings.duitNowQrPath))
@@ -70,6 +76,9 @@ export default function AdminSettingsPage() {
         shopClosesAt,
         openingHours: `Daily: ${shopOpensAt} - ${shopClosesAt}`,
         whatsappNumber: normalizedWhatsapp,
+        chilledNoticeEn: chilledEn.trim(),
+        chilledNoticeZh: chilledZh.trim(),
+        showLanguageLine,
         ...(duitNowQrPath && { duitNowQrPath }),
       })
 
@@ -151,6 +160,24 @@ export default function AdminSettingsPage() {
           />
           <p className="text-[11px] text-muted mt-1">Never shown publicly — only on a confirmed order&apos;s status page.</p>
         </div>
+
+        <div>
+          <label htmlFor="chilled-en" className="block text-xs uppercase tracking-widest text-ink/70 mb-2">
+            Chilled notice (English)
+          </label>
+          <textarea id="chilled-en" rows={3} value={chilledEn} onChange={(e) => setChilledEn(e.target.value)} className="w-full bg-white border border-line py-3 px-4 text-ink text-sm focus:outline-none focus:border-ink/40 resize-none" />
+        </div>
+        <div>
+          <label htmlFor="chilled-zh" className="block text-xs uppercase tracking-widest text-ink/70 mb-2">
+            Chilled notice (Chinese)
+          </label>
+          <textarea id="chilled-zh" rows={3} value={chilledZh} onChange={(e) => setChilledZh(e.target.value)} className="w-full bg-white border border-line py-3 px-4 text-ink text-sm focus:outline-none focus:border-ink/40 resize-none" />
+          <p className="text-[11px] text-muted mt-1">Shown on products marked Chilled and in a cart that has one. Leave empty for the default text.</p>
+        </div>
+        <label className="flex items-center gap-3 text-sm">
+          <input type="checkbox" checked={showLanguageLine} onChange={(e) => setShowLanguageLine(e.target.checked)} />
+          Show &quot;We speak English, Bahasa Melayu and 中文&quot; on the shop
+        </label>
 
         {error && <p className="text-xs text-clay">{error}</p>}
         {saved && <p className="text-xs text-clay">Saved.</p>}

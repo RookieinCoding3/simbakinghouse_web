@@ -1,6 +1,17 @@
 export interface Product {
   id: string
   name: string
+  /** Chinese name (SBH Inventory); '' when not set. */
+  nameZh?: string
+  /** Product / shelf code (SBH Inventory), for search. */
+  code?: string
+  /** Storefront collections ticked in the editor (lib/storefront/collections.ts). */
+  collections?: string[]
+  /** Kept chilled: a notice is shown on the product and in the cart. */
+  chilled?: boolean
+  /** "You will also need…" (e.g. eggs, butter, a tin): written by Sim, shown on the product. */
+  alsoNeed?: string
+  alsoNeedZh?: string
   description: string
   /** undefined means no price has been set — show "Ask for price", never hide the card */
   price?: number
@@ -17,6 +28,9 @@ export interface Product {
   managedStock?: boolean
   /** Public, derived by the server for managed products only — never a number. */
   stockStatus?: 'in_stock' | 'low' | 'out'
+  /** From publicCatalog (SBH Inventory iPad, via Cloud Function). Never a
+   *  number: just in stock / low / out / ask us. Wins over the above. */
+  availability?: 'in_stock' | 'low' | 'out' | 'ask_us'
   /** Sizes sold online (public). Old products get one default size. */
   sellUnits?: PublicSellUnit[]
   /** Larger wholesale sizes exist — sold in the shop / on WhatsApp only. */

@@ -6,6 +6,7 @@ import {
   memoryLocalCache,
   Firestore,
 } from 'firebase/firestore'
+import { assertProjectAllowed } from './envGuard'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -28,6 +29,9 @@ if (typeof window !== 'undefined') {
     }
   })
 }
+
+// Never production from a Vercel Preview (see envGuard.ts).
+assertProjectAllowed(firebaseConfig.projectId)
 
 // Initialize Firebase (singleton pattern to prevent multiple instances)
 let app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp()

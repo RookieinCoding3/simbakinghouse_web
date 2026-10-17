@@ -1,6 +1,7 @@
 import { initializeApp, getApps, cert, type App } from 'firebase-admin/app'
 import { getFirestore, type Firestore } from 'firebase-admin/firestore'
 import { getStorage, type Storage } from 'firebase-admin/storage'
+import { assertProjectAllowed } from './envGuard'
 
 // Do not re-add `import { getAppCheck } from 'firebase-admin/app-check'`
 // without checking firebase-admin's jwks-rsa/jose versions first: as of
@@ -65,6 +66,9 @@ function getAdminApp(): App {
       'Firebase Admin credentials are not configured (need FIREBASE_CLIENT_EMAIL and FIREBASE_PRIVATE_KEY)'
     )
   }
+
+  // Never production from a Vercel Preview (its orders would be real).
+  assertProjectAllowed(projectId)
 
   try {
     app = initializeApp({

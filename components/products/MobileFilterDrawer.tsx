@@ -1,7 +1,8 @@
 'use client'
 
 import { cn } from '@/lib/utils/cn'
-import ProductBadge from './ProductBadge'
+import { COLLECTIONS } from '@/lib/storefront/collections'
+import { useLang } from '@/lib/i18n/LangContext'
 
 interface MobileFilterDrawerProps {
   isOpen: boolean
@@ -9,6 +10,9 @@ interface MobileFilterDrawerProps {
   categories: string[]
   selectedCategory: string | null
   onSelectCategory: (category: string | null) => void
+  /** Collections that have products (empty ones are not offered). */
+  collections?: string[]
+  onSelectCollection?: (id: string) => void
   totalProducts: number
 }
 
@@ -18,8 +22,11 @@ export default function MobileFilterDrawer({
   categories,
   selectedCategory,
   onSelectCategory,
+  collections = [],
+  onSelectCollection,
   totalProducts
 }: MobileFilterDrawerProps) {
+  const { t } = useLang()
   return (
     <div className={cn(
       "fixed inset-0 z-[100] transition-all duration-700",
@@ -56,6 +63,24 @@ export default function MobileFilterDrawer({
 
         {/* Category List */}
         <div className="flex-1 space-y-12 overflow-y-auto">
+          {/* Collections (the old "Shop by level" badges did nothing). */}
+          {collections.length > 0 && onSelectCollection && (
+            <div className="pb-8 border-b border-ink/10 space-y-3" data-testid="drawer-collections">
+              {COLLECTIONS.filter((c) => collections.includes(c.id)).map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => {
+                    onSelectCollection(c.id)
+                    onClose()
+                  }}
+                  className="block w-full text-left font-heading text-2xl text-ink hover:text-clay min-h-[44px]"
+                >
+                  {t(c.title)}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="space-y-6">
             <div className="flex flex-col space-y-4">
               {/* All Products Option */}
@@ -89,20 +114,6 @@ export default function MobileFilterDrawer({
             </div>
           </div>
 
-          {/* Guided Paths - Quick Shortcuts */}
-          <div className="pt-8 border-t border-ink/10 space-y-6">
-            <p className="font-body text-ink/30 text-[10px] tracking-[0.3em] uppercase">
-              Shop by level
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <div className="cursor-pointer opacity-70 hover:opacity-100 transition-opacity">
-                <ProductBadge type="beginner-friendly" size="md" />
-              </div>
-              <div className="cursor-pointer opacity-70 hover:opacity-100 transition-opacity">
-                <ProductBadge type="sourdough-essential" size="md" />
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Footer */}

@@ -175,7 +175,12 @@ export default function AdminOrderDetailPage() {
       <div className="text-sm space-y-1">
         <p className="text-ink font-medium">{order.customerName}</p>
         {order.customerPhone && <p className="text-muted">{order.customerPhone}</p>}
-        {order.fulfilment && <p className="text-muted">{order.fulfilment === 'pickup' ? 'Self pickup' : 'Delivery'}</p>}
+        {order.fulfilment && (
+          <p className="text-muted">
+            {order.fulfilment === 'pickup' ? 'Self pickup' : order.fulfilment === 'courier_pickup' ? 'Courier pickup (Grab / Lalamove)' : 'Delivery'}
+          </p>
+        )}
+        {order.courierNote && <p className="text-muted">Courier: {order.courierNote}</p>}
         {(order.collectDate || order.collectTime) && (
           <p className="text-muted">
             {formatCollectDate(order.collectDate)} {formatCollectTime(order.collectTime)}
@@ -240,7 +245,13 @@ export default function AdminOrderDetailPage() {
         </div>
       )}
 
-      {order.status === 'new' && (
+      {order.heldOnIpad && (
+        <p className="text-sm text-ink border border-line rounded px-3 py-2" data-testid="held-on-ipad">
+          This order is handled on the iPad (SBH Inventory), which holds its stock. Change its status there.
+        </p>
+      )}
+
+      {!order.heldOnIpad && order.status === 'new' && (
         <div className="space-y-3">
           <label className="block text-xs uppercase tracking-widest text-ink/70">
             Final total (RM)
@@ -262,7 +273,7 @@ export default function AdminOrderDetailPage() {
         </div>
       )}
 
-      {order.status === 'confirmed' && (
+      {!order.heldOnIpad && order.status === 'confirmed' && (
         <div className="space-y-3">
           {confirmationWaLink && (
             <a
@@ -284,7 +295,7 @@ export default function AdminOrderDetailPage() {
         </div>
       )}
 
-      {order.status === 'paid' && (
+      {!order.heldOnIpad && order.status === 'paid' && (
         <button
           onClick={() => updateStatus('ready')}
           disabled={busy}
@@ -294,7 +305,7 @@ export default function AdminOrderDetailPage() {
         </button>
       )}
 
-      {order.status === 'ready' && (
+      {!order.heldOnIpad && order.status === 'ready' && (
         <button
           onClick={handleMarkCollected}
           disabled={busy}

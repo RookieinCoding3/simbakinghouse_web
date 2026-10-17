@@ -137,14 +137,14 @@ await check('a page that throws shows the error boundary; the rest of admin keep
 
 console.log('\n--- Layout, noindex, manifest ---')
 
-await check('admin pages: no customer header/footer/cart; bottom tabs Orders/Products/Stock/Settings', async () => {
+await check('admin pages: no customer header/footer/cart; bottom tabs Orders/Products/Settings (Stock moved to the iPad)', async () => {
   await page.goto(`${BASE_URL}/admin`)
   await waitForOrdersSettled()
   assert(!(await page.getByText('Sim · Baking · House').count()), 'customer header present')
   assert(!(await page.locator('footer#find-us').count()), 'customer footer present')
   assert(!(await page.locator('[aria-label^="Cart,"]').count()), 'cart present')
   const tabs = await page.getByRole('navigation', { name: 'Admin sections' }).getByRole('link').allInnerTexts()
-  assert(JSON.stringify(tabs.map((t) => t.trim())) === JSON.stringify(['Orders', 'Products', 'Stock', 'Settings']), `tabs: ${tabs}`)
+  assert(JSON.stringify(tabs.map((t) => t.trim())) === JSON.stringify(['Orders', 'Products', 'Settings']), `tabs: ${tabs}`)
   assert(await page.getByRole('link', { name: 'View shop' }).count(), 'no View shop link')
 })
 

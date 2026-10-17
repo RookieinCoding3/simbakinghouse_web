@@ -37,6 +37,8 @@ interface OrderMessageInput {
   estimatedTotal: number
   /** Some lines are "Ask for price" and aren't in estimatedTotal. */
   priceToConfirm?: boolean
+  /** This site's address (e.g. a preview); default: the production domain. */
+  baseUrl?: string
 }
 
 export function buildOrderMessage({
@@ -47,6 +49,7 @@ export function buildOrderMessage({
   items,
   estimatedTotal,
   priceToConfirm = false,
+  baseUrl,
 }: OrderMessageInput): string {
   const itemsBlock =
     items.length > MAX_ITEMS_IN_MESSAGE
@@ -68,7 +71,7 @@ export function buildOrderMessage({
       ? `Estimated total: RM ${estimatedTotal.toFixed(2)} + items with price to confirm`
       : `Estimated total: RM ${estimatedTotal.toFixed(2)}`,
     '',
-    `Link: ${absoluteUrl(`/order/${orderId}`)}`,
+    `Link: ${baseUrl ? `${baseUrl}/order/${orderId}` : absoluteUrl(`/order/${orderId}`)}`,
   ].join('\n')
 }
 

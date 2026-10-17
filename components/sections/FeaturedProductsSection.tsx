@@ -6,6 +6,7 @@ import Image from 'next/image'
 import type { Product } from '@/types/product'
 import { fetchProductsByIds } from '@/lib/firebase/products'
 import ProductModal from '@/components/products/ProductModal'
+import { useLang } from '@/lib/i18n/LangContext'
 
 // Top 3 Best Sellers IDs (moved outside component to prevent re-creation)
 const BEST_SELLER_IDS = [
@@ -20,6 +21,7 @@ export default function FeaturedProductsSection() {
   const [error, setError] = useState<string | null>(null)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const { t } = useLang()
 
   useEffect(() => {
     async function loadFeaturedProducts() {
@@ -49,6 +51,10 @@ export default function FeaturedProductsSection() {
     setTimeout(() => setSelectedProduct(null), 300)
   }, [])
 
+  // Nothing to show (e.g. those products were removed): no section rather
+  // than "No products available", which makes the shop look empty.
+  if (!loading && !error && products.length === 0) return null
+
   return (
     <section
       id="premixes"
@@ -57,7 +63,7 @@ export default function FeaturedProductsSection() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
         {/* Left: headline */}
         <div className="lg:col-span-4 space-y-6">
-          <h2 className="text-xs uppercase tracking-[0.25em] font-semibold text-ink">Best sellers</h2>
+          <h2 className="text-xs uppercase tracking-[0.25em] font-semibold text-ink">{t('home.bestSellers')}</h2>
           <div className="pt-2">
             <Link
               href="/products"

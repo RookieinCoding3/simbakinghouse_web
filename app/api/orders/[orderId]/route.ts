@@ -36,7 +36,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     // Only 'confirmed' needs the DuitNow QR — by 'ready' the order should
     // already be paid. ('ready' has its own "pickup QR" in the TASK.md
     // spec; that's a separate, unbuilt feature — see review notes.)
-    if (order.status === 'confirmed') {
+    if (order.status === 'confirmed' || order.status === 'awaiting_payment') {
       const settings = await fetchShopSettings()
       if (settings.duitNowQrPath) {
         try {

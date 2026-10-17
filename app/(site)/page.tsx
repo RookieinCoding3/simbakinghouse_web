@@ -1,5 +1,11 @@
 import dynamic from 'next/dynamic'
 import HeroSection from '@/components/sections/HeroSection'
+import HowToOrderSection from '@/components/sections/HowToOrderSection'
+import AskSimSection from '@/components/storefront/AskSimSection'
+import CollectionsSection from '@/components/storefront/CollectionsSection'
+import { fetchProducts } from '@/lib/firebase/products'
+import { groupByCollection } from '@/lib/storefront/collections'
+import { onlineUnits } from '@/lib/productView'
 import WhyChooseUsSection from '@/components/sections/WhyChooseUsSection'
 import CategoryNavigationSection from '@/components/sections/CategoryNavigationSection'
 import FeaturedProductsSection from '@/components/sections/FeaturedProductsSection'
@@ -19,13 +25,34 @@ const GetInTouchSection = dynamic(() => import('@/components/sections/GetInTouch
 // customers. The component file is left in place in case any are
 // confirmed real and the owner wants to restore a subset — see
 // components/sections/TestimonialsSection.tsx.
-export default function Home() {
+export default async function Home() {
+  const products = await fetchProducts().catch(() => [])
+  const groups = groupByCollection(products).map((g) => ({
+    id: g.id,
+    products: g.products.slice(0, 4).map((p) => {
+      const priced = onlineUnits(p).filter((u) => u.priceSen !== null).map((u) => u.priceSen as number)
+      return {
+        id: p.id,
+        name: p.name,
+        nameZh: p.nameZh,
+        imageUrl: p.imageUrl,
+        priceSen: priced.length ? Math.min(...priced) : null,
+        fromPrice: new Set(priced).size > 1,
+      }
+    }),
+  }))
+  // "New to baking? Start here": the first-timers collection if Sim has
+  // filled it, otherwise straight to Ask Sim.
+  const startHref = groups.some((g) => g.id === 'first-time') ? '/products?collection=first-time' : '#ask-sim'
   return (
     <main>
-      <HeroSection />
+      <HeroSection startHref={startHref} />
+      <HowToOrderSection />
+      <CollectionsSection groups={groups} />
       <CategoryNavigationSection />
-      <BakersJourneySection />
+      <AskSimSection />
       <FeaturedProductsSection />
+      <BakersJourneySection />
       <WhyChooseUsSection />
       <GetInTouchSection />
     </main>

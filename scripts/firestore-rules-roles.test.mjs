@@ -29,7 +29,7 @@ await testEnv.withSecurityRulesDisabled(async (ctx) => {
   await setDoc(doc(db, 'carts', 'cust'), { items: [] })
   await setDoc(doc(db, 'products', 'managed'), { name: 'Rice flour', price: 4, category: 'Flour', managedStock: true, stockStatus: 'low' })
   await setDoc(doc(db, 'orders', 'HELD'), { status: 'confirmed', items: [], stock: { state: 'reserved', lines: [] } })
-  for (const c of ['inventory', 'stockMovements', 'batches', 'sales', 'stockCountDrafts', 'productPrivate', 'stockOps']) {
+  for (const c of ['inventory', 'sales', 'stockCountDrafts', 'productPrivate', 'stockOps']) {
     await setDoc(doc(db, c, 'x1'), { qtyMilli: 1000 })
   }
 })
@@ -60,6 +60,8 @@ async function expect(persona, label, allowed, run) {
 const CASES = [
   ['read products', () => true, (db) => getDoc(doc(db, 'products', 'p1'))],
   ['write products', (p) => STAFF.has(p), (db) => setDoc(doc(db, 'products', 'p2'), { name: 'Sugar', price: 3, category: 'Sugar' })],
+  ['website admin (no inventory claim) cannot read the inventory ledger', () => false, (db) => getDocs(collection(db, 'stockMovements'))],
+  ['website admin (no inventory claim) cannot write the inventory ledger', () => false, (db) => setDoc(doc(db, 'stockMovements', 'x2'), { qtyMilli: 1 })],
   ['read categories', () => true, (db) => getDoc(doc(db, 'categories', 'c1'))],
   ['write categories', (p) => STAFF.has(p), (db) => setDoc(doc(db, 'categories', 'c2'), { name: 'Tools' })],
   ['read settings', () => true, (db) => getDoc(doc(db, 'settings', 'shop'))],
@@ -81,8 +83,10 @@ const CASES = [
   ['read rateLimits', () => false, (db) => getDoc(doc(db, 'rateLimits', 'global'))],
   ['write rateLimits', () => false, (db) => setDoc(doc(db, 'rateLimits', 'global'), { count: 0 })],
   ["read someone else's cart", (p) => p === 'customer', (db) => getDoc(doc(db, 'carts', 'cust'))],
-  // Stock engine: admin/owner can read, nobody can write from a client.
-  ...['inventory', 'stockMovements', 'batches', 'sales', 'stockCountDrafts', 'productPrivate'].flatMap((c) => [
+  // Phase 2 stock engine (retired, kept closed): admin/owner can read, nobody
+  // can write from a client. stockMovements and batches now belong to the
+  // SBH Inventory app: see firestore-rules-inventory.test.mjs.
+  ...['inventory', 'sales', 'stockCountDrafts', 'productPrivate'].flatMap((c) => [
     [`read ${c}`, (p) => STAFF.has(p), (db) => getDoc(doc(db, c, 'x1'))],
     [`write ${c}`, () => false, (db) => setDoc(doc(db, c, 'x1'), { qtyMilli: 999999 })],
   ]),

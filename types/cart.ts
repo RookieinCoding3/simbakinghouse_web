@@ -8,6 +8,9 @@ export interface CartItem {
   /** Absent in carts saved before sell units existed = the product's first size. */
   sellUnitId?: string
   sellUnitLabel?: string
+  /** Display only (taken from the product when added). */
+  nameZh?: string
+  chilled?: boolean
 }
 
 /** One cart line per product AND size. */

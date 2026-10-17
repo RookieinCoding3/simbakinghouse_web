@@ -5,12 +5,12 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
 import { useAdminSession } from '@/lib/admin/AdminSession'
-import { runningLowStore } from '@/lib/admin/collectionStore'
 
 const TABS = [
   { name: 'Orders', href: '/admin', match: (p: string) => p === '/admin' || p.startsWith('/admin/orders'), icon: OrdersIcon },
   { name: 'Products', href: '/admin/products', match: (p: string) => p.startsWith('/admin/products'), icon: ProductsIcon },
-  { name: 'Stock', href: '/admin/stock', match: (p: string) => p.startsWith('/admin/stock') || p.startsWith('/admin/sale'), icon: StockIcon },
+  // Stock tab retired: stock is kept on the SBH Inventory iPad app. The
+  // Phase 2 pages stay in the code, unlinked (never used in production).
   { name: 'Settings', href: '/admin/settings', match: (p: string) => p.startsWith('/admin/settings'), icon: SettingsIcon },
 ]
 
@@ -34,8 +34,8 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   }, [session.phase, pathname, router])
 
   const showContent = session.phase === 'admin' || session.phase === 'checking' || session.likelyAdmin
-  const runningLow = runningLowStore.use(session.phase === 'admin').docs?.size ?? 0
-  const badgeFor = (name: string) => (name === 'Stock' && runningLow > 0 ? runningLow : 0)
+  // No tab has a badge since the Stock tab moved to the iPad app.
+  const badgeFor = (_name: string): number => 0
 
   return (
     <div className="min-h-screen bg-paper">
@@ -180,13 +180,6 @@ function ProductsIcon({ active }: { active: boolean }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" strokeWidth={1.6} className={iconClass(active)} aria-hidden="true">
       <path d="M4 7l8-4 8 4-8 4-8-4zM4 7v10l8 4 8-4V7M12 11v10" strokeLinejoin="round" />
-    </svg>
-  )
-}
-function StockIcon({ active }: { active: boolean }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" strokeWidth={1.6} className={iconClass(active)} aria-hidden="true">
-      <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" strokeLinecap="round" />
     </svg>
   )
 }

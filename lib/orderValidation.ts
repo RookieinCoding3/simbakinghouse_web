@@ -6,6 +6,7 @@ export const MAX_ITEMS = 50
 export const MAX_NAME_LENGTH = 100
 export const MAX_ITEM_NAME_LENGTH = 200
 export const MAX_NOTES_LENGTH = 500
+export const MAX_COURIER_NOTE_LENGTH = 300
 export const MAX_QTY = 99
 
 export interface ValidatedOrderItem {
@@ -20,6 +21,8 @@ export interface ValidatedOrderInput {
   customerName: string
   customerPhone: string
   fulfilment: Fulfilment
+  /** Grab / Lalamove booking details, for 'courier_pickup' ('' otherwise). */
+  courierNote: string
   collectDate: string | null
   collectTime: string | null
   notes: string
@@ -56,6 +59,14 @@ export interface ShopHours {
 
 const DEFAULT_SHOP_HOURS: ShopHours = { shopOpensAt: SHOP_OPENS_AT, shopClosesAt: SHOP_CLOSES_AT }
 
+/** Which ways of collecting are on (set on the SBH Inventory iPad,
+ *  invSettings/app.orderTypes). Customers book their own courier. */
+export interface OrderTypes {
+  pickup: boolean
+  courierPickup: boolean
+}
+export const DEFAULT_ORDER_TYPES: OrderTypes = { pickup: true, courierPickup: true }
+
 /**
  * Validates and normalises a raw checkout submission. Returns either
  * `{ ok: true, data }` or `{ ok: false, error }` with a message safe to
@@ -71,7 +82,8 @@ const DEFAULT_SHOP_HOURS: ShopHours = { shopOpensAt: SHOP_OPENS_AT, shopClosesAt
  */
 export function validateOrderInput(
   body: unknown,
-  shopHours: ShopHours = DEFAULT_SHOP_HOURS
+  shopHours: ShopHours = DEFAULT_SHOP_HOURS,
+  orderTypes: OrderTypes = DEFAULT_ORDER_TYPES
 ): { ok: true; data: ValidatedOrderInput } | { ok: false; error: string } {
   const shopOpensMinutes = displayTimeToMinutes(shopHours.shopOpensAt)
   const shopClosesMinutes = displayTimeToMinutes(shopHours.shopClosesAt)
@@ -88,10 +100,19 @@ export function validateOrderInput(
     return { ok: false, error: 'Enter a valid Malaysian phone number' }
   }
 
-  const fulfilment = b.fulfilment === 'delivery' ? 'delivery' : b.fulfilment === 'pickup' ? 'pickup' : null
+  // New orders: self pickup, or the customer's own Grab/Lalamove courier
+  // collecting from the shop — whichever the shop has switched on.
+  const fulfilment: Fulfilment | null =
+    b.fulfilment === 'pickup' && orderTypes.pickup
+      ? 'pickup'
+      : b.fulfilment === 'courier_pickup' && orderTypes.courierPickup
+        ? 'courier_pickup'
+        : null
   if (!fulfilment) {
-    return { ok: false, error: 'Choose pickup or delivery' }
+    return { ok: false, error: 'Choose how you will collect your order' }
   }
+  const courierNote =
+    fulfilment === 'courier_pickup' && typeof b.courierNote === 'string' ? b.courierNote.trim().slice(0, MAX_COURIER_NOTE_LENGTH) : ''
 
   let collectDate: string | null = null
   if (typeof b.collectDate === 'string' && b.collectDate) {
@@ -105,7 +126,7 @@ export function validateOrderInput(
       return { ok: false, error: 'Choose a date from today onwards' }
     }
     collectDate = b.collectDate
-  } else if (fulfilment === 'pickup') {
+  } else {
     return { ok: false, error: 'Choose a collection date' }
   }
 
@@ -150,6 +171,7 @@ export function validateOrderInput(
       customerName: nameRaw,
       customerPhone: phone,
       fulfilment,
+      courierNote,
       collectDate,
       collectTime,
       notes,

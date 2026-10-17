@@ -5,11 +5,15 @@ import { cartLineKey } from '@/types/cart'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
 import { useCart } from '@/lib/cart/CartContext'
+import { useLang } from '@/lib/i18n/LangContext'
+import ChilledNotice from '@/components/storefront/ChilledNotice'
 
 export default function CartDrawer() {
   const { items, subtotal, hasUnpricedItems, isDrawerOpen, closeDrawer, setQty, removeItem } =
     useCart()
   const router = useRouter()
+  const { t, pick } = useLang()
+  const hasChilled = items.some((i) => i.chilled)
 
   const handleContinue = () => {
     closeDrawer()
@@ -38,11 +42,11 @@ export default function CartDrawer() {
         )}
       >
         <div className="flex justify-between items-center mb-10">
-          <h2 className="font-heading text-ink text-3xl md:text-4xl">Cart</h2>
+          <h2 className="font-heading text-ink text-3xl md:text-4xl">{t('cart.title')}</h2>
           <button
             onClick={closeDrawer}
             className="w-10 h-10 flex items-center justify-center text-ink/50 hover:text-clay transition-colors"
-            aria-label="Close cart"
+            aria-label={t('cart.close')}
           >
             <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -51,7 +55,7 @@ export default function CartDrawer() {
         </div>
 
         {items.length === 0 ? (
-          <p className="text-sm text-muted">Your cart is empty.</p>
+          <p className="text-sm text-muted">{t('cart.empty')}</p>
         ) : (
           <div className="flex-1 space-y-6 overflow-y-auto">
             {items.map((item) => (
@@ -60,10 +64,11 @@ export default function CartDrawer() {
                   <Image src={item.imageUrl || '/images/placeholder-product.jpg'} alt={item.name} fill sizes="64px" className="object-cover" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs uppercase tracking-wider text-ink font-medium truncate">{item.name}</p>
+                  <p className="text-xs uppercase tracking-wider text-ink font-medium truncate">{pick(item.name, item.nameZh)}</p>
+                  {item.chilled && <p className="text-[11px] text-[#1F4A63]">❄ {t('product.chilled')}</p>}
                   {item.sellUnitLabel && <p className="text-[11px] text-ink/60">{item.sellUnitLabel}</p>}
                   <p className="text-xs text-muted mt-0.5">
-                    {item.unitPrice !== null ? `RM ${item.unitPrice.toFixed(2)}` : 'Ask for price'}
+                    {item.unitPrice !== null ? `RM ${item.unitPrice.toFixed(2)}` : t('product.askPrice')}
                   </p>
                   <div className="flex items-center gap-3 mt-2">
                     <button
@@ -85,7 +90,7 @@ export default function CartDrawer() {
                       onClick={() => removeItem(cartLineKey(item))}
                       className="text-[10px] uppercase tracking-widest text-muted hover:text-clay transition-colors ml-2"
                     >
-                      Remove
+                      {t('cart.remove')}
                     </button>
                   </div>
                 </div>
@@ -97,19 +102,21 @@ export default function CartDrawer() {
         {items.length > 0 && (
           <div className="pt-8 mt-8 border-t border-ink/10">
             <div className="flex justify-between items-baseline mb-1">
-              <p className="text-xs uppercase tracking-widest text-ink/70">Subtotal</p>
+              <p className="text-xs uppercase tracking-widest text-ink/70">{t('cart.subtotal')}</p>
               <p className="font-heading text-2xl text-ink">RM {subtotal.toFixed(2)}</p>
             </div>
+            <p className="text-[11px] text-ink/70 mt-2 mb-2" data-testid="cart-how">{t('cart.howItWorks')}</p>
+            {hasChilled && <ChilledNotice className="mb-3 mt-2" title={t('cart.chilledNote')} />}
             {hasUnpricedItems && (
               <p className="text-[11px] text-muted mb-4">
-                Some items are priced on request — Sim will confirm the total.
+                {t('cart.unpriced')}
               </p>
             )}
             <button
               onClick={handleContinue}
               className="w-full bg-ink text-paper py-4 font-body font-medium text-xs uppercase tracking-[0.2em] hover:bg-clay transition-colors mt-4"
             >
-              Continue to order
+              {t('cart.continue')}
             </button>
           </div>
         )}

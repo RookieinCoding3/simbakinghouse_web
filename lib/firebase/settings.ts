@@ -14,7 +14,17 @@ export interface ShopSettings {
   whatsappNumber: string // 60XXXXXXXXX
   /** Storage path (not a URL — the file isn't public), or null if none uploaded yet. */
   duitNowQrPath: string | null
+  /** Shown on chilled products and in a cart that has one. */
+  chilledNoticeEn: string
+  chilledNoticeZh: string
+  /** "We speak English, Bahasa Melayu and 中文" — off until Sim confirms it. */
+  showLanguageLine: boolean
 }
+
+// Neutral defaults: they say nothing about the shop's own fridges or
+// procedures (docs/OWNER-TO-CONFIRM.md); Sim edits them in Settings.
+export const DEFAULT_CHILLED_NOTICE_EN = 'Chilled item: it needs to stay cold. Please collect it soon after Sim confirms your order, and bring a cool bag if you are travelling far.'
+export const DEFAULT_CHILLED_NOTICE_ZH = '冷藏商品：需要保持冰冷。Sim 确认订单后请尽快来取，路程远的话请带保冷袋。'
 
 export const DEFAULT_SETTINGS: ShopSettings = {
   shopOpensAt: DEFAULT_SHOP_OPENS_AT,
@@ -22,6 +32,9 @@ export const DEFAULT_SETTINGS: ShopSettings = {
   openingHours: DEFAULT_OPENING_HOURS,
   whatsappNumber: DEFAULT_WHATSAPP_NUMBER,
   duitNowQrPath: null,
+  chilledNoticeEn: DEFAULT_CHILLED_NOTICE_EN,
+  chilledNoticeZh: DEFAULT_CHILLED_NOTICE_ZH,
+  showLanguageLine: false,
 }
 
 const SETTINGS_DOC = doc(db, 'settings', 'shop')
@@ -45,6 +58,9 @@ export async function fetchShopSettings(): Promise<ShopSettings> {
       openingHours: typeof data.openingHours === 'string' ? data.openingHours : DEFAULT_SETTINGS.openingHours,
       whatsappNumber: typeof data.whatsappNumber === 'string' ? data.whatsappNumber : DEFAULT_SETTINGS.whatsappNumber,
       duitNowQrPath: typeof data.duitNowQrPath === 'string' ? data.duitNowQrPath : null,
+      chilledNoticeEn: typeof data.chilledNoticeEn === 'string' && data.chilledNoticeEn.trim() ? data.chilledNoticeEn : DEFAULT_CHILLED_NOTICE_EN,
+      chilledNoticeZh: typeof data.chilledNoticeZh === 'string' && data.chilledNoticeZh.trim() ? data.chilledNoticeZh : DEFAULT_CHILLED_NOTICE_ZH,
+      showLanguageLine: data.showLanguageLine === true,
     }
   } catch {
     return DEFAULT_SETTINGS
@@ -52,6 +68,6 @@ export async function fetchShopSettings(): Promise<ShopSettings> {
 }
 
 /** Admin-only write (settings/{id} Firestore rule requires isAdmin()). */
-export async function saveShopSettings(settings: Omit<ShopSettings, 'duitNowQrPath'> & { duitNowQrPath?: string | null }) {
+export async function saveShopSettings(settings: Partial<ShopSettings>) {
   await setDoc(SETTINGS_DOC, settings, { merge: true })
 }

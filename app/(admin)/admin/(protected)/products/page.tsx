@@ -47,6 +47,9 @@ export default function AdminProductsPage() {
     <div>
       <div className="flex items-center justify-between gap-3 mb-4">
         <h1 className="font-heading text-ink text-2xl md:text-3xl">Products</h1>
+        <Link href="/admin/drafts" className="ml-auto text-xs uppercase tracking-widest text-clay hover:text-clay/80 py-2.5">
+          Complete details
+        </Link>
         <Link
           href="/admin/products/new"
           className="bg-ink hover:bg-clay text-paper text-xs uppercase tracking-widest font-medium px-4 py-2.5 transition-colors"

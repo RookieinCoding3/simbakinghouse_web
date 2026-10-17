@@ -13,6 +13,7 @@ export const runtime = 'nodejs'
 const NEXT: Partial<Record<OrderStatus, OrderStatus[]>> = {
   new: ['confirmed', 'cancelled'],
   confirmed: ['paid', 'cancelled'],
+  awaiting_payment: ['paid', 'cancelled'],
   paid: ['ready', 'cancelled'],
   ready: ['collected', 'cancelled'],
 }
@@ -80,6 +81,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       const order = snap.data() as Record<string, unknown>
       const current = (typeof order.status === 'string' ? order.status.toLowerCase() : '') as OrderStatus
       if (current === to) return { unchanged: true }
+      // Stock for this order is held by the SBH Inventory iPad app: its
+      // steps must happen there, so the hold is released or taken off too.
+      if (order.inv && typeof order.inv === 'object') {
+        throw new Refused('This order is handled on the iPad (SBH Inventory). Change its status there.')
+      }
       if (!NEXT[current]?.includes(to)) {
         throw new Refused(`This order is ${current || 'in an unknown state'}; it can't be marked ${to}.`)
       }

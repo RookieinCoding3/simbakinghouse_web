@@ -3,6 +3,7 @@ import { getAdminDb } from '@/lib/firebase/admin'
 import { resolveLines, neededPerProduct, LineError } from '@/lib/server/lines'
 import { validateOrderInput } from '@/lib/orderValidation'
 import { fetchShopSettings } from '@/lib/firebase/settings'
+import { fetchOrderTypes } from '@/lib/server/orderTypes'
 import { lastFourDigits } from '@/lib/phone'
 import { verifyFirebaseIdToken } from '@/lib/firebase/verifyIdToken'
 import { isHoneypotTripped, isSubmittedTooFast } from '@/lib/botDefense'
@@ -42,8 +43,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { shopOpensAt, shopClosesAt } = await fetchShopSettings()
-    const validated = validateOrderInput(body, { shopOpensAt, shopClosesAt })
+    const [{ shopOpensAt, shopClosesAt }, orderTypes] = await Promise.all([fetchShopSettings(), fetchOrderTypes()])
+    const validated = validateOrderInput(body, { shopOpensAt, shopClosesAt }, orderTypes)
     if (!validated.ok) {
       return NextResponse.json({ error: validated.error }, { status: 400 })
     }
@@ -88,6 +89,16 @@ export async function POST(request: NextRequest) {
       // product docs, by sell unit — never from the client's request.
       const lines = resolveLines(data.items, new Map(productIds.map((id, i) => [id, productSnaps[i]])), null, 'online')
 
+      // Stock kept on the SBH Inventory iPad: refuse what its catalogue
+      // says is out (the shop page may be up to 5 minutes old). No numbers.
+      const catalogSnaps = await transaction.getAll(...productIds.map((id) => db.collection('publicCatalog').doc(id)))
+      for (const [i, id] of productIds.entries()) {
+        if (catalogSnaps[i].data()?.availability === 'out') {
+          const name = lines.find((l) => l.productId === id)?.name ?? 'This item'
+          throw new LineError(`Sorry, ${name} is out of stock. Remove it from your cart to continue.`, 409, id)
+        }
+      }
+
       // Stock is checked only for products Sim has switched to managed; it is
       // not held until she confirms the order. Every other product is
       // ordered exactly as before.
@@ -131,6 +142,7 @@ export async function POST(request: NextRequest) {
         customerPhone: data.customerPhone,
         phoneLast4: lastFourDigits(data.customerPhone),
         fulfilment: data.fulfilment,
+        ...(data.courierNote && { courierNote: data.courierNote }),
         collectDate: data.collectDate,
         collectTime: data.collectTime,
         notes: data.notes,

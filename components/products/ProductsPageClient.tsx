@@ -9,6 +9,11 @@ import ProductCard from '@/components/products/ProductCard'
 import ProductModal from '@/components/products/ProductModal'
 import SimsChoiceSpotlight from '@/components/products/SimsChoiceSpotlight'
 import MobileFilterDrawer from '@/components/products/MobileFilterDrawer'
+import { matchesSearch } from '@/lib/storefront/search'
+import { COLLECTIONS, readCollections } from '@/lib/storefront/collections'
+import { useLang } from '@/lib/i18n/LangContext'
+import { useStorefrontSettings, waLink } from '@/components/storefront/StorefrontSettings'
+import { WhatsAppIcon } from '@/components/storefront/AskSimSection'
 
 // Psychology: Show 12 items at a time to prevent choice overload
 const ITEMS_PER_PAGE = 12
@@ -20,6 +25,33 @@ interface ProductsPageClientProps {
 export default function ProductsPageClient({ initialProducts }: ProductsPageClientProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  // What is in the box, including an unfinished Chinese IME composition;
+  // the list only filters on committed text (searchQuery).
+  const [draft, setDraft] = useState('')
+  const composing = useRef(false)
+  const [collection, setCollection] = useState<string | null>(null)
+  const { t } = useLang()
+  const { whatsappNumber } = useStorefrontSettings()
+  const setQuery = useCallback((q: string) => {
+    setDraft(q)
+    setSearchQuery(q)
+  }, [])
+
+  // ?search= (Google sitelinks search) and ?collection= (home page links).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const q = params.get('search')
+    if (q) setQuery(q)
+    const c = readCollections([params.get('collection')])[0]
+    if (c) setCollection(c)
+    // ?product= (home page collection cards): open that product right away.
+    const pid = params.get('product')
+    const p = pid ? initialProducts.find((x) => x.id === pid) : undefined
+    if (p) {
+      setSelectedProduct(p)
+      setIsModalOpen(true)
+    }
+  }, [setQuery, initialProducts])
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
@@ -40,7 +72,7 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
   // Reset visible count when filters change
   useEffect(() => {
     setVisibleCount(ITEMS_PER_PAGE)
-  }, [selectedCategory, searchQuery])
+  }, [selectedCategory, searchQuery, collection])
 
   // Track search queries with debounce (log after 1.5s of no typing)
   useEffect(() => {
@@ -75,19 +107,17 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
       result = result.filter((product) => product.category === selectedCategory)
     }
 
-    // Filter by search query
+    if (collection !== null) {
+      result = result.filter((product) => product.collections?.includes(collection))
+    }
+
+    // Live search: English or Chinese name, code, description, category.
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase()
-      result = result.filter(
-        (product) =>
-          product.name.toLowerCase().includes(query) ||
-          product.description.toLowerCase().includes(query) ||
-          product.category.toLowerCase().includes(query)
-      )
+      result = result.filter((product) => matchesSearch(product, searchQuery))
     }
 
     return result
-  }, [selectedCategory, searchQuery, products])
+  }, [selectedCategory, searchQuery, products, collection])
 
   // Get currently displayed products (Load More logic)
   const displayedProducts = useMemo(() => {
@@ -125,19 +155,57 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
       {/* 1. HERO with Search - Clean & Minimal */}
       <section className="py-12 md:py-20 text-center px-4">
         <h1 className="font-heading text-ink text-5xl md:text-7xl mb-8">
-          Products
+          {t('products.title')}
         </h1>
 
         {/* THE SEARCH BAR - Minimalist & Clean */}
         <div className="max-w-md mx-auto relative group">
+          <label htmlFor="product-search" className="sr-only">{t('search.label')}</label>
           <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="What are you baking today?"
-            className="w-full bg-white border border-line py-4 px-6 text-ink placeholder:text-ink/40 font-body text-sm focus:outline-none focus:border-ink/40 transition-all"
+            id="product-search"
+            type="search"
+            inputMode="search"
+            enterKeyHint="search"
+            autoComplete="off"
+            value={draft}
+            onChange={(e) => {
+              setDraft(e.target.value)
+              if (!composing.current) setSearchQuery(e.target.value)
+            }}
+            onCompositionStart={() => {
+              composing.current = true
+            }}
+            onCompositionEnd={(e) => {
+              composing.current = false
+              setSearchQuery(e.currentTarget.value)
+            }}
+            placeholder={t('search.placeholder')}
+            data-testid="product-search"
+            className="w-full bg-white border border-line py-4 pl-6 pr-12 text-ink placeholder:text-ink/40 font-body text-base focus:outline-none focus:border-ink/40 transition-all"
           />
+          {draft && (
+            <button
+              type="button"
+              onClick={() => setQuery('')}
+              aria-label={t('search.clear')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center text-ink/50 hover:text-ink"
+            >
+              ✕
+            </button>
+          )}
         </div>
+        {collection && (
+          <div className="mt-4 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setCollection(null)}
+              className="inline-flex items-center gap-2 border border-ink px-4 py-2 text-xs text-ink"
+              data-testid="collection-filter"
+            >
+              {t(COLLECTIONS.find((c) => c.id === collection)!.title)} <span aria-hidden="true">✕</span>
+            </button>
+          </div>
+        )}
       </section>
 
       {/* Category Navigation - Desktop Only */}
@@ -150,7 +218,7 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
       </div>
 
       {/* Sim's Choice Spotlight - Desktop only */}
-      {featuredProducts.length > 0 && !selectedCategory && !searchQuery && (
+      {featuredProducts.length > 0 && !selectedCategory && !searchQuery && !collection && (
         <div className="hidden md:block">
           <SimsChoiceSpotlight
             products={featuredProducts}
@@ -167,7 +235,7 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
           {/* Results Info Bar */}
           <div className="flex justify-between items-center mb-8 px-1">
             <p className="font-body text-[10px] md:text-sm uppercase tracking-widest text-ink/50">
-              Showing {displayedProducts.length} of {filteredProducts.length} products
+              {t('products.showing', { shown: displayedProducts.length, total: filteredProducts.length })}
               {selectedCategory && (
                 <span className="ml-1 text-clay">in {selectedCategory}</span>
               )}
@@ -176,21 +244,22 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
             {/* Mobile Filter Button */}
             <button
               onClick={() => setIsFilterOpen(true)}
-              className="md:hidden font-body text-ink text-xs uppercase font-medium tracking-widest border-b border-ink/30 pb-0.5 hover:text-clay transition-colors"
+              className="md:hidden font-body text-ink text-xs uppercase font-medium tracking-widest border border-ink px-4 min-h-[40px] hover:bg-sand transition-colors"
             >
-              Categories
+              {t('products.categories')}
             </button>
 
             {/* Desktop Clear Button */}
-            {(selectedCategory || searchQuery) && (
+            {(selectedCategory || searchQuery || collection) && (
               <button
                 onClick={() => {
                   setSelectedCategory(null)
-                  setSearchQuery('')
+                  setQuery('')
+                  setCollection(null)
                 }}
                 className="hidden md:block font-body text-clay/70 text-xs uppercase tracking-widest hover:text-clay transition-colors"
               >
-                Clear filters
+                {t('products.clear')}
               </button>
             )}
           </div>
@@ -198,17 +267,31 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
           {/* Product Grid */}
           {filteredProducts.length === 0 ? (
             <div className="text-center py-12 md:py-20">
-              <p className="font-body text-ink/70 text-base md:text-lg mb-4">
-                No products found
+              <p className="font-body text-ink/70 text-base md:text-lg mb-4" data-testid="search-none">
+                {searchQuery.trim() ? t('search.none', { q: searchQuery.trim() }) : t('products.none')}
               </p>
+              {searchQuery.trim() && (
+                <a
+                  href={waLink(whatsappNumber, t('search.askPrefill', { q: searchQuery.trim() }))}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-[#1F7A4D] hover:bg-[#186640] text-white px-6 py-3 text-sm font-semibold mb-6 min-h-[48px]"
+                  data-testid="search-ask-sim"
+                >
+                  <WhatsAppIcon />
+                  {t('search.askSim')}
+                </a>
+              )}
+              <br />
               <button
                 onClick={() => {
                   setSelectedCategory(null)
-                  setSearchQuery('')
+                  setQuery('')
+                  setCollection(null)
                 }}
                 className="font-body text-clay hover:text-clay/80 transition-colors underline text-sm"
               >
-                Clear filters and show all
+                {t('products.showAll')}
               </button>
             </div>
           ) : (
@@ -235,7 +318,7 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
                     onClick={loadMore}
                     className="group relative inline-flex items-center gap-4 px-12 py-5 border border-ink text-ink font-body font-medium uppercase tracking-[0.2em] text-xs hover:bg-ink hover:text-paper transition-all duration-500"
                   >
-                    <span>DISCOVER MORE</span>
+                    <span>{t('products.more')}</span>
                     <span className="group-hover:translate-x-1 transition-transform">→</span>
 
                     {/* Subtle glow effect */}
@@ -264,13 +347,6 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
         onClose={handleCloseModal}
       />
 
-      {/* Floating Mobile Filter Button */}
-      <button
-        onClick={() => setIsFilterOpen(true)}
-        className="md:hidden fixed bottom-10 left-1/2 -translate-x-1/2 z-40 bg-ink text-paper px-8 py-4 font-body font-medium text-[11px] uppercase tracking-widest shadow-xl flex items-center gap-2 hover:bg-clay transition-colors"
-      >
-        Categories
-      </button>
 
       {/* Mobile Filter Drawer */}
       <MobileFilterDrawer
@@ -279,6 +355,8 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
         categories={categories}
         selectedCategory={selectedCategory}
         onSelectCategory={handleCategoryChange}
+        collections={COLLECTIONS.map((c) => c.id).filter((id) => products.some((p) => p.collections?.includes(id)))}
+        onSelectCollection={(id) => setCollection(id)}
         totalProducts={filteredProducts.length}
       />
     </main>
