@@ -31,6 +31,10 @@ export interface AdminOrder {
   courierNote: string
   /** Held by the iPad app: change status there, not here. */
   heldOnIpad: boolean
+  /** Shared stock system (iPad + web): reserved | collected | released. */
+  invState: 'reserved' | 'collected' | 'released' | null
+  /** Sale-event discounts the server applied (estimatedTotal is after them). */
+  promo: { subtotalSen: number; totalDiscountSen: number; discounts: { name: string; discountSen: number }[] } | null
   collectDate: string | null
   collectTime: string | null
   notes: string
@@ -136,6 +140,15 @@ export function normalizeOrder(docId: string, raw: unknown): AdminOrder {
     fulfilment,
     courierNote: str(d.courierNote),
     heldOnIpad: !!d.inv && typeof d.inv === 'object',
+    invState: d.inv && typeof d.inv === 'object' && ['reserved', 'collected', 'released'].includes((d.inv as { state?: string }).state ?? '') ? ((d.inv as { state: 'reserved' | 'collected' | 'released' }).state) : null,
+    promo:
+      d.promo && typeof d.promo === 'object' && Array.isArray((d.promo as { discounts?: unknown }).discounts)
+        ? {
+            subtotalSen: Number((d.promo as { subtotalSen?: unknown }).subtotalSen) || 0,
+            totalDiscountSen: Number((d.promo as { totalDiscountSen?: unknown }).totalDiscountSen) || 0,
+            discounts: ((d.promo as { discounts: unknown[] }).discounts as { name?: unknown; discountSen?: unknown }[]).map((x) => ({ name: String(x.name ?? 'Sale'), discountSen: Number(x.discountSen) || 0 })),
+          }
+        : null,
     collectDate: str(d.collectDate) || null,
     collectTime: str(d.collectTime) || null,
     notes: str(d.notes),

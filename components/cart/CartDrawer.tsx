@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils/cn'
 import { useCart } from '@/lib/cart/CartContext'
 import { useLang } from '@/lib/i18n/LangContext'
 import ChilledNotice from '@/components/storefront/ChilledNotice'
+import { CartPromoLines, useCartPricing } from '@/components/storefront/Promotions'
 
 export default function CartDrawer() {
   const { items, subtotal, hasUnpricedItems, isDrawerOpen, closeDrawer, setQty, removeItem } =
@@ -14,6 +15,7 @@ export default function CartDrawer() {
   const router = useRouter()
   const { t, pick } = useLang()
   const hasChilled = items.some((i) => i.chilled)
+  const pricing = useCartPricing()
 
   const handleContinue = () => {
     closeDrawer()
@@ -105,6 +107,13 @@ export default function CartDrawer() {
               <p className="text-xs uppercase tracking-widest text-ink/70">{t('cart.subtotal')}</p>
               <p className="font-heading text-2xl text-ink">RM {subtotal.toFixed(2)}</p>
             </div>
+            <CartPromoLines className="mt-3" />
+            {pricing.totalDiscountSen > 0 && (
+              <div className="flex justify-between items-baseline mt-2" data-testid="cart-total">
+                <p className="text-xs uppercase tracking-widest text-ink/70">{t('cart.total')}</p>
+                <p className="font-heading text-2xl text-ink">RM {(pricing.totalSen / 100).toFixed(2)}</p>
+              </div>
+            )}
             <p className="text-[11px] text-ink/70 mt-2 mb-2" data-testid="cart-how">{t('cart.howItWorks')}</p>
             {hasChilled && <ChilledNotice className="mb-3 mt-2" title={t('cart.chilledNote')} />}
             {hasUnpricedItems && (

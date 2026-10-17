@@ -55,5 +55,17 @@ await d.collection('settings').doc('shop').set({
   showLanguageLine: true,
 })
 
-console.log('Seeded shop catalogue (3 managed, 3 old, 1 draft) + storefront fields and settings')
+// Sale events (storefront suite): CLEARANCE 10% off cocoa; any 2 of cocoa /
+// butter for RM 20; spend RM 20 save RM 2 ("almost there" from RM 10).
+// Rice is in none of them, so the shop suite's prices stay as they were.
+await d.collection('settings').doc('promotions').set({
+  promos: [
+    { id: 'clr', name: 'Cocoa Clearance', active: true, type: 'PRODUCT_BADGE', badgeConfig: { badgeTextEn: 'CLEARANCE', badgeTextZh: '清仓特价', badgeColor: 'red', productIds: ['shop-cocoa'], discountPercent: 10 } },
+    { id: 'mm', name: 'Any 2 for RM20', active: true, type: 'MIX_AND_MATCH', mixMatchConfig: { eligibleProductIds: ['shop-cocoa', 'shop-butter'], requiredQty: 2, bundlePriceSen: 2000, promptTextEn: 'Add {remaining} more item(s) to get 2 for RM20!', promptTextZh: '再加 {remaining} 件，2 件只要 RM20！' } },
+    { id: 'sp', name: 'Spend RM20 save RM2', active: true, type: 'SPEND_THRESHOLD', thresholdConfig: { minSpendSen: 2000, discountSen: 200, upsellThresholdSen: 1000 } },
+    { id: 'old', name: 'Ended sale', active: true, type: 'PRODUCT_BADGE', endDate: '2020-01-01', badgeConfig: { badgeTextEn: 'OLD', badgeColor: 'amber', productIds: ['shop-rice'] } },
+  ],
+})
+
+console.log('Seeded shop catalogue (3 managed, 3 old, 1 draft) + storefront fields, settings and sale events')
 process.exit(0)

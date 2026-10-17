@@ -151,6 +151,8 @@ export const STRINGS = {
 
   // home: older sections
   'home.bestSellers': ['Best sellers', '热卖'],
+  'promo.almost': ['Almost there! Spend RM {amount} more to get RM {off} off.', '快到了！再买 RM {amount}，即可减 RM {off}。'],
+  'cart.total': ['Total', '总计'],
   'returns.title': ['Returns', '退换说明'],
   'returns.body': [
     'No returns for change of mind. Damaged, expired or wrong item? Tell us within 24 hours of collection, with a photo, and we will replace or refund it.',

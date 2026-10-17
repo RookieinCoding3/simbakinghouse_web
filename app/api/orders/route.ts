@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { applyPromos } from '@/lib/promotions/engine'
+import { parsePromotions } from '@/lib/promotions/validate'
 import { getAdminDb } from '@/lib/firebase/admin'
 import { resolveLines, neededPerProduct, LineError } from '@/lib/server/lines'
 import { validateOrderInput } from '@/lib/orderValidation'
@@ -128,7 +130,16 @@ export async function POST(request: NextRequest) {
         unitPriceSen: l.unitPriceSen,
       }))
       // Lines priced "on request" are kept in the order but left out of the total.
-      const totalSen = lines.reduce((sum, l) => sum + (l.lineTotalSen ?? 0), 0)
+      const listTotalSen = lines.reduce((sum, l) => sum + (l.lineTotalSen ?? 0), 0)
+      // Sale events, priced HERE (the cart only shows the same calculation).
+      const promoSnap = await transaction.get(db.collection('settings').doc('promotions'))
+      const klToday = new Date(Date.now() + 8 * 3600_000).toISOString().slice(0, 10)
+      const promo = applyPromos(
+        lines.map((l) => ({ key: `${l.productId}::${l.unit.id}`, productId: l.productId, qty: l.qty, unitPriceSen: l.unitPriceSen })),
+        parsePromotions(promoSnap.exists ? promoSnap.data() : undefined).promos,
+        klToday,
+      )
+      const totalSen = listTotalSen - promo.totalDiscountSen
       // ...and flag the order so the admin prices it before confirming.
       const priceToConfirm = lines.some((l) => l.unitPriceSen === null)
 
@@ -149,6 +160,9 @@ export async function POST(request: NextRequest) {
         items,
         estimatedTotal: totalSen / 100,
         estimatedTotalSen: totalSen,
+        ...(promo.totalDiscountSen > 0 && {
+          promo: { subtotalSen: listTotalSen, totalDiscountSen: promo.totalDiscountSen, discounts: promo.discounts },
+        }),
         priceToConfirm,
         confirmedTotal: null,
         createdAt: nowIso,

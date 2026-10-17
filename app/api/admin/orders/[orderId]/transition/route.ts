@@ -7,6 +7,7 @@ import { reserve, release, deduct } from '@/lib/inventory/engine'
 import { MILLI, formatQty } from '@/lib/inventory/units'
 import { KNOWN_STATUSES } from '@/lib/admin/normalizeOrder'
 import type { OrderStatus, OrderStock } from '@/types/order'
+import { collectOrderOp, confirmOrderOp, readBatch, readHold, releaseOrderOp, writeInvOp, type InvBatch, type InvHold } from '@/lib/server/invStock'
 
 export const runtime = 'nodejs'
 
@@ -81,11 +82,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       const order = snap.data() as Record<string, unknown>
       const current = (typeof order.status === 'string' ? order.status.toLowerCase() : '') as OrderStatus
       if (current === to) return { unchanged: true }
-      // Stock for this order is held by the SBH Inventory iPad app: its
-      // steps must happen there, so the hold is released or taken off too.
-      if (order.inv && typeof order.inv === 'object') {
-        throw new Refused('This order is handled on the iPad (SBH Inventory). Change its status there.')
-      }
       if (!NEXT[current]?.includes(to)) {
         throw new Refused(`This order is ${current || 'in an unknown state'}; it can't be marked ${to}.`)
       }
@@ -94,6 +90,24 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       const stock = (order.stock ?? null) as OrderStock | null
       const session = new StockSession(tx, auth.caller)
       await session.load([...new Set(lines.map((l) => l.productId))])
+
+      // Everything not on the old (Phase 2) managed-stock path is kept in the
+      // shared SBH Inventory system (same as the iPad): confirm holds it,
+      // collect takes it off the soonest-expiring batches, cancel lets go.
+      const hold = readHold(order.inv)
+      const invLines = lines.filter((l) => !session.item(l.productId).config.managed).map((l) => ({ productId: l.productId, qtyMilli: l.baseQtyMilli }))
+      const batchesByProduct = new Map<string, InvBatch[]>()
+      if (to === 'collected' && hold?.state !== 'collected') {
+        const ids = [...new Set((hold?.lines ?? invLines).map((l) => l.productId))]
+        for (let i = 0; i < ids.length; i += 30) {
+          const snap = await tx.get(db.collection('batches').where('productId', 'in', ids.slice(i, i + 30)))
+          for (const d of snap.docs) {
+            const b = readBatch(d.id, d.data())
+            if (b.qtyMilli > 0) batchesByProduct.set(b.productId, [...(batchesByProduct.get(b.productId) ?? []), b])
+          }
+        }
+      }
+      let newHold: InvHold | null = null
 
       let newStock: OrderStock | null = stock
       const legacyStockCounts: { ref: FirebaseFirestore.DocumentReference; value: number }[] = []
@@ -120,6 +134,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         }
         for (const [id, n] of need) session.apply(id, (s) => reserve(s, n), { orderId })
         newStock = need.size ? { state: 'reserved', lines: [...need].map(([productId, qtyMilli]) => ({ productId, qtyMilli })) } : null
+        if (!hold && invLines.length) {
+          const r = confirmOrderOp(invLines)
+          writeInvOp(db, tx, r.op, auth.caller)
+          newHold = r.hold
+        }
       }
 
       if (to === 'collected') {
@@ -141,6 +160,17 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           }
         }
         newStock = deducted.length ? { state: 'deducted', lines: deducted } : stock ? { ...stock, state: 'released' } : null
+        if (hold?.state !== 'collected' && (hold?.lines.length || invLines.length)) {
+          const r = collectOrderOp(hold?.state === 'released' ? null : hold, invLines, batchesByProduct)
+          writeInvOp(db, tx, r.op, auth.caller)
+          newHold = r.hold
+        }
+      }
+
+      if (to === 'cancelled' && hold?.state === 'reserved') {
+        const r = releaseOrderOp(hold)
+        writeInvOp(db, tx, r.op, auth.caller)
+        newHold = r.hold
       }
 
       if (to === 'cancelled' && stock?.state === 'reserved') {
@@ -159,6 +189,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         ...(to === 'confirmed' && { confirmedTotal: confirmedTotalSen! / 100, confirmedTotalSen }),
         ...(to === 'cancelled' && { cancelReason }),
         ...(newStock ? { stock: newStock } : {}),
+        ...(newHold ? { inv: newHold } : {}),
       })
       session.commit()
       for (const s of legacyStockCounts) tx.update(s.ref, { stockCount: s.value })
@@ -167,7 +198,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         entityType: 'order',
         entityId: orderId,
         before: { status: current },
-        after: { status: to, ...(newStock && { stock: newStock.state }) },
+        after: { status: to, ...(newStock && { stock: newStock.state }), ...(newHold && { inv: newHold.state }) },
       })
       return { unchanged: false }
     })

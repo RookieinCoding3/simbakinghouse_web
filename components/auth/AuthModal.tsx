@@ -3,7 +3,11 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { doc, getDoc } from 'firebase/firestore'
 import { useAuth } from '@/lib/auth/AuthContext'
+import { auth } from '@/lib/firebase/auth'
+import { db } from '@/lib/firebase/config'
 import { detectInAppBrowser, isBlockedUserAgentError } from '@/lib/utils/inAppBrowser'
 import Button from '@/components/ui/Button'
 
@@ -36,6 +40,19 @@ function authErrorMessage(error: unknown): string {
 
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const { signInWithEmail, signUpWithEmail, signInWithGoogle, sendPasswordReset } = useAuth()
+  const router = useRouter()
+
+  /** An admin signing in from the shop goes straight to the admin. Same
+   *  check as the account menu: their own admins/{uid} doc. */
+  const goToAdminIfAdmin = async () => {
+    const uid = auth.currentUser?.uid
+    if (!uid) return
+    try {
+      if ((await getDoc(doc(db, 'admins', uid))).exists()) router.push('/admin')
+    } catch {
+      // Not an admin (or offline): stay on the shop.
+    }
+  }
   const [mode, setMode] = useState<Mode>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -117,6 +134,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       } else if (mode === 'signin') {
         await signInWithEmail(email, password)
         onClose()
+        void goToAdminIfAdmin()
       } else {
         await signUpWithEmail(email, password)
         onClose()
@@ -138,6 +156,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     try {
       await signInWithGoogle()
       onClose()
+      void goToAdminIfAdmin()
     } catch (err) {
       if (isBlockedUserAgentError(err)) {
         // The proactive UA check (inAppBrowser) didn't catch this one —

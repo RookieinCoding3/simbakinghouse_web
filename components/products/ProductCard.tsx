@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils/cn'
 import { productAvailability, onlineUnits } from '@/lib/productView'
 import { formatSen } from '@/lib/money'
 import { useLang } from '@/lib/i18n/LangContext'
+import { PromoBadge, useProductPromo } from '@/components/storefront/Promotions'
 
 interface ProductCardProps {
   product: Product
@@ -29,6 +30,9 @@ function ProductCard({ product, onClick, index = 0, responsiveTheme = false }: P
   const { sellable, status } = productAvailability(product)
   const { t, pick } = useLang()
   const name = pick(product.name, product.nameZh)
+  const units = onlineUnits(product)
+  const firstPriced = units.find((u) => u.priceSen !== null)?.priceSen ?? null
+  const { salePriceSen } = useProductPromo(product.id, units.length === 1 ? firstPriced : null)
   return (
     <div
       onClick={onClick}
@@ -61,6 +65,8 @@ function ProductCard({ product, onClick, index = 0, responsiveTheme = false }: P
           )}
         </div>
 
+        <PromoBadge productId={product.id} className="absolute top-3 right-3" />
+
         {/* Out of Stock Overlay — boolean only, never a count (owner may not
             track exact stock, and a count invites arguing over the number) */}
         {!sellable && (
@@ -84,7 +90,14 @@ function ProductCard({ product, onClick, index = 0, responsiveTheme = false }: P
         <h3 className="font-heading text-lg md:text-xl leading-tight line-clamp-2 transition-colors duration-300 text-ink group-hover:text-clay">
           {name}
         </h3>
-        <p className="font-heading text-lg md:text-xl text-clay whitespace-nowrap">{cardPrice(product, t('product.askPrice'))}</p>
+        {salePriceSen !== null ? (
+          <p className="font-heading text-lg md:text-xl whitespace-nowrap" data-testid="sale-price">
+            <span className="text-[#B42318]">{formatSen(salePriceSen)}</span>{' '}
+            <span className="text-sm text-ink/40 line-through">{cardPrice(product, t('product.askPrice'))}</span>
+          </p>
+        ) : (
+          <p className="font-heading text-lg md:text-xl text-clay whitespace-nowrap">{cardPrice(product, t('product.askPrice'))}</p>
+        )}
         <p className="text-[10px] uppercase tracking-widest text-ink/50">{product.category}</p>
         {status && status !== 'out' && (
           <p className={cn('text-[10px] uppercase tracking-widest font-medium', status === 'low' ? 'text-clay' : 'text-ink/50')}>

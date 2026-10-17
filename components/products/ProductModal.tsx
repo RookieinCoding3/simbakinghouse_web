@@ -13,6 +13,7 @@ import { CONTACT_WHATSAPP_URL } from '@/lib/site'
 import { cn } from '@/lib/utils/cn'
 import { useLang } from '@/lib/i18n/LangContext'
 import ChilledNotice from '@/components/storefront/ChilledNotice'
+import { PromoBadge, useProductPromo } from '@/components/storefront/Promotions'
 import { useStorefrontSettings, waLink } from '@/components/storefront/StorefrontSettings'
 import { WhatsAppIcon } from '@/components/storefront/AskSimSection'
 
@@ -136,6 +137,7 @@ export default function ProductModal({
               )}
 
               {/* Product Name */}
+              <PromoBadge productId={product.id} className="inline-block" />
               <h2 className="font-heading text-ink text-4xl md:text-5xl leading-tight animate-fade-in">
                 {pick(product.name, product.nameZh)}
               </h2>
@@ -181,9 +183,7 @@ export default function ProductModal({
                   <p className="text-[10px] uppercase tracking-widest text-ink/50 font-body">
                     Total Value
                   </p>
-                  <span className="font-heading text-4xl text-ink">
-                    {unit ? formatSen(unit.priceSen) : 'Wholesale'}
-                  </span>
+                  <PromoPrice productId={product.id} priceSen={unit ? unit.priceSen : null} wholesale={!unit} />
                   {status && (
                     <p className={cn('text-[11px] uppercase tracking-widest mt-2 font-medium', status === 'in_stock' ? 'text-ink/60' : 'text-clay')} data-testid="stock-status">
                       {t(`stock.${status}`)}
@@ -283,5 +283,17 @@ export default function ProductModal({
         </div>
       </div>
     </div>
+  )
+}
+
+/** Price in the popup, with the sale price when a badge gives % off. */
+function PromoPrice({ productId, priceSen, wholesale }: { productId: string; priceSen: number | null; wholesale: boolean }) {
+  const { salePriceSen } = useProductPromo(productId, priceSen)
+  if (wholesale) return <span className="font-heading text-4xl text-ink">Wholesale</span>
+  if (salePriceSen === null) return <span className="font-heading text-4xl text-ink">{formatSen(priceSen)}</span>
+  return (
+    <span className="font-heading text-4xl" data-testid="modal-sale-price">
+      <span className="text-[#B42318]">{formatSen(salePriceSen)}</span> <span className="text-xl text-ink/40 line-through">{formatSen(priceSen)}</span>
+    </span>
   )
 }

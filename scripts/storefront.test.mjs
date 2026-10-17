@@ -322,6 +322,48 @@ for (const width of [375, 1440]) {
   }
 }
 
+for (const width of [375, 1440]) {
+  await check(`${width}px sale events: badge + sale price on the card; cart shows bundle and spend discounts; the server charges the same`, async () => {
+    const page = await newPage(width)
+    await page.goto(`${BASE_URL}/products`)
+    const card = (name) => page.locator('div.group', { has: page.getByRole('heading', { name, exact: true }) }).first()
+    await card('Cocoa powder').getByTestId('promo-badge').waitFor({ timeout: 20000 })
+    assert((await card('Cocoa powder').getByTestId('promo-badge').innerText()).trim() === 'CLEARANCE', 'badge text')
+    assert(/RM\s?8\.91/.test(await card('Cocoa powder').getByTestId('sale-price').innerText()), 'sale price 10% off 9.90')
+    assert((await card('Rice flour').getByTestId('promo-badge').count()) === 0, 'ended sale not shown')
+    // Butter only: the bundle prompt and the "almost there" nudge.
+    await card('Butter 250g').click()
+    await page.getByRole('button', { name: 'Add to cart' }).click()
+    const drawer = page.locator('.fixed.inset-0.z-\\[100\\]')
+    await drawer.getByTestId('mixmatch-prompt').waitFor()
+    assert((await drawer.getByTestId('mixmatch-prompt').innerText()).includes('Add 1 more item(s) to get 2 for RM20!'), 'bundle prompt')
+    assert(/RM 7\.10 more/.test(await drawer.getByTestId('threshold-prompt').innerText()), await drawer.getByTestId('threshold-prompt').innerText())
+    await page.keyboard.press('Escape').catch(() => {})
+    await page.goto(`${BASE_URL}/products`)
+    await card('Cocoa powder').click()
+    await page.getByRole('button', { name: 'Add to cart' }).click()
+    // 12.90 + 8.91 = 21.81 -> bundle 20.00 (1.81 off) -> spend >= 20: 2.00 off -> 18.00
+    await drawer.getByTestId('cart-total').waitFor()
+    assert(/RM 18\.00/.test(await drawer.getByTestId('cart-total').innerText()), await drawer.getByTestId('cart-total').innerText())
+    const lines = await drawer.getByTestId('cart-discount').allInnerTexts()
+    assert(lines.length === 3 && lines.join('|').includes('−RM 2.00'), lines.join('|'))
+    await page.screenshot({ path: `${SHOTS}/cart-sales-${width}.png` })
+    await drawer.getByRole('button', { name: 'Continue to order' }).click()
+    await page.waitForURL(/\/checkout/)
+    assert(/RM 18\.00/.test(await page.getByTestId('checkout-total').innerText()), 'checkout total')
+    await page.locator('#name').fill('Sale Test')
+    // Its own number: this suite already sent several orders from 012-345 6789 (rate limit).
+    await page.locator('#phone').fill(width === 375 ? '013-555 0101' : '013-555 0202')
+    await page.locator('#collectTime').fill('10:00')
+    await page.locator('form input[type=checkbox][required]').check()
+    await sleep(3200)
+    await page.getByRole('button', { name: 'Send order on WhatsApp' }).click()
+    await page.waitForURL(/\/order\/SBH-/, { timeout: 20000 })
+    assert(/RM\s?18\.00/.test(await page.getByTestId('order-est-total').innerText()), 'order page total = server total')
+    await page.context().close()
+  })
+}
+
 await check('no uncaught page errors', async () => {
   assert(pageErrors.length === 0, pageErrors.join(' | '))
 })

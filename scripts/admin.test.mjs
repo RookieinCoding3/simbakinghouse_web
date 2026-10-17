@@ -71,10 +71,10 @@ await check('non-admin: sees "not an admin" with their UID, and is signed out', 
   await page.waitForURL(/\/admin\/login/, { timeout: 15000 })
 })
 
-await check('admin (legacy doc, no role): signs in straight to /admin', async () => {
+await check('admin (legacy doc, no role): signs in straight to /admin (the dashboard)', async () => {
   await login(owner.email)
   await page.waitForURL(`${BASE_URL}/admin`, { timeout: 15000 })
-  await waitForOrdersSettled()
+  await page.getByTestId('fulfilment-queue').waitFor({ timeout: 15000 })
 })
 
 await check('already signed in: /admin/login goes straight back to /admin', async () => {
@@ -83,6 +83,7 @@ await check('already signed in: /admin/login goes straight back to /admin', asyn
 })
 
 console.log('\n--- Orders: every filter tab, with old-format orders seeded ---')
+await page.goto(`${BASE_URL}/admin/orders`)
 
 for (const [label, expected] of Object.entries(EXPECT)) {
   await check(`tab "${label}" renders without crashing and lists exactly ${expected.length} order(s)`, async () => {
@@ -114,7 +115,7 @@ for (const id of ['OLD-01', 'OLD-02', 'OLD-03', 'OLD-04', 'OLD-07', 'OLD-09', 'O
 console.log('\n--- Failure handling ---')
 
 await check('failed orders query shows "Could not load orders" + Retry, and Retry recovers', async () => {
-  await page.goto(`${BASE_URL}/admin`)
+  await page.goto(`${BASE_URL}/admin/orders`)
   await page.evaluate(() => localStorage.setItem('__sbhFault', 'orders-query'))
   await page.reload()
   await page.getByText('Could not load orders.').waitFor({ timeout: 15000 })
@@ -137,15 +138,18 @@ await check('a page that throws shows the error boundary; the rest of admin keep
 
 console.log('\n--- Layout, noindex, manifest ---')
 
-await check('admin pages: no customer header/footer/cart; bottom tabs Orders/Products/Settings (Stock moved to the iPad)', async () => {
-  await page.goto(`${BASE_URL}/admin`)
+await check('admin pages: no customer header/footer/cart; phone bottom tabs Home/Orders/Stock/Products/Settings + menu', async () => {
+  await page.goto(`${BASE_URL}/admin/orders`)
   await waitForOrdersSettled()
   assert(!(await page.getByText('Sim · Baking · House').count()), 'customer header present')
   assert(!(await page.locator('footer#find-us').count()), 'customer footer present')
   assert(!(await page.locator('[aria-label^="Cart,"]').count()), 'cart present')
-  const tabs = await page.getByRole('navigation', { name: 'Admin sections' }).getByRole('link').allInnerTexts()
-  assert(JSON.stringify(tabs.map((t) => t.trim())) === JSON.stringify(['Orders', 'Products', 'Settings']), `tabs: ${tabs}`)
-  assert(await page.getByRole('link', { name: 'View shop' }).count(), 'no View shop link')
+  const tabs = await page.getByRole('navigation', { name: 'Admin sections' }).getByRole('link').evaluateAll((as) => as.map((a) => a.getAttribute('aria-label')?.split(',')[0]))
+  assert(JSON.stringify(tabs) === JSON.stringify(['Home', 'Orders', 'Stock', 'Products', 'Settings']), `tabs: ${tabs}`)
+  await page.getByRole('button', { name: 'Open admin menu' }).click()
+  assert(await page.getByRole('dialog', { name: 'Admin menu' }).getByRole('link', { name: /View Live Shop/ }).count(), 'no View Live Shop link')
+  await page.keyboard.press('Escape')
+  await page.goto(`${BASE_URL}/admin/orders`)
 })
 
 await check('every /admin page is noindex (meta tag and X-Robots-Tag header)', async () => {
