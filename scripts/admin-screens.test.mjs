@@ -111,13 +111,16 @@ async function screenshot(page, path) {
 const phone = await newPage(390)
 await loginAdmin(phone, sim.email)
 
-console.log('--- Stock screens (retired: stock is kept on the iPad app) ---')
+console.log('--- Stock screens (shared stock system: Stock & batches page) ---')
 
-await check('old Stock and Quick sale links show the "kept on the iPad" notice', async () => {
-  for (const path of ['/admin/stock', `/admin/stock/${rice}`, '/admin/stock/count', '/admin/stock/switch', '/admin/sale']) {
+await check('old Phase 2 stock links open the Stock & batches page; Quick sale still shows the notice', async () => {
+  for (const path of ['/admin/stock', `/admin/stock/${rice}`, '/admin/stock/count', '/admin/stock/switch']) {
     await phone.goto(`${BASE_URL}${path}`)
-    await phone.getByTestId('stock-moved').waitFor()
+    await phone.waitForURL(/\/admin\/stock$/)
+    await phone.getByRole('heading', { name: 'Stock & batches' }).waitFor()
   }
+  await phone.goto(`${BASE_URL}/admin/sale`)
+  await phone.getByTestId('stock-moved').waitFor()
 })
 
 console.log('--- Complete details (drafts quick-added on the iPad) ---')
@@ -195,7 +198,10 @@ await check('a draft with no price and quantity 0 is flagged red and cannot be c
 console.log('\n--- Every screen at 390 px and 1440 px ---')
 
 const SCREENS = [
-  ['orders', '/admin', 'Orders'],
+  ['dashboard', '/admin', 'Today'],
+  ['orders', '/admin/orders', 'Orders'],
+  ['stock', '/admin/stock', 'Stock & batches'],
+  ['promos', '/admin/promos', 'Sale events'],
   ['order-held', `/admin/orders/${held.json.orderId}`, held.json.orderId],
   ['products', '/admin/products', 'Products'],
   ['drafts', '/admin/drafts', 'Complete details'],

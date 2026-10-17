@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useCart } from '@/lib/cart/CartContext'
 import { useLang } from '@/lib/i18n/LangContext'
 import ChilledNotice from '@/components/storefront/ChilledNotice'
+import { CartPromoLines, useCartPricing } from '@/components/storefront/Promotions'
 import { cartLineKey } from '@/types/cart'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { normalizeMyPhone } from '@/lib/phone'
@@ -44,6 +45,7 @@ function isTimeWithinRange(time: string, min: string, max: string): boolean {
 export default function CheckoutPage() {
   const { items, subtotal, hasUnpricedItems, clear } = useCart()
   const { t, pick } = useLang()
+  const pricing = useCartPricing()
   const { user } = useAuth()
   const router = useRouter()
 
@@ -258,6 +260,17 @@ export default function CheckoutPage() {
             <span className="text-ink">{t('cart.subtotal')}</span>
             <span className="text-ink">RM {subtotal.toFixed(2)}</span>
           </div>
+          {pricing.totalDiscountSen > 0 || pricing.mixMatchPrompts.length || pricing.thresholdPrompt ? (
+            <div className="py-4">
+              <CartPromoLines />
+              {pricing.totalDiscountSen > 0 && (
+                <div className="flex justify-between pt-2 text-sm font-semibold" data-testid="checkout-total">
+                  <span className="text-ink">{t('cart.total')}</span>
+                  <span className="text-ink">RM {(pricing.totalSen / 100).toFixed(2)}</span>
+                </div>
+              )}
+            </div>
+          ) : null}
         </div>
         {items.some((i) => i.chilled) && <ChilledNotice className="-mt-6 mb-10" title={t('cart.chilledNote')} />}
         {hasUnpricedItems && (

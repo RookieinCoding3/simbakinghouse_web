@@ -39,9 +39,17 @@ export interface StatusHistoryEntry {
 }
 
 /** Firestore shape, as written by app/api/orders. */
+export interface OrderPromo {
+  subtotalSen: number
+  totalDiscountSen: number
+  discounts: { promoId: string; name: string; type: string; discountSen: number }[]
+}
+
 export interface Order {
   orderId: string
   status: OrderStatus
+  /** Sale-event discounts applied by the server (estimatedTotal is after them). */
+  promo?: OrderPromo
   /** Firebase Auth uid, when the order was placed while signed in. Null for
    *  guest checkout — guest checkout keeps working unchanged either way. */
   userId?: string | null

@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useCart } from '@/lib/cart/CartContext'
 import { useLang } from '@/lib/i18n/LangContext'
+import { useCartPricing } from './Promotions'
 
 // Phone-only bar: cart count + total + the cart's own "continue to order"
 // action. It sits above the home indicator (safe area) and a spacer of the
@@ -14,6 +15,7 @@ const BAR_PX = 64
 export default function MobileCartBar() {
   const { itemCount, subtotal, hasUnpricedItems, isDrawerOpen } = useCart()
   const { t } = useLang()
+  const pricing = useCartPricing()
   const pathname = usePathname()
   const router = useRouter()
   const visible = itemCount > 0 && !isDrawerOpen && pathname !== '/checkout'
@@ -37,7 +39,7 @@ export default function MobileCartBar() {
           <div className="min-w-0">
             <p className="text-xs text-paper/75">{itemCount === 1 ? t('sticky.item') : t('sticky.items', { n: itemCount })}</p>
             <p className="font-heading text-xl leading-tight">
-              RM {subtotal.toFixed(2)}
+              RM {(pricing.totalDiscountSen > 0 ? pricing.totalSen / 100 : subtotal).toFixed(2)}
               {hasUnpricedItems && <span className="text-xs text-paper/75"> +</span>}
             </p>
           </div>

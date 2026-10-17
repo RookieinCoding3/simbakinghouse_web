@@ -12,6 +12,8 @@ import { LangProvider } from '@/lib/i18n/LangContext'
 import { StorefrontSettingsProvider } from '@/components/storefront/StorefrontSettings'
 import MobileCartBar from '@/components/storefront/MobileCartBar'
 import { fetchShopSettings } from '@/lib/firebase/settings'
+import { fetchPromotions } from '@/lib/firebase/promotions'
+import { PromotionsProvider } from '@/components/storefront/Promotions'
 import { SITE_URL, CONTACT_EMAIL, CONTACT_PHONE_E164 } from '@/lib/site'
 import '../globals.css'
 
@@ -256,7 +258,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const settings = await fetchShopSettings()
+  const [settings, promotions] = await Promise.all([fetchShopSettings(), fetchPromotions()])
   const storefront = {
     whatsappNumber: settings.whatsappNumber,
     openingHours: settings.openingHours,
@@ -280,6 +282,7 @@ export default async function RootLayout({
         <PWAInit />
         <LangProvider>
           <StorefrontSettingsProvider value={storefront}>
+            <PromotionsProvider promos={promotions.promos}>
             <AuthProvider>
               <CartProvider>
                 <Header />
@@ -289,6 +292,7 @@ export default async function RootLayout({
                 <CartDrawer />
               </CartProvider>
             </AuthProvider>
+            </PromotionsProvider>
           </StorefrontSettingsProvider>
         </LangProvider>
         <Analytics />
