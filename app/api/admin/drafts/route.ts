@@ -17,6 +17,14 @@ export async function GET(request: NextRequest) {
       db.collection('categories').get(),
       db.collection('products').where('kind', '==', 'bulk').get(),
     ])
+    // Stock on hand per draft (all places): quantity 0 must be counted on the
+    // iPad before the draft can be completed.
+    const onHand = new Map<string, number>()
+    const ids = drafts.docs.map((d) => d.id)
+    for (let i = 0; i < ids.length; i += 30) {
+      const levels = await db.collection('stockLevels').where('productId', 'in', ids.slice(i, i + 30)).get()
+      for (const l of levels.docs) onHand.set(l.get('productId'), (onHand.get(l.get('productId')) ?? 0) + Number(l.get('onHandMilli') ?? 0))
+    }
     const ms = (v: unknown) => (v && typeof v === 'object' && 'toMillis' in v ? (v as { toMillis: () => number }).toMillis() : 0)
     return NextResponse.json({
       drafts: drafts.docs
@@ -30,6 +38,7 @@ export async function GET(request: NextRequest) {
           kind: d.get('kind') ?? 'standard',
           repackSourceProductId: d.get('repackSourceProductId') ?? null,
           scannedAt: ms(d.get('createdAt')),
+          onHandMilli: onHand.get(d.id) ?? 0,
         }))
         .sort((a, b) => a.scannedAt - b.scannedAt),
       categories: categories.docs

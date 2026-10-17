@@ -52,6 +52,9 @@ const nextConfig = {
   // values at build time, so they go to their own directory — a test build
   // must never be what a plain `next start` serves.
   distDir: process.env.NEXT_DIST_DIR || '.next',
+  // Which Vercel environment built this (lib/firebase/envGuard.ts): lets
+  // the browser refuse the production Firebase project on a Preview.
+  env: { NEXT_PUBLIC_DEPLOY_ENV: process.env.VERCEL_ENV || '' },
   // firebase-admin (and its deps: @grpc/grpc-js, google-auth-library,
   // protobufjs, etc.) uses dynamic requires and optional native bindings
   // that break when Next tries to bundle them into each route's

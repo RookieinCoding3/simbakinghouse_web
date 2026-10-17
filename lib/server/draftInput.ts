@@ -56,3 +56,9 @@ export function parseDraftCompletion(b: Record<string, unknown>): DraftCompletio
     costSen: sen(b.costSen, 'Cost'),
   }
 }
+
+/** What blocks completing a draft (same rule as the iPad): no sell price, or
+ *  nothing counted on the shelf. */
+export function draftProblems(sellPriceSen: number | null, onHandMilli: number): { noPrice: boolean; noQty: boolean } {
+  return { noPrice: sellPriceSen === null || sellPriceSen <= 0, noQty: onHandMilli <= 0 }
+}

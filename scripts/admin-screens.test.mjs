@@ -129,6 +129,7 @@ await check('complete a draft in the browser: details saved, status active, audi
     code: 'SHELF-001', name: '', category: '', status: 'draft', isActive: false, sellPrice: 450, price: 4.5,
     createdVia: 'quick_add', imageUrls: [], unitLabel: 'pack', kind: 'standard', createdAt: new Date(),
   })
+  await d.collection('stockLevels').doc('draft-1_storeroom').set({ productId: 'draft-1', locationId: 'storeroom', onHandMilli: 6000, reservedMilli: 0 })
   await phone.goto(`${BASE_URL}/admin/drafts`)
   const form = phone.getByTestId('draft-form')
   await form.waitFor()
@@ -151,6 +152,44 @@ await check('complete a draft in the browser: details saved, status active, audi
 await check('completing the same draft twice is refused (e.g. already done on the iPad)', async () => {
   const res = await api('POST', '/api/admin/drafts/draft-1', { name: 'x', categoryId: 'flour-cat' })
   assert(res.status === 409, `status ${res.status}`)
+})
+
+await check('a draft with no price and quantity 0 is flagged red and cannot be completed until fixed', async () => {
+  const d = db()
+  await d.collection('products').doc('draft-2').set({
+    code: 'SHELF-002', name: '', category: '', status: 'draft', isActive: false,
+    createdVia: 'quick_add', imageUrls: [], unitLabel: 'pack', kind: 'standard', createdAt: new Date(),
+  })
+  await phone.goto(`${BASE_URL}/admin/drafts`)
+  const form = phone.getByTestId('draft-form')
+  await form.getByText('Code SHELF-002').waitFor()
+  const problems = form.getByTestId('draft-problems')
+  await problems.getByText('No price').waitFor()
+  await problems.getByText('Quantity 0').waitFor()
+  await form.getByLabel('Name (English)').fill('Shelf thing')
+  await form.getByLabel('Category').selectOption('flour-cat')
+  const save = form.getByRole('button', { name: 'Save and next' })
+  assert(await save.isDisabled(), 'Save enabled with no price and quantity 0')
+  await form.getByLabel('Sell price (RM)').fill('5.00')
+  await problems.getByText('Quantity 0').waitFor()
+  assert(await save.isDisabled(), 'Save enabled with quantity 0')
+  // The server refuses too (an old page, or a direct call).
+  let res = await api('POST', '/api/admin/drafts/draft-2', { name: 'x', categoryId: 'flour-cat' })
+  assert(res.status === 400, `no price: status ${res.status}`)
+  res = await api('POST', '/api/admin/drafts/draft-2', { name: 'x', categoryId: 'flour-cat', sellPriceSen: 500 })
+  assert(res.status === 409, `quantity 0: status ${res.status}`)
+  assert((await getDoc('products', 'draft-2')).status === 'draft', 'completed anyway')
+  // Counted on the iPad: now it can be completed here.
+  await d.collection('stockLevels').doc('draft-2_storeroom').set({ productId: 'draft-2', locationId: 'storeroom', onHandMilli: 3000, reservedMilli: 0 })
+  await phone.reload()
+  await form.getByText('Code SHELF-002').waitFor()
+  await form.getByLabel('Name (English)').fill('Shelf thing')
+  await form.getByLabel('Category').selectOption('flour-cat')
+  await form.getByLabel('Sell price (RM)').fill('5.00')
+  assert(!(await save.isDisabled()), 'Save still disabled after fixing')
+  await save.click()
+  await phone.getByTestId('no-drafts').waitFor()
+  assert((await getDoc('products', 'draft-2')).status === 'active', 'not completed after fixing')
 })
 
 console.log('\n--- Every screen at 390 px and 1440 px ---')

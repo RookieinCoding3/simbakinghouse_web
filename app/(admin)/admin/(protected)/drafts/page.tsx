@@ -20,6 +20,7 @@ interface Draft {
   kind: string
   repackSourceProductId: string | null
   scannedAt: number
+  onHandMilli: number
 }
 interface Category {
   id: string
@@ -98,6 +99,7 @@ export default function DraftsPage() {
                   <span className="min-w-0">
                     <span className="block text-sm text-ink font-medium truncate">{d.code}</span>
                     {d.sellPriceSen !== null && <span className="block text-xs text-muted">RM {senToRMString(d.sellPriceSen)}</span>}
+                    <ProblemFlags noPrice={d.sellPriceSen === null || d.sellPriceSen <= 0} noQty={d.onHandMilli <= 0} />
                   </span>
                 </button>
               </li>
@@ -121,6 +123,16 @@ export default function DraftsPage() {
   )
 }
 
+function ProblemFlags({ noPrice, noQty }: { noPrice: boolean; noQty: boolean }) {
+  if (!noPrice && !noQty) return null
+  return (
+    <span className="flex flex-wrap gap-1 mt-1" data-testid="draft-flags">
+      {noPrice && <span className="text-[11px] uppercase tracking-wider bg-red-100 text-red-700 px-2 py-0.5">No price</span>}
+      {noQty && <span className="text-[11px] uppercase tracking-wider bg-red-100 text-red-700 px-2 py-0.5">Quantity 0</span>}
+    </span>
+  )
+}
+
 function DraftForm({ draft, categories, bulks, onSaved }: { draft: Draft; categories: Category[]; bulks: Bulk[]; onSaved: () => void }) {
   const [name, setName] = useState('')
   const [nameZh, setNameZh] = useState('')
@@ -133,6 +145,10 @@ function DraftForm({ draft, categories, bulks, onSaved }: { draft: Draft; catego
   const [cost, setCost] = useState('')
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+
+  const priceSen = price.trim() ? parseRMToSen(price) : null
+  const noPrice = priceSen === null || priceSen <= 0
+  const noQty = draft.onHandMilli <= 0
 
   async function save() {
     setMessage(null)
@@ -242,10 +258,17 @@ function DraftForm({ draft, categories, bulks, onSaved }: { draft: Draft; catego
           </label>
         </div>
       )}
+      {(noPrice || noQty) && (
+        <div className="bg-red-50 border border-red-200 p-4 text-sm text-red-800 space-y-1" data-testid="draft-problems">
+          <ProblemFlags noPrice={noPrice} noQty={noQty} />
+          {noPrice && <p>Enter the sell price before completing.</p>}
+          {noQty && <p>Quantity is 0. Count it on the iPad (Complete details) first; it can&apos;t be completed here until then.</p>}
+        </div>
+      )}
       {message && <p className="text-sm text-clay">{message}</p>}
       <button
         onClick={save}
-        disabled={saving}
+        disabled={saving || noPrice || noQty}
         className="bg-ink hover:bg-clay text-paper py-3 px-8 text-xs uppercase tracking-[0.2em] disabled:opacity-50"
       >
         {saving ? 'Saving…' : 'Save and next'}

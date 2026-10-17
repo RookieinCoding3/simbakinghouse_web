@@ -3,7 +3,7 @@ import { FieldValue } from 'firebase-admin/firestore'
 import { getAdminDb } from '@/lib/firebase/admin'
 import { requireAdmin } from '@/lib/server/adminAuth'
 import { writeAudit } from '@/lib/server/audit'
-import { parseDraftCompletion } from '@/lib/server/draftInput'
+import { draftProblems, parseDraftCompletion } from '@/lib/server/draftInput'
 import { Refused, handleRouteError, readJson } from '@/lib/server/http'
 
 export const runtime = 'nodejs'
@@ -32,6 +32,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         throw new Refused('That bulk product no longer exists.', 400)
       }
       const sellPriceSen = input.sellPriceSen ?? (typeof snap.get('sellPrice') === 'number' ? snap.get('sellPrice') : null)
+      const levels = await tx.get(db.collection('stockLevels').where('productId', '==', productId))
+      const onHandMilli = levels.docs.reduce((n, l) => n + Number(l.get('onHandMilli') ?? 0), 0)
+      const problems = draftProblems(sellPriceSen, onHandMilli)
+      if (problems.noPrice) throw new Refused('Enter the sell price first.', 400)
+      if (problems.noQty) throw new Refused('Quantity is 0: count it on the iPad (Complete details) first.', 409)
       const after = {
         name: input.name,
         nameZh: input.nameZh,

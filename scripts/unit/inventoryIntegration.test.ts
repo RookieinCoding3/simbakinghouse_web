@@ -3,7 +3,8 @@
 import { validateOrderInput } from '../../lib/orderValidation'
 import { productAvailability, STOCK_LABEL } from '../../lib/productView'
 import { normalizeOrder } from '../../lib/admin/normalizeOrder'
-import { parseDraftCompletion } from '../../lib/server/draftInput'
+import { draftProblems, parseDraftCompletion } from '../../lib/server/draftInput'
+import { assertProjectAllowed } from '../../lib/firebase/envGuard'
 import type { Product } from '../../types/product'
 import { test, eq, ok, done } from './harness'
 
@@ -80,6 +81,30 @@ test('admin reads iPad statuses, courier notes and holds', () => {
   eq(o.courierNote, 'Lalamove')
   eq(o.heldOnIpad, true)
   eq(o.problems.length, 0)
+})
+
+test('a Vercel Preview refuses the production Firebase project; production and local are unaffected', () => {
+  const throws = (f: () => void) => {
+    try {
+      f()
+      return false
+    } catch {
+      return true
+    }
+  }
+  ok(throws(() => assertProjectAllowed('sim-baking-house', 'preview')), 'preview + prod must refuse')
+  ok(!throws(() => assertProjectAllowed('sim-baking-house-test', 'preview')), 'preview + staging is fine')
+  ok(!throws(() => assertProjectAllowed('sim-baking-house', 'production')), 'production is unaffected')
+  ok(!throws(() => assertProjectAllowed('sim-baking-house', '')), 'local dev is unaffected')
+  ok(!throws(() => assertProjectAllowed('demo-sbh-test', 'preview')), 'emulator projects are fine')
+})
+
+test('a draft with no price or quantity 0 cannot be completed (same rule as the iPad)', () => {
+  eq(draftProblems(450, 1000), { noPrice: false, noQty: false })
+  eq(draftProblems(null, 1000), { noPrice: true, noQty: false })
+  eq(draftProblems(0, 1000).noPrice, true)
+  eq(draftProblems(450, 0), { noPrice: false, noQty: true })
+  eq(draftProblems(450, -2000).noQty, true)
 })
 
 test('complete a draft: names, category and repack checked; prices in sen', () => {

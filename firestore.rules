@@ -249,7 +249,7 @@ service cloud.firestore {
       allow read: if isAdmin();
       allow write: if false;
     }
-    // (stockMovements and batches moved to the SBH Inventory section below:
+    // (stockMovements and batches moved to the SBH Inventory section above:
     // same names, new schema, written by the iPad app. Phase 2 never stored
     // any docs in them.)
     match /sales/{id} {
