@@ -19,6 +19,8 @@ export interface ProductInput {
   units: SellUnit[]
   collections: string[]
   chilled: boolean
+  alsoNeed: string
+  alsoNeedZh: string
 }
 
 function str(v: unknown, max: number): string {
@@ -78,6 +80,8 @@ export function parseProductInput(b: Record<string, unknown>): ProductInput {
     units,
     collections: readCollections(b.collections),
     chilled: b.chilled === true,
+    alsoNeed: str(b.alsoNeed, 300),
+    alsoNeedZh: str(b.alsoNeedZh, 300),
   }
 }
 

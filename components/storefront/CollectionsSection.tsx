@@ -5,8 +5,12 @@ import Link from 'next/link'
 import type { Product } from '@/types/product'
 import { useLang } from '@/lib/i18n/LangContext'
 import { COLLECTIONS } from '@/lib/storefront/collections'
+import { formatSen } from '@/lib/money'
 
-type Group = { id: string; products: Pick<Product, 'id' | 'name' | 'nameZh' | 'imageUrl'>[] }
+type Group = {
+  id: string
+  products: (Pick<Product, 'id' | 'name' | 'nameZh' | 'imageUrl'> & { priceSen: number | null; fromPrice: boolean })[]
+}
 
 /** Collections that have products (empty ones are not passed in). */
 export default function CollectionsSection({ groups }: { groups: Group[] }) {
@@ -30,11 +34,14 @@ export default function CollectionsSection({ groups }: { groups: Group[] }) {
             <ul className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {g.products.slice(0, 4).map((p) => (
                 <li key={p.id}>
-                  <Link href={`/products?collection=${g.id}`} className="block group">
+                  <Link href={`/products?collection=${g.id}&product=${encodeURIComponent(p.id)}`} className="block group" data-testid="collection-product">
                     <div className="relative aspect-square bg-white border border-line overflow-hidden">
                       <Image src={p.imageUrl || '/images/placeholder-product.jpg'} alt="" fill sizes="(max-width: 768px) 50vw, 25vw" className="object-cover" />
                     </div>
                     <p className="mt-2 text-sm text-ink group-hover:text-clay line-clamp-2">{pick(p.name, p.nameZh)}</p>
+                    <p className="text-sm font-semibold text-clay whitespace-nowrap" data-testid="collection-price">
+                      {p.priceSen === null ? t('product.askPrice') : `${p.fromPrice ? (t('product.from') + ' ') : ''}${formatSen(p.priceSen)}`}
+                    </p>
                   </Link>
                 </li>
               ))}

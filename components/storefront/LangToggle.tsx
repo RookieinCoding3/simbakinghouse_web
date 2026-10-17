@@ -26,3 +26,21 @@ export default function LangToggle({ className }: { className?: string }) {
     </div>
   )
 }
+
+/** Phone header: one small button that switches to the other language. */
+export function LangSwitchCompact({ className }: { className?: string }) {
+  const { lang, setLang } = useLang()
+  const other = lang === 'zh' ? 'en' : 'zh'
+  return (
+    <button
+      type="button"
+      onClick={() => setLang(other)}
+      lang={other === 'zh' ? 'zh-Hans' : 'en'}
+      aria-label={other === 'zh' ? '切换到中文' : 'Switch to English'}
+      className={cn('min-w-[40px] h-10 px-1.5 text-[12px] text-ink border border-line', className)}
+      data-testid="lang-compact"
+    >
+      {other === 'zh' ? '中文' : 'EN'}
+    </button>
+  )
+}

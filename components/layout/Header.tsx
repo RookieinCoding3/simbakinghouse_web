@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
 import CartButton from '@/components/cart/CartButton'
 import AccountButton from '@/components/auth/AccountButton'
-import LangToggle from '@/components/storefront/LangToggle'
+import LangToggle, { LangSwitchCompact } from '@/components/storefront/LangToggle'
 import { useLang } from '@/lib/i18n/LangContext'
 import type { StringKey } from '@/lib/i18n/strings'
 
@@ -110,7 +110,7 @@ export default function Header() {
           href="/"
           prefetch={false}
           onClick={() => setMobileMenuOpen(false)}
-          className="text-center font-medium tracking-[0.25em] text-[11px] sm:text-sm uppercase text-ink whitespace-nowrap"
+          className="text-center font-medium tracking-[0.14em] sm:tracking-[0.25em] text-[11px] sm:text-sm uppercase text-ink whitespace-nowrap"
         >
           Sim · Baking · House
         </Link>
@@ -118,6 +118,7 @@ export default function Header() {
         {/* Right: account + cart */}
         <div className="flex justify-end items-center gap-1">
           <LangToggle className="hidden lg:inline-flex mr-2" />
+          <LangSwitchCompact className="lg:hidden mr-1" />
           <AccountButton />
           <CartButton />
         </div>

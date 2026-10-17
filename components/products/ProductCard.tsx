@@ -78,45 +78,29 @@ function ProductCard({ product, onClick, index = 0, responsiveTheme = false }: P
         )}
       </div>
 
-      {/* Product Info - Clean Layout */}
-      <div className="flex justify-between items-start px-1">
-        <div className="max-w-[70%]">
-          <h3 className={cn(
-            "font-heading text-lg md:text-xl leading-tight line-clamp-1 transition-colors duration-300",
-            "text-ink group-hover:text-clay"
-          )}>
-            {name}
-          </h3>
-          <p className={cn(
-            "text-[10px] uppercase tracking-widest mt-1",
-            "text-ink/50"
-          )}>
-            {product.category}
+      {/* Product info: full-width name (two lines), price on its own line
+          so "RM 4.50" never wraps on a phone. */}
+      <div className="px-1 space-y-1">
+        <h3 className="font-heading text-lg md:text-xl leading-tight line-clamp-2 transition-colors duration-300 text-ink group-hover:text-clay">
+          {name}
+        </h3>
+        <p className="font-heading text-lg md:text-xl text-clay whitespace-nowrap">{cardPrice(product, t('product.askPrice'))}</p>
+        <p className="text-[10px] uppercase tracking-widest text-ink/50">{product.category}</p>
+        {status && status !== 'out' && (
+          <p className={cn('text-[10px] uppercase tracking-widest font-medium', status === 'low' ? 'text-clay' : 'text-ink/50')}>
+            {t(`stock.${status}`)}
           </p>
-          {status && status !== 'out' && (
-            <p className={cn('text-[10px] uppercase tracking-widest mt-1 font-medium', status === 'low' ? 'text-clay' : 'text-ink/50')}>
-              {t(`stock.${status}`)}
-            </p>
-          )}
-          {product.chilled && (
-            <p className="text-[10px] uppercase tracking-widest mt-1 font-medium text-[#1F4A63]" data-testid="chilled-tag">
-              ❄ {t('product.chilled')}
-            </p>
-          )}
-          {product.featured && (
-            <p className="text-[10px] uppercase tracking-widest mt-1 font-medium text-clay" data-testid="bestseller">
-              Bestseller
-            </p>
-          )}
-        </div>
-        <div className="text-right">
-          <p className={cn(
-            "font-heading text-lg md:text-xl",
-            "text-clay"
-          )}>
-            {cardPrice(product, t('product.askPrice'))}
+        )}
+        {product.chilled && (
+          <p className="text-[10px] uppercase tracking-widest font-medium text-[#1F4A63]" data-testid="chilled-tag">
+            ❄ {t('product.chilled')}
           </p>
-        </div>
+        )}
+        {product.featured && (
+          <p className="text-[10px] uppercase tracking-widest font-medium text-clay" data-testid="bestseller">
+            Bestseller
+          </p>
+        )}
       </div>
     </div>
   )

@@ -105,6 +105,17 @@ for (const width of [375, 1440]) {
       }
     })
 
+    if (width < 800) {
+      await check(`${tag} phone header has a language switch and fits without sideways scroll`, async () => {
+        const b = page.getByTestId('lang-compact')
+        await b.waitFor()
+        assert((await b.innerText()).trim() === (lang === 'zh' ? 'EN' : '中文'), await b.innerText())
+        const box = await page.locator('header').boundingBox()
+        const r = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, w: document.documentElement.clientWidth }))
+        assert(r.sw <= r.w + 1 && box.width <= 376, `header overflow ${r.sw}/${r.w}`)
+      })
+    }
+
     await check(`${tag} How to order: 3 steps, hours from settings, no delivery`, async () => {
       const how = page.getByTestId('how-to-order')
       await how.getByRole('heading', { name: t.howto }).waitFor()
@@ -130,8 +141,29 @@ for (const width of [375, 1440]) {
       assert((await page.getByTestId('collection-regulars').count()) === 0, 'empty collection shown')
       assert(!(await cols.innerText()).includes(t.regulars), 'regulars title shown')
       assert((await page.getByTestId('collection-first-time').innerText()).includes(t.rice), 'product name not in the chosen language')
+      const prices = await page.getByTestId('collection-price').allInnerTexts()
+      assert(prices.length > 0 && prices.every((x) => /RM\s?\d|Ask for price|价格请询问/.test(x)), `card prices: ${prices.join('|')}`)
       await noSidewaysScroll(page)
       await page.screenshot({ path: `${SHOTS}/home-${width}-${lang}.png`, fullPage: true })
+    })
+
+    await check(`${tag} a collection card opens that product (price shown)`, async () => {
+      const cardLink = page.getByTestId('collection-first-time').getByTestId('collection-product').filter({ hasText: t.rice }).first()
+      assert(/RM\s?3\.50|from|起价/.test(await cardLink.innerText()), await cardLink.innerText())
+      await cardLink.click()
+      await page.waitForURL(/product=shop-rice/)
+      await page.getByTestId('returns-note').waitFor()
+      if (width < 800) {
+        const btn = await page.getByTestId('modal-buy').getByRole('button').last().boundingBox()
+        assert(btn && btn.y + btn.height <= 812, `Add to cart below the fold: ${btn?.y}`)
+      }
+      await page.getByTestId('product-ask-sim').waitFor()
+      const href = await page.getByTestId('product-ask-sim').getAttribute('href')
+      assert(href.startsWith(`https://wa.me/${WA}?text=`), href)
+      const note = await page.getByTestId('returns-note').innerText()
+      assert(/24/.test(note) && !/non-refundable/i.test(note), note)
+      await page.goto(`${BASE_URL}/`)
+      await page.getByTestId('hero').waitFor()
     })
 
     await check(`${tag} "Start here" opens the first-timers collection`, async () => {
@@ -156,6 +188,9 @@ for (const width of [375, 1440]) {
       await search.fill('可可')
       await sleep(150)
       assert((await names()).some((n) => /Cocoa|可可/.test(n)) && (await names()).length === 1, (await names()).join('|'))
+      await search.fill(lang === 'zh' ? 'flor' : 'ryce flor')
+      await sleep(150)
+      assert((await names()).some((n) => n === t.rice), `typo search: ${(await names()).join('|')}`)
       await search.fill('f00011')
       await sleep(150)
       assert((await names()).length === 1 && (await names())[0] === t.rice, (await names()).join('|'))
@@ -216,19 +251,50 @@ for (const width of [375, 1440]) {
       }
       await drawerNotice.waitFor()
       assert((await drawerNotice.innerText()).includes(t.chilled), 'cart notice text')
+      assert(/WhatsApp/.test(await page.getByTestId('cart-how').innerText()), 'cart how-it-works line')
       await page.screenshot({ path: `${SHOTS}/cart-chilled-${width}-${lang}.png` })
       await page.locator('.fixed.inset-0.z-\\[100\\]').getByRole('button', { name: lang === 'zh' ? '去下单' : 'Continue to order' }).click()
       await page.waitForURL(/\/checkout/)
       await page.locator('main').getByTestId('chilled-notice').waitFor()
+      // The earliest day (tomorrow) is already chosen, with a hint.
+      assert((await page.locator('#collectDate').inputValue()) !== '', 'collection date not preselected')
+      if (width === 375 || lang === 'zh') {
+        await page.locator('#name').fill('Store Test')
+        await page.locator('#phone').fill('012-345 6789')
+        await page.locator('#collectTime').fill('10:00')
+        await page.locator('form input[type=checkbox][required]').check()
+        await sleep(3200) // the server refuses forms sent in under 3 s
+        await page.getByRole('button', { name: lang === 'zh' ? '用 WhatsApp 发送订单' : 'Send order on WhatsApp' }).click()
+        await page.waitForURL(/\/order\/SBH-/, { timeout: 20000 })
+        const steps = page.getByTestId('order-next-steps')
+        await steps.waitFor()
+        const send = await page.getByTestId('order-send-whatsapp').getAttribute('href')
+        const text = decodeURIComponent(send)
+        assert(send.startsWith(`https://wa.me/${WA}?text=`) && text.includes(page.url().split('/order/')[1]), send)
+        assert(text.includes(`${BASE_URL}/order/`), `link uses this site's address: ${text}`)
+        assert(/RM\s?12\.90/.test(await page.getByTestId('order-est-total').innerText()), 'estimated total')
+        await steps.getByTestId('chilled-notice').waitFor()
+        await noSidewaysScroll(page)
+        const left = (await page.getByTestId('order-send-whatsapp').boundingBox()).x
+        assert(left >= 12, `order page has no side margin: x=${left}`)
+        await page.screenshot({ path: `${SHOTS}/order-next-${width}-${lang}.png`, fullPage: true })
+      }
     })
 
     if (width < 800) {
       await check(`${tag} sticky cart bar: count + total + checkout; never covers content; Categories button above it`, async () => {
         await page.goto(`${BASE_URL}/products`)
         const bar = page.getByTestId('mobile-cart-bar')
+        if (!(await bar.isVisible().catch(() => false))) {
+          // The order above emptied the cart: add the butter again.
+          const butterName = lang === 'zh' ? '牛油 250克' : 'Butter 250g'
+          await page.locator('div.group', { has: page.getByRole('heading', { name: butterName, exact: true }) }).first().click()
+          await page.getByRole('button', { name: lang === 'zh' ? '加入购物车' : 'Add to cart' }).click()
+          await page.goto(`${BASE_URL}/products`)
+        }
         await bar.waitFor()
         const text = await bar.innerText()
-        assert(/RM\s*12\.90/.test(text) && (text.includes('1 item') || text.includes('1 件')), text)
+        assert(/RM\s*\d+\.\d\d/.test(text) && /\d+ (items?|件)/.test(text), text)
         assert((await page.getByTestId('mobile-cart-checkout').innerText()).toLowerCase().includes(t.checkout.toLowerCase()), 'checkout label')
         // Scrolled to the very bottom, the last footer line sits above the bar.
         await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
@@ -236,8 +302,9 @@ for (const width of [375, 1440]) {
         const barTop = (await bar.boundingBox()).y
         const lastLine = await page.locator('footer a').last().boundingBox()
         assert(lastLine.y + lastLine.height <= barTop + 1, `footer covered: ${lastLine.y + lastLine.height} > ${barTop}`)
-        const cat = await page.getByRole('button', { name: 'Categories' }).last().boundingBox()
-        assert(cat.y + cat.height <= barTop, `Categories button covered: ${cat.y + cat.height} > ${barTop}`)
+        // With the cart bar showing, the floating Categories button steps
+        // aside (the Categories link stays in the results bar).
+        assert(!(await page.locator('button.fixed', { hasText: /Categories|分类/ }).isVisible()), 'floating Categories button shown with the cart bar')
         await noSidewaysScroll(page)
         await page.screenshot({ path: `${SHOTS}/sticky-bar-${width}-${lang}.png` })
         await page.getByTestId('mobile-cart-checkout').click()

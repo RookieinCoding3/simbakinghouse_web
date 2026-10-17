@@ -44,7 +44,14 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
     if (q) setQuery(q)
     const c = readCollections([params.get('collection')])[0]
     if (c) setCollection(c)
-  }, [setQuery])
+    // ?product= (home page collection cards): open that product right away.
+    const pid = params.get('product')
+    const p = pid ? initialProducts.find((x) => x.id === pid) : undefined
+    if (p) {
+      setSelectedProduct(p)
+      setIsModalOpen(true)
+    }
+  }, [setQuery, initialProducts])
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
@@ -148,7 +155,7 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
       {/* 1. HERO with Search - Clean & Minimal */}
       <section className="py-12 md:py-20 text-center px-4">
         <h1 className="font-heading text-ink text-5xl md:text-7xl mb-8">
-          Products
+          {t('products.title')}
         </h1>
 
         {/* THE SEARCH BAR - Minimalist & Clean */}
@@ -228,7 +235,7 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
           {/* Results Info Bar */}
           <div className="flex justify-between items-center mb-8 px-1">
             <p className="font-body text-[10px] md:text-sm uppercase tracking-widest text-ink/50">
-              Showing {displayedProducts.length} of {filteredProducts.length} products
+              {t('products.showing', { shown: displayedProducts.length, total: filteredProducts.length })}
               {selectedCategory && (
                 <span className="ml-1 text-clay">in {selectedCategory}</span>
               )}
@@ -237,9 +244,9 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
             {/* Mobile Filter Button */}
             <button
               onClick={() => setIsFilterOpen(true)}
-              className="md:hidden font-body text-ink text-xs uppercase font-medium tracking-widest border-b border-ink/30 pb-0.5 hover:text-clay transition-colors"
+              className="md:hidden font-body text-ink text-xs uppercase font-medium tracking-widest border border-ink px-4 min-h-[40px] hover:bg-sand transition-colors"
             >
-              Categories
+              {t('products.categories')}
             </button>
 
             {/* Desktop Clear Button */}
@@ -252,7 +259,7 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
                 }}
                 className="hidden md:block font-body text-clay/70 text-xs uppercase tracking-widest hover:text-clay transition-colors"
               >
-                Clear filters
+                {t('products.clear')}
               </button>
             )}
           </div>
@@ -261,7 +268,7 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
           {filteredProducts.length === 0 ? (
             <div className="text-center py-12 md:py-20">
               <p className="font-body text-ink/70 text-base md:text-lg mb-4" data-testid="search-none">
-                {searchQuery.trim() ? t('search.none', { q: searchQuery.trim() }) : 'No products found'}
+                {searchQuery.trim() ? t('search.none', { q: searchQuery.trim() }) : t('products.none')}
               </p>
               {searchQuery.trim() && (
                 <a
@@ -284,7 +291,7 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
                 }}
                 className="font-body text-clay hover:text-clay/80 transition-colors underline text-sm"
               >
-                Clear filters and show all
+                {t('products.showAll')}
               </button>
             </div>
           ) : (
@@ -311,7 +318,7 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
                     onClick={loadMore}
                     className="group relative inline-flex items-center gap-4 px-12 py-5 border border-ink text-ink font-body font-medium uppercase tracking-[0.2em] text-xs hover:bg-ink hover:text-paper transition-all duration-500"
                   >
-                    <span>DISCOVER MORE</span>
+                    <span>{t('products.more')}</span>
                     <span className="group-hover:translate-x-1 transition-transform">→</span>
 
                     {/* Subtle glow effect */}
@@ -340,14 +347,6 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
         onClose={handleCloseModal}
       />
 
-      {/* Floating Mobile Filter Button */}
-      <button
-        onClick={() => setIsFilterOpen(true)}
-        style={{ bottom: 'calc(var(--mobile-cart-bar-h, 0px) + 2.5rem)' }}
-        className="md:hidden fixed left-1/2 -translate-x-1/2 z-40 bg-ink text-paper px-8 py-4 font-body font-medium text-[11px] uppercase tracking-widest shadow-xl flex items-center gap-2 hover:bg-clay transition-colors"
-      >
-        Categories
-      </button>
 
       {/* Mobile Filter Drawer */}
       <MobileFilterDrawer
@@ -356,6 +355,8 @@ export default function ProductsPageClient({ initialProducts }: ProductsPageClie
         categories={categories}
         selectedCategory={selectedCategory}
         onSelectCategory={handleCategoryChange}
+        collections={COLLECTIONS.map((c) => c.id).filter((id) => products.some((p) => p.collections?.includes(id)))}
+        onSelectCollection={(id) => setCollection(id)}
         totalProducts={filteredProducts.length}
       />
     </main>

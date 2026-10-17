@@ -9,6 +9,9 @@ export interface Product {
   collections?: string[]
   /** Kept chilled: a notice is shown on the product and in the cart. */
   chilled?: boolean
+  /** "You will also need…" (e.g. eggs, butter, a tin): written by Sim, shown on the product. */
+  alsoNeed?: string
+  alsoNeedZh?: string
   description: string
   /** undefined means no price has been set — show "Ask for price", never hide the card */
   price?: number

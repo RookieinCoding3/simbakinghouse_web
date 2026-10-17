@@ -105,6 +105,7 @@ export default function CartDrawer() {
               <p className="text-xs uppercase tracking-widest text-ink/70">{t('cart.subtotal')}</p>
               <p className="font-heading text-2xl text-ink">RM {subtotal.toFixed(2)}</p>
             </div>
+            <p className="text-[11px] text-ink/70 mt-2 mb-2" data-testid="cart-how">{t('cart.howItWorks')}</p>
             {hasChilled && <ChilledNotice className="mb-3 mt-2" title={t('cart.chilledNote')} />}
             {hasUnpricedItems && (
               <p className="text-[11px] text-muted mb-4">

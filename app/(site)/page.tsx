@@ -5,6 +5,7 @@ import AskSimSection from '@/components/storefront/AskSimSection'
 import CollectionsSection from '@/components/storefront/CollectionsSection'
 import { fetchProducts } from '@/lib/firebase/products'
 import { groupByCollection } from '@/lib/storefront/collections'
+import { onlineUnits } from '@/lib/productView'
 import WhyChooseUsSection from '@/components/sections/WhyChooseUsSection'
 import CategoryNavigationSection from '@/components/sections/CategoryNavigationSection'
 import FeaturedProductsSection from '@/components/sections/FeaturedProductsSection'
@@ -28,7 +29,17 @@ export default async function Home() {
   const products = await fetchProducts().catch(() => [])
   const groups = groupByCollection(products).map((g) => ({
     id: g.id,
-    products: g.products.slice(0, 4).map((p) => ({ id: p.id, name: p.name, nameZh: p.nameZh, imageUrl: p.imageUrl })),
+    products: g.products.slice(0, 4).map((p) => {
+      const priced = onlineUnits(p).filter((u) => u.priceSen !== null).map((u) => u.priceSen as number)
+      return {
+        id: p.id,
+        name: p.name,
+        nameZh: p.nameZh,
+        imageUrl: p.imageUrl,
+        priceSen: priced.length ? Math.min(...priced) : null,
+        fromPrice: new Set(priced).size > 1,
+      }
+    }),
   }))
   // "New to baking? Start here": the first-timers collection if Sim has
   // filled it, otherwise straight to Ask Sim.

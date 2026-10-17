@@ -62,6 +62,8 @@ function mapDocumentToProduct(docId: string, data: DocumentData): Product {
     code: typeof data.code === 'string' ? data.code : '',
     collections: readCollections(data.collections),
     chilled: data.chilled === true,
+    alsoNeed: typeof data.alsoNeed === 'string' ? data.alsoNeed : '',
+    alsoNeedZh: typeof data.alsoNeedZh === 'string' ? data.alsoNeedZh : '',
     description: data.description || data.desc || data.Description || data.details || '',
     price: readPrice(data),
     imageUrl: data.imageUrl || data.image || data.imageURL || data.photo || data.photoURL || '/images/placeholder-product.jpg',

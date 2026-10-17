@@ -73,7 +73,14 @@ export default function CheckoutPage() {
       })
       .catch(() => {})
   }, [])
-  const [collectDate, setCollectDate] = useState('')
+  // Starts on the earliest day allowed (tomorrow), so the box never looks
+  // filled in while it is actually empty. (The server renders the empty
+  // cart view, so there is no date input to mismatch on hydration.)
+  const [collectDate, setCollectDate] = useState(() => {
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    return toDateInputValue(tomorrow)
+  })
   const [collectTime, setCollectTime] = useState('')
   const [timeError, setTimeError] = useState<string | null>(null)
   const [notes, setNotes] = useState('')
@@ -102,17 +109,18 @@ export default function CheckoutPage() {
     return toDateInputValue(tomorrow)
   }, [])
 
+
   if (items.length === 0) {
     return (
       <main className="min-h-screen bg-paper flex items-center justify-center px-4">
         <div className="text-center max-w-md">
-          <h1 className="font-heading text-ink text-4xl mb-4">Your cart is empty</h1>
-          <p className="font-body text-ink/70 text-sm mb-8">Add something from our products before checking out.</p>
+          <h1 className="font-heading text-ink text-4xl mb-4">{t('co.empty')}</h1>
+          <p className="font-body text-ink/70 text-sm mb-8">{t('co.emptyBody')}</p>
           <Link
             href="/products"
             className="inline-flex items-center gap-2 px-8 py-4 bg-ink hover:bg-clay text-paper font-body font-medium uppercase tracking-widest text-xs transition-colors"
           >
-            Browse products
+            {t('co.browse')}
           </Link>
         </div>
       </main>
@@ -125,14 +133,14 @@ export default function CheckoutPage() {
     setTimeError(null)
 
     const normalizedPhone = normalizeMyPhone(phone)
-    if (!name.trim()) return setError('Enter your name')
-    if (!normalizedPhone) return setError('Enter a valid Malaysian phone number')
-    if (!collectDate) return setError('Choose a collection date')
-    if (!collectTime) return setError('Choose a collection time')
+    if (!name.trim()) return setError(t('co.err.name'))
+    if (!normalizedPhone) return setError(t('co.err.phone'))
+    if (!collectDate) return setError(t('co.err.date'))
+    if (!collectTime) return setError(t('co.err.time'))
     if (!isTimeWithinRange(collectTime, timeMin, timeMax)) {
-      return setTimeError(`Choose a time between ${settings.shopOpensAt} and ${settings.shopClosesAt}`)
+      return setTimeError(t('co.timeError', { open: settings.shopOpensAt, close: settings.shopClosesAt }))
     }
-    if (!consent) return setError('Please agree to the storage of your details to continue')
+    if (!consent) return setError(t('co.err.consent'))
 
     setSubmitting(true)
     try {
@@ -203,13 +211,26 @@ export default function CheckoutPage() {
         })),
         estimatedTotal,
         priceToConfirm: priceToConfirm === true,
+        baseUrl: window.location.origin,
       }, `https://wa.me/${settings.whatsappNumber}`)
+
+      // The order page offers this link again ("send on WhatsApp"), with
+      // the total and the chilled reminder: if WhatsApp did not open, the
+      // customer still knows what to do.
+      try {
+        sessionStorage.setItem(
+          `sbh_order_wa_${orderId}`,
+          JSON.stringify({ waLink, estimatedTotal, priceToConfirm: priceToConfirm === true, chilled: items.some((i) => i.chilled) }),
+        )
+      } catch {
+        // The order page rebuilds the link from the order itself.
+      }
 
       clear()
       window.open(waLink, '_blank', 'noopener,noreferrer')
       router.push(`/order/${orderId}`)
     } catch {
-      setError('Something went wrong, please try again')
+      setError(t('co.err.generic'))
       setSubmitting(false)
     }
   }
@@ -217,7 +238,7 @@ export default function CheckoutPage() {
   return (
     <main className="min-h-screen bg-paper px-4 py-16 md:py-24">
       <div className="max-w-xl mx-auto">
-        <h1 className="font-heading text-ink text-4xl md:text-5xl mb-10">Checkout</h1>
+        <h1 className="font-heading text-ink text-4xl md:text-5xl mb-10">{t('co.title')}</h1>
 
         {/* Order summary */}
         <div className="mb-10 border-t border-b border-line divide-y divide-line">
@@ -229,12 +250,12 @@ export default function CheckoutPage() {
                 {item.chilled && <span className="text-[#1F4A63]"> · ❄ {t('product.chilled')}</span>}
               </span>
               <span className="text-muted">
-                {item.unitPrice !== null ? `RM ${(item.unitPrice * item.qty).toFixed(2)}` : 'Ask for price'}
+                {item.unitPrice !== null ? `RM ${(item.unitPrice * item.qty).toFixed(2)}` : t('product.askPrice')}
               </span>
             </div>
           ))}
           <div className="flex justify-between py-4 text-sm font-medium">
-            <span className="text-ink">Subtotal</span>
+            <span className="text-ink">{t('cart.subtotal')}</span>
             <span className="text-ink">RM {subtotal.toFixed(2)}</span>
           </div>
         </div>
@@ -261,7 +282,7 @@ export default function CheckoutPage() {
 
           <div>
             <label htmlFor="name" className="block text-xs uppercase tracking-widest text-ink/70 mb-2">
-              Name
+              {t('co.name')}
             </label>
             <input
               id="name"
@@ -276,7 +297,7 @@ export default function CheckoutPage() {
 
           <div>
             <label htmlFor="phone" className="block text-xs uppercase tracking-widest text-ink/70 mb-2">
-              Phone
+              {t('co.phone')}
             </label>
             <input
               id="phone"
@@ -290,7 +311,7 @@ export default function CheckoutPage() {
           </div>
 
           <div>
-            <span className="block text-xs uppercase tracking-widest text-ink/70 mb-2">Fulfilment</span>
+            <span className="block text-xs uppercase tracking-widest text-ink/70 mb-2">{t('co.fulfilment')}</span>
             <div className="flex flex-col gap-2">
               {orderTypes.pickup && (
                 <label className="flex items-center gap-2 text-sm text-ink">
@@ -300,7 +321,7 @@ export default function CheckoutPage() {
                     checked={fulfilment === 'pickup'}
                     onChange={() => setFulfilment('pickup')}
                   />
-                  Self pickup at the shop
+                  {t('co.pickup')}
                 </label>
               )}
               {orderTypes.courierPickup && (
@@ -311,7 +332,7 @@ export default function CheckoutPage() {
                     checked={fulfilment === 'courier_pickup'}
                     onChange={() => setFulfilment('courier_pickup')}
                   />
-                  Courier pickup — you book Grab / Lalamove to collect from the shop
+                  {t('co.courier')}
                 </label>
               )}
               {fulfilment === 'courier_pickup' && (
@@ -321,7 +342,7 @@ export default function CheckoutPage() {
                   onChange={(e) => setCourierNote(e.target.value)}
                   maxLength={300}
                   rows={2}
-                  placeholder="Courier details (e.g. Grab, driver will come at 11am)"
+                  placeholder={t('co.courierPh')}
                   className="w-full bg-white border border-line py-3 px-4 text-ink text-sm focus:outline-none focus:border-ink/40"
                 />
               )}
@@ -331,7 +352,7 @@ export default function CheckoutPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="collectDate" className="block text-xs uppercase tracking-widest text-ink/70 mb-2">
-                Collection date
+                {t('co.date')}
               </label>
               <input
                 id="collectDate"
@@ -340,12 +361,14 @@ export default function CheckoutPage() {
                 onChange={(e) => setCollectDate(e.target.value)}
                 min={minDate}
                 required
+                aria-describedby="collectDate-hint"
                 className="w-full bg-white border border-line py-3 px-4 text-ink text-sm focus:outline-none focus:border-ink/40"
               />
+              <p id="collectDate-hint" className="text-[11px] mt-1 text-muted">{t('co.dateHint')}</p>
             </div>
             <div>
               <label htmlFor="collectTime" className="block text-xs uppercase tracking-widest text-ink/70 mb-2">
-                Collection time
+                {t('co.time')}
               </label>
               <input
                 id="collectTime"
@@ -361,7 +384,7 @@ export default function CheckoutPage() {
                   // instead of only finding out from the server.
                   setTimeError(
                     value && !isTimeWithinRange(value, timeMin, timeMax)
-                      ? `Choose a time between ${settings.shopOpensAt} and ${settings.shopClosesAt}`
+                      ? t('co.timeError', { open: settings.shopOpensAt, close: settings.shopClosesAt })
                       : null
                   )
                 }}
@@ -378,14 +401,14 @@ export default function CheckoutPage() {
                 id="collectTime-hint"
                 className={`text-[11px] mt-1 ${timeError ? 'text-red-600' : 'text-muted'}`}
               >
-                {timeError ?? `Between ${settings.shopOpensAt} and ${settings.shopClosesAt}`}
+                {timeError ?? t('co.timeHint', { open: settings.shopOpensAt, close: settings.shopClosesAt })}
               </p>
             </div>
           </div>
 
           <div>
             <label htmlFor="notes" className="block text-xs uppercase tracking-widest text-ink/70 mb-2">
-              Notes (optional)
+              {t('co.notes')}
             </label>
             <textarea
               id="notes"
@@ -406,13 +429,13 @@ export default function CheckoutPage() {
               required
             />
             <span>
-              I agree to the{' '}
+              {t('co.agree')}{' '}
               <Link href="/privacy" prefetch={false} target="_blank" rel="noopener noreferrer" className="underline hover:text-ink">
-                Privacy Notice
+                {t('co.privacy')}
               </Link>{' '}
-              and{' '}
+              {t('co.and')}{' '}
               <Link href="/terms" prefetch={false} target="_blank" rel="noopener noreferrer" className="underline hover:text-ink">
-                Terms of Sale
+                {t('co.terms')}
               </Link>
               .
             </span>
@@ -421,7 +444,7 @@ export default function CheckoutPage() {
           {error && <p className="text-xs text-clay">{error}</p>}
 
           <p className="text-xs text-muted">
-            We&apos;ll confirm stock and send a payment QR on WhatsApp. No payment needed yet.
+            {t('co.info')}
           </p>
 
           <button
@@ -429,7 +452,7 @@ export default function CheckoutPage() {
             disabled={submitting}
             className="w-full bg-ink hover:bg-clay disabled:opacity-50 text-paper py-4 font-body font-medium text-xs uppercase tracking-[0.2em] transition-colors"
           >
-            {submitting ? 'Sending…' : 'Send order on WhatsApp'}
+            {submitting ? t('co.sending') : t('co.send')}
           </button>
         </form>
       </div>

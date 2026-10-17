@@ -13,6 +13,8 @@ import { CONTACT_WHATSAPP_URL } from '@/lib/site'
 import { cn } from '@/lib/utils/cn'
 import { useLang } from '@/lib/i18n/LangContext'
 import ChilledNotice from '@/components/storefront/ChilledNotice'
+import { useStorefrontSettings, waLink } from '@/components/storefront/StorefrontSettings'
+import { WhatsAppIcon } from '@/components/storefront/AskSimSection'
 
 interface ProductModalProps {
   product: Product | null
@@ -29,6 +31,7 @@ export default function ProductModal({
   const lastLoggedProductId = useRef<string | null>(null)
   const { addItem } = useCart()
   const { t, pick } = useLang()
+  const { whatsappNumber } = useStorefrontSettings()
   const [qty, setQty] = useState(1)
   const [unitId, setUnitId] = useState<string | null>(null)
 
@@ -109,7 +112,7 @@ export default function ProductModal({
 
         <div className="grid md:grid-cols-2 gap-0">
           {/* Product Image */}
-          <div className="relative h-64 md:h-full min-h-[300px] bg-clay/10">
+          <div className="relative h-44 md:h-full md:min-h-[300px] bg-clay/10">
             <Image
               src={product.imageUrl || '/images/placeholder-product.jpg'}
               alt={pick(product.name, product.nameZh)}
@@ -153,19 +156,22 @@ export default function ProductModal({
               <p className="font-body text-ink/70 leading-relaxed text-base animate-fade-in-delayed">
                 {product.description}
               </p>
-            </div>
-
-            {/* PSYCHOLOGY: Quality Commitment - Positive Reframing */}
-            <div className="mt-6 p-4 bg-sand border border-line">
-              <div className="flex items-center gap-2 mb-2">
-                <h4 className="font-body font-semibold text-clay text-[10px] tracking-widest uppercase">
-                  Our Quality Promise
-                </h4>
-              </div>
-              <p className="font-body text-ink/60 text-[11px] leading-relaxed">
-                To ensure the absolute freshness of our artisan supplies,
-                <span className="text-ink/80 font-medium"> all sales are final and non-refundable.</span> Thank you for trusting our craft.
-              </p>
+              {(pick(product.alsoNeed ?? '', product.alsoNeedZh) || '').trim() && (
+                <div className="text-sm text-ink/80" data-testid="also-need">
+                  <span className="block text-[10px] uppercase tracking-widest text-ink/50 mb-1">{t('products.alsoNeed')}</span>
+                  {pick(product.alsoNeed ?? '', product.alsoNeedZh)}
+                </div>
+              )}
+              <a
+                href={waLink(whatsappNumber, t('products.unsurePrefill', { name: pick(product.name, product.nameZh) }))}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm text-[#1F7A4D] font-semibold underline underline-offset-4"
+                data-testid="product-ask-sim"
+              >
+                <WhatsAppIcon className="w-4 h-4" />
+                {t('products.unsure')}
+              </a>
             </div>
 
             {/* Total Value & CTA Footer */}
@@ -242,6 +248,7 @@ export default function ProductModal({
                 </div>
               )}
 
+              <div data-testid="modal-buy">
               {units.length === 0 ? (
                 <a
                   href={wholesaleHref}
@@ -262,7 +269,16 @@ export default function ProductModal({
                   {canAdd ? t('product.add') : t('stock.out')}
                 </Button>
               )}
+              </div>
             </div>
+
+            {/* Same policy as the Terms of Sale (no change-of-mind returns;
+                faulty / wrong items replaced or refunded within 24 hours). */}
+            <div className="mt-6 p-4 bg-sand border border-line" data-testid="returns-note">
+              <h4 className="font-body font-semibold text-clay text-[10px] tracking-widest uppercase mb-2">{t('returns.title')}</h4>
+              <p className="font-body text-ink/70 text-[12px] leading-relaxed">{t('returns.body')}</p>
+            </div>
+
           </div>
         </div>
       </div>

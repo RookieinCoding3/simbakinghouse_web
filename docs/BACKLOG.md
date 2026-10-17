@@ -11,3 +11,6 @@ Deliberately left out of `feature/storefront-ux`:
 4. Bahasa Melayu version (only if Sim wants it).
 5. Category names in Chinese on cards and filters (categories already store `nameZh`).
 6. Different opening hours per day (Settings supports one daily range).
+7. **Chinese product descriptions**: add `descriptionZh` (editor + product doc) and show it in 中文 mode (customer review B5).
+8. "Goes with" product suggestions (e.g. premix → 8-inch tin with an Add button) and real one-price bundles (customer review B2, F11).
+9. Chinese text for the remaining older home sections, the footer and the WhatsApp order message.

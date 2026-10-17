@@ -2,16 +2,37 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { CONTACT_WHATSAPP_URL } from '@/lib/site'
-import { formatDate, formatTime } from '@/lib/whatsapp'
+import { buildOrderWhatsAppLink, formatDate, formatTime } from '@/lib/whatsapp'
 import type { PublicOrderView } from '@/types/order'
+import { useLang } from '@/lib/i18n/LangContext'
+import { localizeHours } from '@/lib/i18n/strings'
+import { useStorefrontSettings, waLink } from '@/components/storefront/StorefrontSettings'
+import { WhatsAppIcon } from '@/components/storefront/AskSimSection'
+import ChilledNotice from '@/components/storefront/ChilledNotice'
 
 function sessionKey(orderId: string) {
   return `sbh_order_access_${orderId}`
 }
 
-function askWhatsAppLink(orderId: string) {
-  return `${CONTACT_WHATSAPP_URL}?text=${encodeURIComponent(`Hi, I have a question about order ${orderId}.`)}`
+function useAskLink() {
+  const { whatsappNumber } = useStorefrontSettings()
+  return (orderId: string) => waLink(whatsappNumber, `Hi, I have a question about order ${orderId}.`)
+}
+
+/** What checkout saved for this order in this browser (see checkout page). */
+interface Handoff {
+  waLink: string
+  estimatedTotal: number
+  priceToConfirm: boolean
+  chilled: boolean
+}
+function readHandoff(orderId: string): Handoff | null {
+  try {
+    const raw = sessionStorage.getItem(`sbh_order_wa_${orderId}`)
+    return raw ? (JSON.parse(raw) as Handoff) : null
+  } catch {
+    return null
+  }
 }
 
 export default function OrderStatusPage() {
@@ -23,6 +44,8 @@ export default function OrderStatusPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [needsLast4, setNeedsLast4] = useState(false)
+  const { t } = useLang()
+  const askWhatsAppLink = useAskLink()
 
   const fetchOrder = async (last4: string) => {
     setLoading(true)
@@ -79,7 +102,7 @@ export default function OrderStatusPage() {
   return (
     <main className="min-h-screen bg-paper px-4 py-16 md:py-24">
       <div className="max-w-lg mx-auto">
-        <p className="text-xs uppercase tracking-widest text-ink/50 mb-2">Order</p>
+        <p className="text-xs uppercase tracking-widest text-ink/50 mb-2">{t('order.label')}</p>
         <h1 className="font-heading text-ink text-4xl md:text-5xl mb-10">{orderId}</h1>
 
         {loading && <p className="text-sm text-muted">Loading…</p>}
@@ -122,6 +145,7 @@ export default function OrderStatusPage() {
 }
 
 function OrderStatusView({ order }: { order: PublicOrderView }) {
+  const { t } = useLang()
   return (
     <div className="space-y-8">
       <StatusMessage order={order} />
@@ -133,28 +157,89 @@ function OrderStatusView({ order }: { order: PublicOrderView }) {
               {item.qty} x {item.name}
             </span>
             <span className="text-muted">
-              {item.unitPriceSnapshot !== null ? `RM ${(item.unitPriceSnapshot * item.qty).toFixed(2)}` : 'Ask for price'}
+              {item.unitPriceSnapshot !== null ? `RM ${(item.unitPriceSnapshot * item.qty).toFixed(2)}` : t('product.askPrice')}
             </span>
           </div>
         ))}
       </div>
 
       <div className="text-sm text-muted space-y-1">
-        {order.collectDate && <p>Collect: {formatDate(order.collectDate)}</p>}
-        {order.collectTime && <p>Time: {formatTime(order.collectTime)}</p>}
+        {order.collectDate && <p>{t('order.collect')}: {formatDate(order.collectDate)}</p>}
+        {order.collectTime && <p>{t('order.time')}: {formatTime(order.collectTime)}</p>}
         <p>
-          Fulfilment:{' '}
-          {order.fulfilment === 'pickup' ? 'Self pickup' : order.fulfilment === 'courier_pickup' ? 'Courier pickup (Grab / Lalamove)' : 'Delivery'}
+          {t('order.fulfilment')}:{' '}
+          {order.fulfilment === 'pickup' ? t('order.pickup') : order.fulfilment === 'courier_pickup' ? t('order.courier') : 'Delivery'}
         </p>
       </div>
     </div>
   )
 }
 
+/** A new order: the WhatsApp message is what reaches Sim, so make sending
+ *  it (again) the main thing on the page, with the total and next steps. */
+function NewOrderNextSteps({ order }: { order: PublicOrderView }) {
+  const { t, lang } = useLang()
+  const { whatsappNumber, openingHours } = useStorefrontSettings()
+  const [handoff, setHandoff] = useState<Handoff | null>(null)
+  useEffect(() => setHandoff(readHandoff(order.orderId)), [order.orderId])
+  const link =
+    handoff?.waLink ??
+    buildOrderWhatsAppLink(
+      {
+        orderId: order.orderId,
+        name: '',
+        collectDate: order.collectDate,
+        collectTime: order.collectTime,
+        items: order.items.map((i) => ({ productId: i.productId, name: i.name, qty: i.qty, unitPriceSnapshot: i.unitPriceSnapshot })),
+        estimatedTotal: order.estimatedTotal,
+        priceToConfirm: order.items.some((i) => i.unitPriceSnapshot === null),
+        baseUrl: typeof window === 'undefined' ? undefined : window.location.origin,
+      },
+      `https://wa.me/${whatsappNumber}`,
+    )
+  const priceToConfirm = handoff?.priceToConfirm ?? order.items.some((i) => i.unitPriceSnapshot === null)
+  return (
+    <div className="space-y-5" data-testid="order-next-steps">
+      <p className="text-sm text-ink">{t('order.received')}</p>
+      <div className="border border-[#1F7A4D]/30 bg-[#EEF7F1] p-5 space-y-3">
+        <h2 className="text-base font-semibold text-ink">{t('order.sendTitle')}</h2>
+        <p className="text-sm text-ink/80">{t('order.sendBody')}</p>
+        <a
+          href={link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-3 bg-[#1F7A4D] hover:bg-[#186640] text-white px-6 py-4 text-sm font-semibold min-h-[52px]"
+          data-testid="order-send-whatsapp"
+        >
+          <WhatsAppIcon />
+          {t('order.sendButton')}
+        </a>
+      </div>
+      <p className="text-sm text-ink" data-testid="order-est-total">
+        {t('order.estTotal')}: <span className="font-semibold">RM {order.estimatedTotal.toFixed(2)}</span>
+        {priceToConfirm && <span className="text-muted"> {t('order.plusAsk')}</span>}
+      </p>
+      {handoff?.chilled && <ChilledNotice />}
+      <div>
+        <h3 className="text-xs uppercase tracking-widest text-ink/70 mb-2">{t('order.next')}</h3>
+        <ol className="list-decimal pl-5 space-y-1 text-sm text-ink/85">
+          <li>{t('order.next1')}</li>
+          <li>{t('order.next2')}</li>
+          {order.collectDate && order.collectTime && (
+            <li>{t('order.next3', { date: formatDate(order.collectDate), time: formatTime(order.collectTime) })}</li>
+          )}
+        </ol>
+        <p className="text-xs text-muted mt-3">{t('order.noReply', { hours: localizeHours(lang, openingHours) })}</p>
+      </div>
+    </div>
+  )
+}
+
 function StatusMessage({ order }: { order: PublicOrderView }) {
+  const askWhatsAppLink = useAskLink()
   switch (order.status) {
     case 'new':
-      return <p className="text-sm text-ink">Order received. Sim is checking stock.</p>
+      return <NewOrderNextSteps order={order} />
     case 'confirmed':
     case 'awaiting_payment':
       return (

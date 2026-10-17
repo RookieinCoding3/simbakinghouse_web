@@ -92,6 +92,8 @@ export default function ProductForm({ productId, initial }: ProductFormProps) {
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [collections, setCollections] = useState<string[]>(() => readCollections(initial?.collections))
   const [chilled, setChilled] = useState(initial?.chilled === true)
+  const [alsoNeed, setAlsoNeed] = useState(str(initial?.alsoNeed))
+  const [alsoNeedZh, setAlsoNeedZh] = useState(str(initial?.alsoNeedZh))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -192,6 +194,8 @@ export default function ProductForm({ productId, initial }: ProductFormProps) {
         sellUnits,
         collections,
         chilled,
+        alsoNeed,
+        alsoNeedZh,
       }
       await adminFetch(productId ? `/api/admin/products/${encodeURIComponent(productId)}` : '/api/admin/products', {
         method: productId ? 'PUT' : 'POST',
@@ -381,6 +385,15 @@ export default function ProductForm({ productId, initial }: ProductFormProps) {
           <input type="checkbox" checked={chilled} onChange={(e) => setChilled(e.target.checked)} />
           Chilled (shows the chilled notice from Settings on the product and in the cart)
         </label>
+        <div>
+          <label htmlFor="also-need" className={labelCls}>You will also need (optional, English)</label>
+          <textarea id="also-need" rows={2} value={alsoNeed} onChange={(e) => setAlsoNeed(e.target.value)} placeholder="e.g. 3 eggs, 125 g butter, an 8-inch tin" className={`${inputCls} resize-none`} />
+        </div>
+        <div>
+          <label htmlFor="also-need-zh" className={labelCls}>You will also need (Chinese)</label>
+          <textarea id="also-need-zh" rows={2} value={alsoNeedZh} onChange={(e) => setAlsoNeedZh(e.target.value)} className={`${inputCls} resize-none`} />
+          <p className="text-xs text-muted mt-1">Shown on the product, so first-time bakers know what else to get.</p>
+        </div>
       </section>
 
       <section className="space-y-4" aria-labelledby="stock-title">
