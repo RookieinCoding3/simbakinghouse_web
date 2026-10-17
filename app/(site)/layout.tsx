@@ -8,6 +8,10 @@ import { CartProvider } from '@/lib/cart/CartContext'
 import CartDrawer from '@/components/cart/CartDrawer'
 import AppCheckInit from '@/components/AppCheckInit'
 import PWAInit from '@/components/PWAInit'
+import { LangProvider } from '@/lib/i18n/LangContext'
+import { StorefrontSettingsProvider } from '@/components/storefront/StorefrontSettings'
+import MobileCartBar from '@/components/storefront/MobileCartBar'
+import { fetchShopSettings } from '@/lib/firebase/settings'
 import { SITE_URL, CONTACT_EMAIL, CONTACT_PHONE_E164 } from '@/lib/site'
 import '../globals.css'
 
@@ -247,11 +251,19 @@ const jsonLd = {
   ],
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const settings = await fetchShopSettings()
+  const storefront = {
+    whatsappNumber: settings.whatsappNumber,
+    openingHours: settings.openingHours,
+    chilledNoticeEn: settings.chilledNoticeEn,
+    chilledNoticeZh: settings.chilledNoticeZh,
+    showLanguageLine: settings.showLanguageLine,
+  }
   return (
     <html
       lang="en"
@@ -266,14 +278,19 @@ export default function RootLayout({
       <body className="antialiased">
         <AppCheckInit />
         <PWAInit />
-        <AuthProvider>
-          <CartProvider>
-            <Header />
-            {children}
-            <Footer />
-            <CartDrawer />
-          </CartProvider>
-        </AuthProvider>
+        <LangProvider>
+          <StorefrontSettingsProvider value={storefront}>
+            <AuthProvider>
+              <CartProvider>
+                <Header />
+                {children}
+                <Footer />
+                <MobileCartBar />
+                <CartDrawer />
+              </CartProvider>
+            </AuthProvider>
+          </StorefrontSettingsProvider>
+        </LangProvider>
         <Analytics />
       </body>
     </html>

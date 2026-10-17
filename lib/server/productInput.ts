@@ -2,6 +2,7 @@ import crypto from 'crypto'
 import { BASE_UNITS } from '@/lib/inventory/units'
 import type { SellUnit, Channel } from '@/lib/inventory/catalog'
 import { Refused } from './http'
+import { readCollections } from '@/lib/storefront/collections'
 
 export interface ProductInput {
   name: string
@@ -16,6 +17,8 @@ export interface ProductInput {
   trackExpiry: boolean
   barcodes: string[]
   units: SellUnit[]
+  collections: string[]
+  chilled: boolean
 }
 
 function str(v: unknown, max: number): string {
@@ -73,6 +76,8 @@ export function parseProductInput(b: Record<string, unknown>): ProductInput {
     trackExpiry: b.trackExpiry === true,
     barcodes,
     units,
+    collections: readCollections(b.collections),
+    chilled: b.chilled === true,
   }
 }
 

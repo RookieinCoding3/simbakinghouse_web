@@ -4,8 +4,9 @@ import { memo } from 'react'
 import Image from 'next/image'
 import type { Product } from '@/types/product'
 import { cn } from '@/lib/utils/cn'
-import { productAvailability, onlineUnits, STOCK_LABEL } from '@/lib/productView'
+import { productAvailability, onlineUnits } from '@/lib/productView'
 import { formatSen } from '@/lib/money'
+import { useLang } from '@/lib/i18n/LangContext'
 
 interface ProductCardProps {
   product: Product
@@ -15,17 +16,19 @@ interface ProductCardProps {
   responsiveTheme?: boolean
 }
 
-function cardPrice(product: Product): string {
+function cardPrice(product: Product, askPrice: string): string {
   const units = onlineUnits(product)
   if (units.length === 0) return 'Wholesale'
   const priced = units.filter((u) => u.priceSen !== null).map((u) => u.priceSen as number)
-  if (priced.length === 0) return 'Ask for price'
+  if (priced.length === 0) return askPrice
   const min = Math.min(...priced)
   return units.length > 1 && new Set(priced).size > 1 ? `from ${formatSen(min)}` : formatSen(min)
 }
 
 function ProductCard({ product, onClick, index = 0, responsiveTheme = false }: ProductCardProps) {
   const { sellable, status } = productAvailability(product)
+  const { t, pick } = useLang()
+  const name = pick(product.name, product.nameZh)
   return (
     <div
       onClick={onClick}
@@ -38,7 +41,7 @@ function ProductCard({ product, onClick, index = 0, responsiveTheme = false }: P
       )}>
         <Image
           src={product.imageUrl || '/images/placeholder-product.jpg'}
-          alt={product.name}
+          alt={name}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
           className={cn(
@@ -69,7 +72,7 @@ function ProductCard({ product, onClick, index = 0, responsiveTheme = false }: P
               "text-[11px] uppercase tracking-[0.2em] font-body font-medium px-4 py-2",
               "text-ink/80 bg-paper/80"
             )}>
-              Out of stock
+              {t('stock.out')}
             </span>
           </div>
         )}
@@ -82,7 +85,7 @@ function ProductCard({ product, onClick, index = 0, responsiveTheme = false }: P
             "font-heading text-lg md:text-xl leading-tight line-clamp-1 transition-colors duration-300",
             "text-ink group-hover:text-clay"
           )}>
-            {product.name}
+            {name}
           </h3>
           <p className={cn(
             "text-[10px] uppercase tracking-widest mt-1",
@@ -92,7 +95,12 @@ function ProductCard({ product, onClick, index = 0, responsiveTheme = false }: P
           </p>
           {status && status !== 'out' && (
             <p className={cn('text-[10px] uppercase tracking-widest mt-1 font-medium', status === 'low' ? 'text-clay' : 'text-ink/50')}>
-              {STOCK_LABEL[status]}
+              {t(`stock.${status}`)}
+            </p>
+          )}
+          {product.chilled && (
+            <p className="text-[10px] uppercase tracking-widest mt-1 font-medium text-[#1F4A63]" data-testid="chilled-tag">
+              ❄ {t('product.chilled')}
             </p>
           )}
           {product.featured && (
@@ -106,7 +114,7 @@ function ProductCard({ product, onClick, index = 0, responsiveTheme = false }: P
             "font-heading text-lg md:text-xl",
             "text-clay"
           )}>
-            {cardPrice(product)}
+            {cardPrice(product, t('product.askPrice'))}
           </p>
         </div>
       </div>

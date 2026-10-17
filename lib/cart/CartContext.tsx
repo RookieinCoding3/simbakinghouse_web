@@ -171,6 +171,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         {
           productId: product.id,
           name: product.name,
+          ...(product.nameZh ? { nameZh: product.nameZh } : {}),
+          ...(product.chilled ? { chilled: true } : {}),
           imageUrl: product.imageUrl,
           unitPrice: unit.priceSen === null ? null : unit.priceSen / 100,
           qty: Math.min(MAX_QTY_PER_ITEM, qty),

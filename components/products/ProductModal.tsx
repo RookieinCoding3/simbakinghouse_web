@@ -7,10 +7,12 @@ import Button from '@/components/ui/Button'
 import ProductBadge from './ProductBadge'
 import { logProductView, logOrderIntent } from '@/lib/firebase/analytics'
 import { useCart } from '@/lib/cart/CartContext'
-import { productAvailability, onlineUnits, STOCK_LABEL } from '@/lib/productView'
+import { productAvailability, onlineUnits } from '@/lib/productView'
 import { formatSen } from '@/lib/money'
 import { CONTACT_WHATSAPP_URL } from '@/lib/site'
 import { cn } from '@/lib/utils/cn'
+import { useLang } from '@/lib/i18n/LangContext'
+import ChilledNotice from '@/components/storefront/ChilledNotice'
 
 interface ProductModalProps {
   product: Product | null
@@ -26,6 +28,7 @@ export default function ProductModal({
   // Track which product was last logged to prevent duplicates
   const lastLoggedProductId = useRef<string | null>(null)
   const { addItem } = useCart()
+  const { t, pick } = useLang()
   const [qty, setQty] = useState(1)
   const [unitId, setUnitId] = useState<string | null>(null)
 
@@ -109,7 +112,7 @@ export default function ProductModal({
           <div className="relative h-64 md:h-full min-h-[300px] bg-clay/10">
             <Image
               src={product.imageUrl || '/images/placeholder-product.jpg'}
-              alt={product.name}
+              alt={pick(product.name, product.nameZh)}
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover"
@@ -131,8 +134,9 @@ export default function ProductModal({
 
               {/* Product Name */}
               <h2 className="font-heading text-ink text-4xl md:text-5xl leading-tight animate-fade-in">
-                {product.name}
+                {pick(product.name, product.nameZh)}
               </h2>
+              {product.chilled && <ChilledNotice />}
 
               {/* Sim's Tip — only ever a real note someone actually entered for
                   this product (e.g. via Firestore); never a generic fallback
@@ -176,7 +180,7 @@ export default function ProductModal({
                   </span>
                   {status && (
                     <p className={cn('text-[11px] uppercase tracking-widest mt-2 font-medium', status === 'in_stock' ? 'text-ink/60' : 'text-clay')} data-testid="stock-status">
-                      {STOCK_LABEL[status]}
+                      {t(`stock.${status}`)}
                     </p>
                   )}
                 </div>
@@ -255,7 +259,7 @@ export default function ProductModal({
                   className="w-full py-5"
                   disabled={!canAdd}
                 >
-                  {canAdd ? 'Add to cart' : 'Out of stock'}
+                  {canAdd ? t('product.add') : t('stock.out')}
                 </Button>
               )}
             </div>

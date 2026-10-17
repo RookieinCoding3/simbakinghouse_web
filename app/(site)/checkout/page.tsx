@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/lib/cart/CartContext'
+import { useLang } from '@/lib/i18n/LangContext'
+import ChilledNotice from '@/components/storefront/ChilledNotice'
 import { cartLineKey } from '@/types/cart'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { normalizeMyPhone } from '@/lib/phone'
@@ -41,6 +43,7 @@ function isTimeWithinRange(time: string, min: string, max: string): boolean {
 
 export default function CheckoutPage() {
   const { items, subtotal, hasUnpricedItems, clear } = useCart()
+  const { t, pick } = useLang()
   const { user } = useAuth()
   const router = useRouter()
 
@@ -221,8 +224,9 @@ export default function CheckoutPage() {
           {items.map((item) => (
             <div key={cartLineKey(item)} className="flex justify-between py-4 text-sm">
               <span className="text-ink">
-                {item.qty} x {item.name}
+                {item.qty} x {pick(item.name, item.nameZh)}
                 {item.sellUnitLabel && <span className="text-muted"> · {item.sellUnitLabel}</span>}
+                {item.chilled && <span className="text-[#1F4A63]"> · ❄ {t('product.chilled')}</span>}
               </span>
               <span className="text-muted">
                 {item.unitPrice !== null ? `RM ${(item.unitPrice * item.qty).toFixed(2)}` : 'Ask for price'}
@@ -234,6 +238,7 @@ export default function CheckoutPage() {
             <span className="text-ink">RM {subtotal.toFixed(2)}</span>
           </div>
         </div>
+        {items.some((i) => i.chilled) && <ChilledNotice className="-mt-6 mb-10" title={t('cart.chilledNote')} />}
         {hasUnpricedItems && (
           <p className="text-xs text-muted -mt-6 mb-10">
             Some items are priced on request — the total above doesn&apos;t include them yet.

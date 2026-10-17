@@ -7,13 +7,16 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
 import CartButton from '@/components/cart/CartButton'
 import AccountButton from '@/components/auth/AccountButton'
+import LangToggle from '@/components/storefront/LangToggle'
+import { useLang } from '@/lib/i18n/LangContext'
+import type { StringKey } from '@/lib/i18n/strings'
 
 // Navigation menu items
-const NAV_ITEMS = [
-  { name: 'Home', path: '/' },
-  { name: 'About', path: '/about' },
-  { name: 'Products', path: '/products' },
-  { name: 'Location', path: '/location' },
+const NAV_ITEMS: { key: StringKey; path: string }[] = [
+  { key: 'nav.home', path: '/' },
+  { key: 'nav.about', path: '/about' },
+  { key: 'nav.products', path: '/products' },
+  { key: 'nav.location', path: '/location' },
 ]
 
 const MOBILE_MENU_ID = 'mobile-nav-panel'
@@ -23,6 +26,7 @@ const MOBILE_MENU_ID = 'mobile-nav-panel'
 const HEADER_HEIGHT_PX = 64
 
 export default function Header() {
+  const { t } = useLang()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
@@ -77,7 +81,7 @@ export default function Header() {
                 isActive(item.path) ? 'text-ink' : 'text-muted hover:text-ink'
               )}
             >
-              {item.name}
+              {t(item.key)}
             </Link>
           ))}
         </div>
@@ -112,7 +116,8 @@ export default function Header() {
         </Link>
 
         {/* Right: account + cart */}
-        <div className="flex justify-end items-center">
+        <div className="flex justify-end items-center gap-1">
+          <LangToggle className="hidden lg:inline-flex mr-2" />
           <AccountButton />
           <CartButton />
         </div>
@@ -154,9 +159,10 @@ export default function Header() {
                     transform: mobileMenuOpen ? 'translateY(0)' : 'translateY(10px)',
                   }}
                 >
-                  {item.name}
+                  {t(item.key)}
                 </Link>
               ))}
+              <LangToggle className="mt-8 self-start text-sm" />
             </div>
           </div>,
           document.body

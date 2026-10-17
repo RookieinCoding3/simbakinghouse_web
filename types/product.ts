@@ -1,6 +1,14 @@
 export interface Product {
   id: string
   name: string
+  /** Chinese name (SBH Inventory); '' when not set. */
+  nameZh?: string
+  /** Product / shelf code (SBH Inventory), for search. */
+  code?: string
+  /** Storefront collections ticked in the editor (lib/storefront/collections.ts). */
+  collections?: string[]
+  /** Kept chilled: a notice is shown on the product and in the cart. */
+  chilled?: boolean
   description: string
   /** undefined means no price has been set — show "Ask for price", never hide the card */
   price?: number

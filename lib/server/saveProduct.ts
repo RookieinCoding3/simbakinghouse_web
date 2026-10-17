@@ -60,6 +60,8 @@ export async function saveProduct(tx: Transaction, caller: AdminCaller, id: stri
     lowStockThresholdMilli: input.lowStockThresholdMilli,
     trackExpiry: input.trackExpiry,
     barcodes: input.barcodes,
+    collections: input.collections,
+    chilled: input.chilled,
     sellUnits: publicUnits,
     hasWholesale: wholesaleUnits.length > 0,
     // Older readers (and anything not yet on sell units) read `price`.

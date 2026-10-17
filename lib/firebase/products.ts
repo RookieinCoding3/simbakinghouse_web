@@ -2,6 +2,7 @@ import { collection, getDocs, query, orderBy, limit, DocumentData } from 'fireba
 import { db } from './config'
 import type { Product } from '@/types/product'
 import { readPublicSellUnits, isOnline } from '@/lib/inventory/catalog'
+import { readCollections } from '@/lib/storefront/collections'
 
 /**
  * Mirrors the soft-delete convention the iOS app writes: a missing
@@ -57,6 +58,10 @@ function mapDocumentToProduct(docId: string, data: DocumentData): Product {
   return {
     id: docId,
     name: data.name || data.title || data.productName || data.Name || 'Untitled Product',
+    nameZh: typeof data.nameZh === 'string' ? data.nameZh : '',
+    code: typeof data.code === 'string' ? data.code : '',
+    collections: readCollections(data.collections),
+    chilled: data.chilled === true,
     description: data.description || data.desc || data.Description || data.details || '',
     price: readPrice(data),
     imageUrl: data.imageUrl || data.image || data.imageURL || data.photo || data.photoURL || '/images/placeholder-product.jpg',

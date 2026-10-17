@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { CONTACT_MAILTO_URL } from '@/lib/site'
 import { fetchShopSettings } from '@/lib/firebase/settings'
+import LanguageLine from '@/components/storefront/LanguageLine'
 
 export default async function Footer() {
   const currentYear = new Date().getFullYear()
@@ -63,6 +64,7 @@ export default async function Footer() {
           </div>
 
           <div className="md:text-right">
+            <LanguageLine className="mb-3" />
             <p>&copy; {currentYear} Sim Baking House</p>
             <p className="mt-1">All rights reserved.</p>
             <Link href="/privacy" prefetch={false} className="block mt-2 hover:text-ink transition-colors">

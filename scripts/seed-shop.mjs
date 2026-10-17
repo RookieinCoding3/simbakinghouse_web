@@ -36,5 +36,24 @@ await d.collection('products').doc('shop-cocoa').set({ name: 'Cocoa powder', pri
 // Quick-added on the iPad, details not filled in yet: must never show.
 await d.collection('products').doc('shop-draft').set({ name: 'Draft secret item', code: 'SHELF-DRAFT', category: '', status: 'draft', isActive: false, sellPrice: 450, price: 4.5, inStock: true, description: '' })
 
-console.log('Seeded shop catalogue (3 managed, 3 old, 1 draft)')
+// Storefront (scripts/storefront.test.mjs): Chinese names, codes,
+// collections (first-time, bundles; "regulars" left empty so it must be
+// hidden), one chilled product, and shop settings with the language line on.
+const store = {
+  'shop-rice': { nameZh: '米粉', code: 'F00011', collections: ['first-time'] },
+  'shop-cocoa': { nameZh: '可可粉', code: 'B00003', collections: ['first-time', 'bundles'] },
+  'shop-butter': { nameZh: '牛油 250克', code: 'D00009', collections: ['bundles'], chilled: true },
+}
+for (const [id, f] of Object.entries(store)) await d.collection('products').doc(id).set(f, { merge: true })
+await d.collection('settings').doc('shop').set({
+  shopOpensAt: '6:30 AM',
+  shopClosesAt: '1:00 PM',
+  openingHours: 'Daily: 6:30 AM - 1:00 PM',
+  whatsappNumber: '60123456789',
+  chilledNoticeEn: 'TEST chilled notice: keep it cold.',
+  chilledNoticeZh: '测试冷藏提示：请保持冰冷。',
+  showLanguageLine: true,
+})
+
+console.log('Seeded shop catalogue (3 managed, 3 old, 1 draft) + storefront fields and settings')
 process.exit(0)

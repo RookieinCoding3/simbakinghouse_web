@@ -138,6 +138,40 @@ await check('editing an old product: opens with its legacy price; a keypad chang
   assert(p.featured === true && p.mentorNote === 'Sim uses this' && p.description === 'Strong flour', 'other fields lost')
 })
 
+await check('storefront: collections and Chilled are saved from the editor, and kept on the next save', async () => {
+  await page.goto(`${BASE_URL}/admin/products/legacy`)
+  await page.getByLabel('Name', { exact: true }).waitFor()
+  const cols = page.getByTestId('collections')
+  await cols.getByLabel('Baking for the first time?').check()
+  await cols.getByLabel('Baking bundles').check()
+  await page.getByLabel(/^Chilled/).check()
+  await page.getByRole('button', { name: 'Save product' }).click()
+  await page.waitForURL(/\/admin\/products$/, { timeout: 15000 })
+  let p = await getDoc('products', 'legacy')
+  assert(JSON.stringify(p.collections) === '["first-time","bundles"]' && p.chilled === true, JSON.stringify(p))
+  // Re-open: ticks are loaded; untick one; Chilled stays on.
+  await page.goto(`${BASE_URL}/admin/products/legacy`)
+  await page.getByLabel('Name', { exact: true }).waitFor()
+  assert(await cols.getByLabel('Baking bundles').isChecked(), 'collection not loaded')
+  await cols.getByLabel('Baking bundles').uncheck()
+  await page.getByRole('button', { name: 'Save product' }).click()
+  await page.waitForURL(/\/admin\/products$/, { timeout: 15000 })
+  p = await getDoc('products', 'legacy')
+  assert(JSON.stringify(p.collections) === '["first-time"]' && p.chilled === true, JSON.stringify(p))
+})
+
+await check('storefront settings: chilled notice (EN + ZH) and the language line switch are saved', async () => {
+  await page.goto(`${BASE_URL}/admin/settings`)
+  await page.getByLabel('Chilled notice (English)').waitFor()
+  await page.getByLabel('Chilled notice (English)').fill('Keep cold, collect today.')
+  await page.getByLabel('Chilled notice (Chinese)').fill('请保持冰冷，当天来取。')
+  await page.getByLabel(/We speak English/).check()
+  await page.getByRole('button', { name: 'Save settings' }).click()
+  await page.getByText('Saved.').waitFor()
+  const s = await getDoc('settings', 'shop')
+  assert(s.chilledNoticeEn === 'Keep cold, collect today.' && s.chilledNoticeZh === '请保持冰冷，当天来取。' && s.showLanguageLine === true, JSON.stringify(s))
+})
+
 await check('editing an old "Ask for price" product keeps it Ask for price', async () => {
   await page.goto(`${BASE_URL}/admin/products/ask-legacy`)
   await page.getByLabel('Name', { exact: true }).waitFor()

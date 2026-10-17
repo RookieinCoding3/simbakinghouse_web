@@ -15,6 +15,7 @@ import { newOpId } from '@/lib/admin/stockView'
 import { readPublicSellUnits, readStockConfig, normalizeSellUnit, type Channel, type SellUnit } from '@/lib/inventory/catalog'
 import { BASE_UNITS, formatQty, milliToString, parseQtyToMilli } from '@/lib/inventory/units'
 import { formatSen } from '@/lib/money'
+import { COLLECTIONS, readCollections } from '@/lib/storefront/collections'
 import PriceKeypad from './PriceKeypad'
 
 // The product editor. Everything is saved through /api/admin/products (one
@@ -89,6 +90,8 @@ export default function ProductForm({ productId, initial }: ProductFormProps) {
   const [openPrice, setOpenPrice] = useState<string | null>(null)
   const [imageUrl] = useState(str(initial?.imageUrl))
   const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [collections, setCollections] = useState<string[]>(() => readCollections(initial?.collections))
+  const [chilled, setChilled] = useState(initial?.chilled === true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -187,6 +190,8 @@ export default function ProductForm({ productId, initial }: ProductFormProps) {
         trackExpiry,
         barcodes: barcodes.split(/[\s,]+/).filter(Boolean),
         sellUnits,
+        collections,
+        chilled,
       }
       await adminFetch(productId ? `/api/admin/products/${encodeURIComponent(productId)}` : '/api/admin/products', {
         method: productId ? 'PUT' : 'POST',
@@ -353,6 +358,29 @@ export default function ProductForm({ productId, initial }: ProductFormProps) {
         >
           + Add a size
         </button>
+      </section>
+
+      <section className="space-y-3" aria-labelledby="shop-title">
+        <h2 id="shop-title" className="text-sm font-semibold text-ink">On the shop</h2>
+        <fieldset className="space-y-2" data-testid="collections">
+          <legend className={labelCls}>Collections (shown on the home page; empty ones are hidden)</legend>
+          {COLLECTIONS.map((c) => (
+            <label key={c.id} className="flex items-center gap-3 text-sm">
+              <input
+                type="checkbox"
+                checked={collections.includes(c.id)}
+                onChange={(e) =>
+                  setCollections((cur) => readCollections(e.target.checked ? [...cur, c.id] : cur.filter((x) => x !== c.id)))
+                }
+              />
+              {c.adminLabel}
+            </label>
+          ))}
+        </fieldset>
+        <label className="flex items-center gap-3 text-sm">
+          <input type="checkbox" checked={chilled} onChange={(e) => setChilled(e.target.checked)} />
+          Chilled (shows the chilled notice from Settings on the product and in the cart)
+        </label>
       </section>
 
       <section className="space-y-4" aria-labelledby="stock-title">
