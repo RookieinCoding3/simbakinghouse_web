@@ -13,8 +13,9 @@
     "test:admin": "bash scripts/test-env.sh bash scripts/e2e-suites.sh admin",
     "test:e2e": "bash scripts/test-env.sh bash scripts/e2e-suites.sh",
     "test:unit": "bash scripts/unit-tests.sh",
-    "test": "npm run test:rules && npm run test:guest-checkout && npm run test:unit && npm run test:e2e && npm run test:shop && npm run test:storefront",
+    "test": "npm run test:rules && npm run test:guest-checkout && npm run test:unit && npm run test:e2e && npm run test:shop && npm run test:storefront && npm run test:prod-compat",
     "test:shop": "PRE_BUILD='node scripts/seed-shop.mjs' bash scripts/test-env.sh node scripts/shop-stock.test.mjs",
+    "test:prod-compat": "PRE_BUILD='node scripts/seed-prodcompat.mjs' bash scripts/test-env.sh node scripts/prod-compat.test.mjs",
     "test:storefront": "PRE_BUILD='node scripts/seed-shop.mjs' bash scripts/test-env.sh node scripts/storefront.test.mjs"
   },
   "dependencies": {
